@@ -21,6 +21,109 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.0 [logstash-9.4.0-release-notes]
+
+### Features and enhancements [logstash-9.4.0-features-enhancements]
+
+#### Reactive pipeline recovery [logstash-9.4.0-reactive-pipeline-recovery]
+
+This release adds a feature to recover from pipeline crashes, under the setting `pipeline.recovery` [#18930](https://github.com/elastic/logstash/pull/18930).
+Crash recovery is applied when `config.reload.automatic` is enabled and accepts:
+
+* `auto`: enables pipeline crash recovery for pipelines backed by the persistent queue
+* `false` (default): do not automate recovery of crashed pipelines
+* `true`: enables pipeline crash recovery for any pipeline, even if backed by the ephemeral memory queue (risk: data loss)
+
+#### Batch chunking  [logstash-9.4.0-batch-chunking]
+
+We have added a safety mechanism to limit memory expansion when using filters that produce more events than they consume (like the `split` filter), controlled by the new `pipeline.batch.output_chunking.growth_threshold_factor` setting [#18680](https://github.com/elastic/logstash/pull/18680). 
+When a batch growth exceeds the configured factor, it is re-chunked into smaller batches of `pipeline.batch.size` events before being handled by the outputs.
+
+#### New batch histogram metrics [logstash-9.4.0-new-batch-histogram-metrics]
+
+We've improved visibility of batch sizing at a pipeline level by exposing new histogram-type metrics in the `GET /_node/stats` endpoint [#17838](https://github.com/elastic/logstash/issues/17838). 
+These metrics show the distribution of batch sizes in bytes and event-count for the lifetime of the pipeline, as well as for the most recent 1, 5, and 15-minute time windows.
+
+#### Additional features and enhancements [logstash-9.4.0-more-features]
+
+* Performance improvements which saves ~40% CPU resource on DLQ segment file lookup operations [19013](https://github.com/elastic/logstash/pull/19013)
+
+### Updates to dependencies [logstash-9.4.0-dependencies]
+
+* Update JRuby to 10.0.5.0
+* Update bundled JDK to 21.0.10 build 7
+
+::::{important}
+
+Logstash 9.4.0 upgrades JRuby to 10 because 9.x is now EOL. JRuby 10 requires Java 21, dropping support for any version below, including 17.
+For this reason, Logstash now also requires Java 21 or later, and Java 17 is no longer supported.
+
+As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
+
+::::
+
+### Plugins [logstash-plugin-9.4.0-changes]
+
+::::{important}
+
+The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash release will bundle Kafka integration plugin `12.x` in its place, which introduces breaking changes, read more about them in the [CHANGELOG.md](https://github.com/logstash-plugins/logstash-integration-kafka/blob/v12.0.0/CHANGELOG.md#1200)
+
+::::
+
+**Aggregate Filter - 2.11.0**
+
+* Feature: Add a warning log message when the number of tasks stored in memory exceeds the configured threshold [#125](https://github.com/logstash-plugins/logstash-filter-aggregate/issues/125)
+
+**Aws Integration - 7.3.4**
+
+* Use milliseconds timestamp precision in S3 input to fix the skip backup and delete object issue in S3-compatible storage services [#60](https://github.com/logstash-plugins/logstash-integration-aws/pull/60)
+* Replace deprecated `Aws::S3::Object#upload_file` in favor of `Aws::S3::TransferManager#upload_file` [#67](https://github.com/logstash-plugins/logstash-integration-aws/pull/67)
+* Replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#65](https://github.com/logstash-plugins/logstash-integration-aws/pull/65)
+* Re-packaging the plugin [#63](https://github.com/logstash-plugins/logstash-integration-aws/pull/63)
+* Add `cutoff_second configuration` option to S3 input plugin [#59](https://github.com/logstash-plugins/logstash-integration-aws/pull/59)
+
+**Date Filter - 3.2.0**
+
+* Add `precision` setting to support nanosecond precision timestamps [#165](https://github.com/logstash-plugins/logstash-filter-date/pull/165)
+  * `ms` (default): timestamps are stored with millisecond precision
+    * it keeps the same behavior as before for backward compatibility
+    * fractional seconds are truncated to 3 digits
+    * custom parsing formats use `joda-time` library
+  * `ns`: timestamps are stored with nanosecond precision
+    * fractional seconds support up to 9 digits
+    * custom parsing formats use `java.time`
+* `ISO8601` now accepts up to 9 fractional-second digits
+
+**De_dot Filter - 1.2.0**
+
+* Apply an 'error' tag to any event that fails the de-dotting process [#26](https://github.com/logstash-plugins/logstash-filter-de_dot/pull/26)
+
+**Dissect Filter - 1.3.0**
+
+* Add JRuby 10 support: replace removed `NativeException` with `RaiseException`, source JRuby from Logstash vendor directory instead of pinning Maven version [#96](https://github.com/logstash-plugins/logstash-filter-dissect/pull/96)
+
+**Elastic Integration Filter - 9.4.0**
+
+* Include Elasticsearch web-utils JAR into the plugin to keep `registered_domain` processor dependencies [#397](https://github.com/elastic/logstash-filter-elastic_integration/pull/397)
+* Fixed `set_security_user` processor to behave consistently with other unsupported processors (`inference`, `enrich`) by tagging events with `_ingest_pipeline_failure` [#269](https://github.com/elastic/logstash-filter-elastic_integration/pull/269)
+
+**Fingerprint Filter - 3.5.0**
+
+* Fix fingerprint instability for Hash and Array field values caused by JRuby 10 changing `Hash#inspect` formatting [#79](https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/79)
+
+**Kafka Integration - 11.8.8**
+
+* Fix a regression introduced in `11.8.7` where `sasl_jaas_config` was incorrectly typed in the output plugin, crashing Logstash on startup when a SASL Kafka output configuration was present [#247](https://github.com/logstash-plugins/logstash-integration-kafka/pull/247)
+  
+**Mutate Filter - 3.6.0**
+
+* Add JRuby 10 support: fix integer conversion precision loss beyond 2^53 caused by `parse_signed_hex_str` routing all strings through `Float()` [#178](https://github.com/logstash-plugins/logstash-filter-mutate/pull/178)
+
+**Gelf Input - 3.4.0**
+
+* Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
+
+
 ## 9.3.4 [logstash-9.3.4-release-notes]
 
 ### Updates to dependencies [logstash-9.3.4-dependencies]
