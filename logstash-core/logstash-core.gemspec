@@ -76,7 +76,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "jrjackson", "= #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
 
-  gem.add_runtime_dependency "elasticsearch", '~> 8'
+  gem.add_runtime_dependency "elasticsearch", '>= 8', '< 10'
   gem.add_runtime_dependency "manticore", '~> 0.6'
 
   # xpack geoip database service
