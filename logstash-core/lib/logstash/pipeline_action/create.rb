@@ -53,7 +53,10 @@ module LogStash module PipelineAction
         new_pipeline.start # block until the pipeline is correctly started or crashed
       end
 
-      agent.untrack_ssl_resources(pipeline_id) unless success
+      unless success
+        agent.untrack_ssl_resources(pipeline_id)
+        new_pipeline.shutdown
+      end
       LogStash::ConvergeResult::ActionResult.create(self, success)
     end
 
