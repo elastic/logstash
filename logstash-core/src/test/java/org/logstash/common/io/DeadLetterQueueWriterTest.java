@@ -514,14 +514,8 @@ public class DeadLetterQueueWriterTest {
 
         // fill the queue to push out the segment with the 2 previous events
         Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-<<<<<<< HEAD
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
-=======
-        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32500));
         try (DeadLetterQueueWriter writeManager = newBuilder(dir, 10 * MB, 20 * MB)
->>>>>>> f2f0d3fde (`dead_letter_queue.flush_check_interval` new config for flushing staled segment files. (#19036))
                 .storageType(QueueStorageType.DROP_NEWER)
                 .build()) {
 
