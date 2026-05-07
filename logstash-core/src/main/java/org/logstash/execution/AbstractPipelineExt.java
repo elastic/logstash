@@ -399,17 +399,23 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final QueueStorageType storageType = QueueStorageType.parse(getSetting(context, "dead_letter_queue.storage_policy").asJavaString());
 
         String dlqPath = getSetting(context, "path.dead_letter_queue").asJavaString();
+<<<<<<< HEAD
         long dlqMaxBytes = getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue();
         Duration dlqFlushInterval = Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue());
+=======
+        long dlqMaxBytes = org.jruby.RubyNumeric.num2long(getSetting(context, "dead_letter_queue.max_bytes").convertToInteger());
+        Duration dlqFlushInterval = Duration.ofMillis(org.jruby.RubyNumeric.num2long(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger()));
+        Duration dlqFlushCheckInterval = Duration.ofMillis(org.jruby.RubyNumeric.num2long(getSetting(context, "dead_letter_queue.flush_check_interval").convertToInteger()));
+>>>>>>> f2f0d3fde (`dead_letter_queue.flush_check_interval` new config for flushing staled segment files. (#19036))
 
         if (hasSetting(context, "dead_letter_queue.retain.age") && !getSetting(context, "dead_letter_queue.retain.age").isNil()) {
             // convert to Duration
             final Duration age = parseToDuration(getSetting(context, "dead_letter_queue.retain.age").convertToString().toString());
             return DeadLetterQueueFactory.getWriter(pipelineId.asJavaString(), dlqPath, dlqMaxBytes,
-                    dlqFlushInterval, storageType, age);
+                    dlqFlushInterval, dlqFlushCheckInterval, storageType, age);
         }
 
-        return DeadLetterQueueFactory.getWriter(pipelineId.asJavaString(), dlqPath, dlqMaxBytes, dlqFlushInterval, storageType);
+        return DeadLetterQueueFactory.getWriter(pipelineId.asJavaString(), dlqPath, dlqMaxBytes, dlqFlushInterval, dlqFlushCheckInterval, storageType);
     }
 
     /**

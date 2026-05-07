@@ -90,6 +90,7 @@ module LogStash
   Setting::ExistingFilePath.new("api.ssl.keystore.path", nil, false).nullable,
           Setting::Password.new("api.ssl.keystore.password", nil, false).nullable,
        Setting::StringArray.new("api.ssl.supported_protocols", nil, true, %w[TLSv1 TLSv1.1 TLSv1.2 TLSv1.3]),
+<<<<<<< HEAD
             Setting::SettingString.new("queue.type", "memory", true, ["persisted", "memory"]),
            Setting::Boolean.new("queue.drain", false),
              Setting::Bytes.new("queue.page_capacity", "64mb"),
@@ -112,6 +113,33 @@ module LogStash
             Setting::SettingString.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::SettingNullableString.new("monitoring.cluster_uuid"),
             Setting::SettingString.new("pipeline.buffer.type", nil, false, ["direct", "heap"])
+=======
+           Setting::StringSetting.new("pipeline.batch.metrics.sampling_mode", "minimal", true, ["disabled", "minimal", "full"]),
+            Setting::StringSetting.new("queue.type", "memory", true, ["persisted", "memory"]),
+           Setting::BooleanSetting.new("queue.drain", false),
+             Setting::BytesSetting.new("queue.page_capacity", "64mb"),
+             Setting::BytesSetting.new("queue.max_bytes", "1024mb"),
+           Setting::NumericSetting.new("queue.max_events", 0), # 0 is unlimited
+           Setting::NumericSetting.new("queue.checkpoint.acks", 1024), # 0 is unlimited
+           Setting::NumericSetting.new("queue.checkpoint.writes", 1024), # 0 is unlimited
+           Setting::NumericSetting.new("queue.checkpoint.interval", 1000), # remove it for #17155
+           Setting::BooleanSetting.new("queue.checkpoint.retry", true),
+            Setting::StringSetting.new("queue.compression", "none", true, %w(none speed balanced size disabled)),
+           Setting::BooleanSetting.new("dead_letter_queue.enable", false),
+             Setting::BytesSetting.new("dead_letter_queue.max_bytes", "1024mb"),
+           Setting::NumericSetting.new("dead_letter_queue.flush_interval", 5000),
+           Setting::NumericSetting.new("dead_letter_queue.flush_check_interval", 1000),
+            Setting::StringSetting.new("dead_letter_queue.storage_policy", "drop_newer", true, ["drop_newer", "drop_older"]),
+    Setting::NullableStringSetting.new("dead_letter_queue.retain.age"), # example 5d
+         Setting::TimeValueSetting.new("slowlog.threshold.warn", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.info", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.debug", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.trace", "-1"),
+            Setting::StringSetting.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
+            Setting::StringSetting.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
+    Setting::NullableStringSetting.new("monitoring.cluster_uuid"),
+            Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
+>>>>>>> f2f0d3fde (`dead_letter_queue.flush_check_interval` new config for flushing staled segment files. (#19036))
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 
