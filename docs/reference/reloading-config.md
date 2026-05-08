@@ -54,7 +54,7 @@ In general, Logstash does not watch or monitor configuration files used or refer
 ## Automatic reload of TLS certificates [automatic-reload-of-tls-certificates]
 
 ```{applies_to}
-stack: ga 9.4.0+
+stack: ga 9.5.0+
 ```
 
 To automatically reload TLS certificate files for pipelines and X-Pack services, enable both `config.reload.automatic: true` and `ssl.reload.automatic: true`.
