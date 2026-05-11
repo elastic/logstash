@@ -21,6 +21,44 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.1 [logstash-9.4.1-release-notes]
+
+### Features and enhancements [logstash-9.4.1-features-enhancements]
+
+#### Dead letter queue flush check interval [logstash-9.4.1-dlq-flush-check-interval]
+
+Introduces new `dead_letter_queue.flush_check_interval` config for flushing the staled segment files scheduler 
+which can reduce frequent check overhead.
+If you are using intensive DLQ operations (write/read), the frequent flush check scheduler might create more overhead for the pipeline, increasing CPU usage. 
+Introducing configurable scheduler cadence improves the pipeline efficiency by removing frequent operations 
+[#19036](https://github.com/elastic/logstash/pull/19036).
+
+### Updates to dependencies [logstash-9.4.1-dependencies]
+
+* Update bundled JDK to 21.0.11 build 10.
+
+### Plugins [logstash-plugin-9.4.1-changes]
+
+**Beats Input - 7.0.9**
+
+* Update Netty dependency to 4.1.133.Final [#539](https://github.com/logstash-plugins/logstash-input-beats/pull/539)
+
+**Http Input - 4.1.8**
+
+* Update Netty dependency to 4.1.133.Final [#216](https://github.com/logstash-plugins/logstash-input-http/pull/216)
+
+**Tcp Input - 7.0.9**
+
+* Update Netty dependency to 4.1.133.Final [#256](https://github.com/logstash-plugins/logstash-input-tcp/pull/256)
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline.
+  This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy [#250](https://github.com/logstash-plugins/logstash-input-tcp/pull/250)
+
+**Elasticsearch Output - 12.1.3**
+
+* Improves the logging experience when DLQ used [#1253](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1253).
+
+
 ## 9.4.0 [logstash-9.4.0-release-notes]
 
 ### Features and enhancements [logstash-9.4.0-features-enhancements]
