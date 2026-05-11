@@ -25,54 +25,24 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.4.1-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.4.1
+#### Dead letter queue flush check interval [logstash-9.4.1-dlq-flush-check-interval]
 
-=== Logstash Commits between 9.4 and 9.4.0
+Introduces new `dead_letter_queue.flush_check_interval` config for flushing the staled segment files scheduler 
+which can reduce frequent check overhead.
+If you are using intensive DLQ operations (write/read), the frequent flush check scheduler might give overhead to the pipeline, 
+means uses much CPU. Introducing configurable scheduler cadence improves the pipeline efficiency by removing frequent operations 
+[#19036](https://github.com/elastic/logstash/pull/19036).
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.0..9.4"
+### Updates to dependencies [logstash-9.4.1-dependencies]
 
-b248f6c74 - (HEAD -> 9.4, origin/9.4) bump lock file for 9.4 (#19094) (3 days ago) <github-actions[bot]>
-9fa66318f - (origin/mergify/bp/9.4/pr-19070) `dead_letter_queue.flush_check_interval` new config for flushing staled segment files. (#19036) (#19090) (4 days ago) <mergify[bot]>
-739460500 - Allow to pull elasticsearch 9.x ruby client versions. This provides an opportunity to upgrade the client in the ES plugins. (#19051) (#19079) (6 days ago) <mergify[bot]>
-727845e95 - Update bundled JDK to 21.0.11 build 10 (#19072) (6 days ago) <github-actions[bot]>
-4cc67d0a4 - Bump logstash version 9.4.1 (#19084) (6 days ago) <github-actions[bot]>
-545524fed - Bump tspascoal/get-user-teams-membership (#19067) (#19078) (7 days ago) <mergify[bot]>
-e88e6c818 - Retry transient curl errors when checking JDK (#19073) (#19082) (7 days ago) <mergify[bot]>
-c6e4264c4 - Release notes for 9.4.0 (#18973) (7 days ago) <github-actions[bot]>
-a42eb877a - Update getting-started-with-logstash min java version (#19058) (#19071) (7 days ago) <mergify[bot]>
-053c932f0 - Release notes for 9.3.4 (#19042) (#19064) (11 days ago) <mergify[bot]>
-70e4b3158 - Exclude non-runtime dependencies for snyk scans of jar dependencies (#19039) (#19056) (13 days ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.4.0..9.4 *.release"
-Changed plugin versions:
-logstash-filter-date: 3.2.0 -> 3.2.1
-logstash-filter-elastic_integration: 9.4.0 -> 9.4.1
-logstash-input-beats: 7.0.8 -> 7.0.9
-logstash-input-elasticsearch: 5.2.1 -> 5.2.2
-logstash-input-http: 4.1.7 -> 4.1.8
-logstash-input-tcp: 7.0.7 -> 7.0.9
-logstash-output-elasticsearch: 12.1.2 -> 12.1.3
----------- GENERATED CONTENT ENDS HERE ------------
+* Update bundled JDK to 21.0.11 build 10.
 
 ### Plugins [logstash-plugin-9.4.1-changes]
-
-**Date Filter - 3.2.1**
-
-* Fix date syntax docs list formatting [#166](https://github.com/logstash-plugins/logstash-filter-date/pull/166)
-
-**Elastic_integration Filter - 9.4.1**
-
-404: Not Found
 
 **Beats Input - 7.0.9**
 
 * Update Netty dependency to 4.1.133.Final [#539](https://github.com/logstash-plugins/logstash-input-beats/pull/539)
 
-**Elasticsearch Input - 5.2.2**
-
-* [DOC] Note that `search_after` requires permissions on underlying indices/data streams, not aliases [#251](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/TBD)
 
 **Http Input - 4.1.8**
 
@@ -82,12 +52,12 @@ logstash-output-elasticsearch: 12.1.2 -> 12.1.3
 
 * Update Netty dependency to 4.1.133.Final [#256](https://github.com/logstash-plugins/logstash-input-tcp/pull/256)
 
-* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#250](https://github.com/logstash-plugins/logstash-input-tcp/pull/250)
-    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy. 
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline.
+  This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy [#250](https://github.com/logstash-plugins/logstash-input-tcp/pull/250)
 
 **Elasticsearch Output - 12.1.3**
 
-* Improves the logging experience when DLQ used [#1253](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1253)
+* Improves the logging experience when DLQ used [#1253](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1253).
 
 
 ## 9.4.0 [logstash-9.4.0-release-notes]
