@@ -75,7 +75,7 @@ For centralized pipeline management and legacy internal collection for monitorin
 This feature is not supported on Windows.
 :::
 
-Changes to the [Logstash API server](/reference/monitoring-logstash.md#monitoring-api-security) settings in [`api.ssl.*`](/reference/logstash-settings-file.md#logstash-settings-file) are not reloaded automatically. Restart Logstash to apply those changes.
+Changes to the [Logstash API server](/reference/monitoring-logstash.md#monitoring-api-security) in the [`api.ssl.*`](/reference/logstash-settings-file.md) settings are not reloaded automatically. Restart Logstash to apply those changes.
 
 
 ## Plugins that prevent automatic reloading [plugins-block-reload]
