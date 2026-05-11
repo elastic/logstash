@@ -30,6 +30,11 @@ jobs:
       INPUTS_BUMP: "${{ inputs.bump }}"
       BACKPORT_LABEL: "backport-${{ inputs.branch }}"
     steps:
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
       - name: Fetch logstash-core team member list
         uses: tspascoal/get-user-teams-membership@818140d631d5f29f26b151afbe4179f87d9ceb5e #v4.0.1
         with: 
