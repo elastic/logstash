@@ -8,6 +8,8 @@ require "logstash/outputs/elasticsearch"
 require "logstash/json"
 require 'helpers/elasticsearch_options'
 require 'helpers/loggable_try'
+require 'logstash/ssl_file_tracker'
+require 'helpers/elasticsearch_client_holder'
 require "license_checker/licensed"
 
 module LogStash
@@ -22,6 +24,9 @@ module LogStash
       VALID_LICENSES = %w(trial standard gold platinum enterprise)
       FEATURE_INTERNAL = 'management'
       FEATURE_EXTERNAL = 'logstash'
+      NAMESPACE = "xpack.#{FEATURE_INTERNAL}".freeze
+      SSL_TRACK_ID_CPM = :".cpm"
+      SSL_TRACK_ID_LICENSE = :".cpm_license"
       SUPPORTED_PIPELINE_SETTINGS = %w(
         pipeline.workers
         pipeline.batch.size
@@ -33,14 +38,24 @@ module LogStash
         queue.checkpoint.writes
       )
 
-      def initialize(settings)
+      def initialize(settings, ssl_file_tracker = nil)
         super(settings)
 
-        if enabled?
-          @es_options = es_options_from_settings('management', settings)
-          setup_license_checker(FEATURE_INTERNAL)
-          license_check(true)
+        return unless enabled?
+
+        @es_options = es_options_from_settings('management', settings)
+
+        if ssl_file_tracker
+          paths = LogStash::SslFileTracker.paths_from_settings(@settings, NAMESPACE)
+          ssl_file_tracker.register_paths(SSL_TRACK_ID_CPM, paths)
+          ssl_file_tracker.register_paths(SSL_TRACK_ID_LICENSE, paths)
         end
+
+        @es_client_holder = LogStash::Helpers::ElasticsearchClientHolder.create(ssl_file_tracker, SSL_TRACK_ID_CPM) { build_client }
+        setup_license_checker(FEATURE_INTERNAL,
+                              ssl_file_tracker: ssl_file_tracker,
+                              tracking_id: SSL_TRACK_ID_LICENSE)
+        license_check(true)
       end
 
       def match?
@@ -179,7 +194,7 @@ module LogStash
       end
 
       def client
-        @client ||= build_client
+        @es_client_holder.get
       end
     end
 

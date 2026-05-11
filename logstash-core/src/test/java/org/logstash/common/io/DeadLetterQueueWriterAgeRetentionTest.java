@@ -66,11 +66,19 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
     private SynchronizedScheduledService synchScheduler;
 
+    private static final long MAX_SEGMENT_SIZE = 10 * MB;
+    private static final long MAX_QUEUE_SIZE = 1 * GB;
+
     @Before
     public void setUp() throws Exception {
         dir = temporaryFolder.newFolder().toPath();
         fakeClock = new ManualAdvanceClock(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
         synchScheduler = new SynchronizedScheduledService();
+    }
+
+    private static DeadLetterQueueWriter.Builder newBuilder(final Path queuePath) {
+        return DeadLetterQueueWriter
+                .newBuilder(queuePath, MAX_SEGMENT_SIZE, MAX_QUEUE_SIZE, Duration.ofSeconds(1), Duration.ofSeconds(1));
     }
 
     @Test
@@ -85,8 +93,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         // Exercise
         final long prevQueueSize;
         final long beheadedQueueSize;
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir)
                 .retentionTime(Duration.ofDays(2))
                 .clock(fakeClock)
                 .build()) {
@@ -109,8 +116,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         final Duration littleMoreThanRetainedPeriod = retainedPeriod.plusMinutes(1);
         long startTime = fakeClock.instant().minus(littleMoreThanRetainedPeriod).toEpochMilli();
         int messageSize = 0;
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir)
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
                 .build()) {
@@ -136,8 +142,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         int messageSize = 0;
 
         final Duration retention = Duration.ofDays(2);
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir)
                 .retentionTime(retention)
                 .clock(fakeClock)
                 .build()) {
@@ -179,8 +184,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         int messageSize = 0;
 
         final Duration retention = Duration.ofDays(2);
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir)
                 .retentionTime(retention)
                 .clock(fakeClock)
                 .build()) {
@@ -272,9 +276,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         final ManualAdvanceClock fakeClock = new ManualAdvanceClock(ZoneId.of("Europe/Rome"));
 
         Duration retainedPeriod = Duration.ofDays(1);
-        Duration flushInterval = Duration.ofSeconds(1);
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, flushInterval)
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir)
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
                 .build()) {

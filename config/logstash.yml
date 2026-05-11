@@ -279,6 +279,14 @@
 #
 # dead_letter_queue.flush_interval: 5000
 
+# If using dead_letter_queue.enable: true, the interval in milliseconds that the DLQ scheduler checks for stale segments
+# to be flushed. A smaller value ensures faster segment rotation at the cost of CPU with more frequent scheduler runs.
+# A larger value reduces scheduler overhead but may delay segment sealing.
+# Minimum value is 1000 and cannot be greater than dead_letter_queue.flush_interval. 
+# Default is 1000.
+#
+# dead_letter_queue.flush_check_interval: 1000
+
 # If using dead_letter_queue.enable: true, controls which entries should be dropped to avoid exceeding the size limit.
 # Set the value to `drop_newer` (default) to stop accepting new events that would push the DLQ size over the limit.
 # Set the value to `drop_older` to remove queue pages containing the oldest events to make space for new ones.

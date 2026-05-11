@@ -560,4 +560,71 @@ describe LogStash::SslFileTracker do
       it_behaves_like "two pipelines sharing a path"
     end
   end
+
+  describe ".paths_from_settings" do
+    let(:settings) { double("settings") }
+    let(:namespace) { "xpack.management" }
+
+    it "returns absolute paths for every configured SSL suffix" do
+      allow(settings).to receive(:get_value).with("xpack.management.elasticsearch.ssl.certificate_authority").and_return("/tmp/ca.crt")
+      allow(settings).to receive(:get_value).with("xpack.management.elasticsearch.ssl.truststore.path").and_return("relative/ts.p12")
+      allow(settings).to receive(:get_value).with("xpack.management.elasticsearch.ssl.keystore.path").and_return(nil)
+      allow(settings).to receive(:get_value).with("xpack.management.elasticsearch.ssl.certificate").and_return("")
+      allow(settings).to receive(:get_value).with("xpack.management.elasticsearch.ssl.key").and_return(nil)
+
+      paths = described_class.paths_from_settings(settings, namespace)
+      expect(paths).to contain_exactly(File.expand_path("/tmp/ca.crt"), File.expand_path("relative/ts.p12"))
+    end
+
+    it "swallows settings.get_value errors and returns empty array when nothing configured" do
+      allow(settings).to receive(:get_value).and_raise(ArgumentError, "unknown setting")
+      expect(described_class.paths_from_settings(settings, namespace)).to eq([])
+    end
+  end
+
+  describe "#consume_stale" do
+    it "does not yield when id was never stale" do
+      ran = false
+      result = tracker.consume_stale(:".cpm") { ran = true }
+      expect(ran).to eq(false)
+      expect(result).to eq(false)
+    end
+
+    it "yields and clears the stale flag when id is stale" do
+      tracker.instance_variable_get(:@stale_ids).add(:".cpm")
+
+      ran = false
+      result = tracker.consume_stale(:".cpm") { ran = true }
+
+      expect(ran).to eq(true)
+      expect(result).to eq(true)
+      expect(tracker.instance_variable_get(:@stale_ids)).not_to include(:".cpm")
+    end
+
+    it "accepts string ids" do
+      tracker.instance_variable_get(:@stale_ids).add(:".cpm")
+      expect(tracker.consume_stale(".cpm") {}).to eq(true)
+    end
+
+    it "re-asserts the stale flag when the block raises" do
+      tracker.instance_variable_get(:@stale_ids).add(:".cpm")
+
+      expect {
+        tracker.consume_stale(:".cpm") { raise "rebuild failed" }
+      }.to raise_error("rebuild failed")
+
+      expect(tracker.instance_variable_get(:@stale_ids)).to include(:".cpm")
+    end
+
+    it "clears only the given id" do
+      stale = tracker.instance_variable_get(:@stale_ids)
+      stale.add(:".cpm")
+      stale.add(:".cpm_license")
+
+      tracker.consume_stale(:".cpm") {}
+
+      expect(stale).not_to include(:".cpm")
+      expect(stale).to include(:".cpm_license")
+    end
+  end
 end

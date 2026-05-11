@@ -19,6 +19,7 @@ require "spec_helper"
 require "stud/temporary"
 require "logstash/inputs/generator"
 require "logstash/config/source/local"
+require "logstash/ssl_file_tracker"
 require_relative "../support/mocks_classes"
 require "fileutils"
 require_relative "../support/helpers"
@@ -619,20 +620,15 @@ describe LogStash::Agent do
       allow(LogStash::WebServer).to receive(:from_settings).with(any_args).and_return(double("WebServer").as_null_object)
     end
 
-    it "is a SslFileTracker when config.reload.automatic and ssl.reload.automatic are both true" do
-      agent = described_class.new(mock_settings("config.reload.automatic" => true, "ssl.reload.automatic" => true), nil)
-      expect(agent.ssl_file_tracker).to be_a(LogStash::SslFileTracker)
+    it "exposes the tracker passed to the constructor" do
+      tracker = double("ssl_file_tracker").as_null_object
+      agent = described_class.new(mock_settings({}), nil, tracker)
+      expect(agent.ssl_file_tracker).to be(tracker)
       agent.shutdown
     end
 
-    it "is nil when ssl.reload.automatic is false even if config.reload.automatic is true" do
-      agent = described_class.new(mock_settings("config.reload.automatic" => true, "ssl.reload.automatic" => false), nil)
-      expect(agent.ssl_file_tracker).to be_nil
-      agent.shutdown
-    end
-
-    it "is nil when config.reload.automatic is false" do
-      agent = described_class.new(mock_settings("config.reload.automatic" => false, "ssl.reload.automatic" => true), nil)
+    it "is nil when no tracker is passed" do
+      agent = described_class.new(mock_settings({}), nil)
       expect(agent.ssl_file_tracker).to be_nil
       agent.shutdown
     end
@@ -646,7 +642,7 @@ describe LogStash::Agent do
     end
 
     context "when ssl reload is disabled" do
-      let(:agent) { described_class.new(mock_settings("config.reload.automatic" => false), nil) }
+      let(:agent) { described_class.new(mock_settings({}), nil) }
 
       after :each do
         agent.shutdown
@@ -658,7 +654,8 @@ describe LogStash::Agent do
     end
 
     context "when ssl reload is enabled" do
-      let(:agent) { described_class.new(mock_settings("config.reload.automatic" => true, "ssl.reload.automatic" => true), nil) }
+      let(:tracker) { LogStash::SslFileTracker.new(org.logstash.common.FileWatchService.create) }
+      let(:agent) { described_class.new(mock_settings("config.reload.automatic" => true), nil, tracker) }
 
       after :each do
         agent.shutdown

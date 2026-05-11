@@ -15,6 +15,19 @@ Before you upgrade, carefully review the Logstash breaking changes and take the 
 % **Action**<br> Steps for mitigating deprecation impact.
 % ::::
 
+
+## 9.4.0 [logstash-940-breaking-changes]
+
+
+::::{dropdown} JDK17 not supported
+:name: jdk-17-support-drop
+
+JDK 21 is now the minimum version of the JDK required to run {{ls}}. This release upgrades JRuby from 9.x to 10.x, which requires JDK 21 or later.
+For the best experience, we still recommend running {{ls}} using the bundled-jdk.
+See [Logstash JVM requirements](/reference/getting-started-with-logstash.md#ls-jvm)
+for details [#19010](https://github.com/elastic/logstash/pull/19010).
+::::
+
 ## 9.0.0 [logstash-900-breaking-changes]
 
 

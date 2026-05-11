@@ -72,11 +72,26 @@ public class DeadLetterQueueWriterTest {
 
     private static long EMPTY_DLQ = VERSION_SIZE; // Only the version field has been written
 
+    private static final long DEFAULT_MAX_SEGMENT_SIZE = 1_000;
+    private static final long DEFAULT_MAX_QUEUE_SIZE = 100_000;
+
+    private static DeadLetterQueueWriter.Builder newBuilder(final Path queuePath) {
+        return newBuilder(queuePath, DEFAULT_MAX_SEGMENT_SIZE, DEFAULT_MAX_QUEUE_SIZE);
+    }
+
+    private static DeadLetterQueueWriter.Builder newBuilder(final Path queuePath, final long maxSegmentSize, final long maxQueueSize) {
+        return newBuilder(queuePath, maxSegmentSize, maxQueueSize, Duration.ofSeconds(1));
+    }
+
+    private static DeadLetterQueueWriter.Builder newBuilder(final Path queuePath, final long maxSegmentSize, final long maxQueueSize, final Duration flushInterval) {
+        return DeadLetterQueueWriter
+                .newBuilder(queuePath, maxSegmentSize, maxQueueSize, flushInterval, Duration.ofSeconds(1));
+    }
+
     @Test
     public void testLockFileManagement() throws Exception {
         Path lockFile = dir.resolve(".lock");
-        DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+        DeadLetterQueueWriter writer = newBuilder(dir)
                 .build();
         assertTrue(Files.exists(lockFile));
         writer.close();
@@ -85,12 +100,10 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testFileLocking() throws Exception {
-        DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+        DeadLetterQueueWriter writer = newBuilder(dir)
                 .build();
         try {
-            DeadLetterQueueWriter
-                    .newBuilder(dir, 100, 1_000, Duration.ofSeconds(1))
+            newBuilder(dir, 100, 1_000)
                     .build();
             fail();
         } catch (LockException e) {
@@ -103,8 +116,7 @@ public class DeadLetterQueueWriterTest {
     public void testUncleanCloseOfPreviousWriter() throws Exception {
         Path lockFilePath = dir.resolve(".lock");
         boolean created = lockFilePath.toFile().createNewFile();
-        DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+        DeadLetterQueueWriter writer = newBuilder(dir)
                 .build();
 
         FileChannel channel = FileChannel.open(lockFilePath, StandardOpenOption.WRITE);
@@ -120,8 +132,7 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testWrite() throws Exception {
-        DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+        DeadLetterQueueWriter writer = newBuilder(dir)
                 .build();
         DLQEntry entry = new DLQEntry(new Event(), "type", "id", "reason");
         writer.writeEntry(entry);
@@ -135,8 +146,7 @@ public class DeadLetterQueueWriterTest {
         DLQEntry entry = new DLQEntry(new Event(), "type", "id", "reason");
         DLQEntry dlqEntry = new DLQEntry(dlqEvent, "type", "id", "reason");
 
-        try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writer = newBuilder(dir)
                 .build()) {
             writer.writeEntry(entry);
             long dlqLengthAfterEvent = dlqLength();
@@ -156,8 +166,7 @@ public class DeadLetterQueueWriterTest {
         long MAX_QUEUE_LENGTH = payloadLength * MESSAGE_COUNT;
 
 
-        try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, payloadLength, MAX_QUEUE_LENGTH, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writer = newBuilder(dir, payloadLength, MAX_QUEUE_LENGTH)
                 .build()) {
 
             for (int i = 0; i < MESSAGE_COUNT; i++)
@@ -174,8 +183,7 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testSlowFlush() throws Exception {
-        try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1_000, 1_000_000, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writer = newBuilder(dir, 1_000, 1_000_000)
                 .build()) {
             DLQEntry entry = new DLQEntry(new Event(), "type", "id", "1");
             writer.writeEntry(entry);
@@ -196,8 +204,7 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testNotFlushed() throws Exception {
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, BLOCK_SIZE, 1_000_000_000, Duration.ofSeconds(5))
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir, BLOCK_SIZE, 1_000_000_000, Duration.ofSeconds(5))
                 .build()) {
             for (int i = 0; i < 4; i++) {
                 DLQEntry entry = new DLQEntry(new Event(), "type", "id", "1");
@@ -219,8 +226,7 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testCloseFlush() throws Exception {
-        try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1_000, 1_000_000, Duration.ofHours(1))
+        try (DeadLetterQueueWriter writer = newBuilder(dir, 1_000, 1_000_000, Duration.ofHours(1))
                 .build()) {
             DLQEntry entry = new DLQEntry(new Event(), "type", "id", "1");
             writer.writeEntry(entry);
@@ -255,8 +261,7 @@ public class DeadLetterQueueWriterTest {
         long startTime = System.currentTimeMillis();
 
         int messageSize = 0;
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir, 10 * MB, 20 * MB)
                 .build()) {
 
             // 320 generates 10 Mb of data
@@ -287,8 +292,7 @@ public class DeadLetterQueueWriterTest {
         final long prevQueueSize;
         final long beheadedQueueSize;
         long droppedEvent;
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir, 10 * MB, 20 * MB)
                 .storageType(QueueStorageType.DROP_OLDER)
                 .build()) {
             prevQueueSize = writeManager.getCurrentQueueSize();
@@ -325,8 +329,7 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testRemoveSegmentsOrder() throws IOException {
-        try (DeadLetterQueueWriter sut = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter sut = newBuilder(dir, 10 * MB, 20 * MB)
                 .build()) {
             // create some segments files
             Files.createFile(dir.resolve("9.log"));
@@ -495,8 +498,7 @@ public class DeadLetterQueueWriterTest {
         Event bigEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         bigEvent.setField("message", DeadLetterQueueReaderTest.generateMessageContent(2 * BLOCK_SIZE));
 
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir, 10 * MB, 20 * MB)
                 .build()) {
             // enqueue a record with size smaller than BLOCK_SIZE
             DLQEntry entry = new DLQEntry(blockAlmostFullEvent, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(System.currentTimeMillis()));
@@ -513,8 +515,7 @@ public class DeadLetterQueueWriterTest {
         // fill the queue to push out the segment with the 2 previous events
         Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32500));
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writeManager = newBuilder(dir, 10 * MB, 20 * MB)
                 .storageType(QueueStorageType.DROP_NEWER)
                 .build()) {
 
@@ -543,16 +544,14 @@ public class DeadLetterQueueWriterTest {
     public void testInitializeWriterWith1ByteEntry() throws Exception {
         Files.write(dir.resolve("1.log"), "1".getBytes());
 
-        DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+        DeadLetterQueueWriter writer = newBuilder(dir)
                 .build();
         writer.close();
     }
 
     @Test
     public void givenDLQWriterCreatedSomeSegmentsWhenReaderWithCleanConsumedNotifyTheDeletionOfSomeThenWriterUpdatesItsMetricsSize() throws IOException, InterruptedException {
-        try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1 * MB, 100 * MB, Duration.ofSeconds(1))
+        try (DeadLetterQueueWriter writer = newBuilder(dir, 1 * MB, 100 * MB)
                 .build()) {
 
             // fill at least 3 segments
@@ -616,4 +615,53 @@ public class DeadLetterQueueWriterTest {
         }
     }
 
+    @Test
+    public void givenFlushIntervalGreaterThanMinimumWhenNormalizedThenRemainsUnmodified() {
+        DeadLetterQueueWriter.Builder builder = newBuilder(dir);
+        Duration result = builder.normalizeFlushInterval(Duration.ofSeconds(10));
+        assertEquals("Valid flush interval should remain unchanged", Duration.ofSeconds(10), result);
+    }
+
+    @Test
+    public void givenFlushIntervalBelowTheMinimumWhenNormalizedThenIsClampedToMinimum() {
+        DeadLetterQueueWriter.Builder builder = newBuilder(dir);
+        Duration result = builder.normalizeFlushInterval(Duration.ofMillis(100));
+        assertEquals("Flush interval below 1s should be clamped to 1s", Duration.ofSeconds(1), result);
+    }
+
+    @Test
+    public void testNormalizeFlushCheckIntervalWithinLimits() {
+        DeadLetterQueueWriter.Builder builder = newBuilder(dir);
+        Duration flushInterval = Duration.ofSeconds(5);
+        Duration flushCheckInterval = Duration.ofSeconds(2);
+        Duration result = builder.normalizeFlushCheckInterval(flushCheckInterval, flushInterval);
+        assertEquals("Valid flush check interval should remain unchanged", flushCheckInterval, result);
+    }
+
+    @Test
+    public void givenFlushCheckIntervalBelowMinimumWhenNormalizedThenClampedToMinimum() {
+        DeadLetterQueueWriter.Builder builder = newBuilder(dir);
+        Duration flushInterval = Duration.ofSeconds(5);
+        Duration belowMinimum = Duration.ofMillis(500);
+        Duration result = builder.normalizeFlushCheckInterval(belowMinimum, flushInterval);
+        assertEquals("Flush check interval below 1s should be clamped to 1s", Duration.ofSeconds(1), result);
+    }
+
+    @Test
+    public void givenFlushCheckIntervalExceedsFlushIntervalWhenNormalizedThenClampedToFlushInterval() {
+        DeadLetterQueueWriter.Builder builder = newBuilder(dir);
+        Duration flushInterval = Duration.ofSeconds(3);
+        Duration aboveFlushInterval = Duration.ofSeconds(5);
+        Duration result = builder.normalizeFlushCheckInterval(aboveFlushInterval, flushInterval);
+        assertEquals("Flush check interval exceeding flush interval should be clamped to flush interval", flushInterval, result);
+    }
+
+    @Test
+    public void givenFlushCheckIntervalJustBelowFlushIntervalWhenNormalizedThenAccepted() {
+        DeadLetterQueueWriter.Builder builder = newBuilder(dir);
+        Duration flushInterval = Duration.ofSeconds(5);
+        Duration justBelowFlushInterval = Duration.ofMillis(4900);
+        Duration result = builder.normalizeFlushCheckInterval(justBelowFlushInterval, flushInterval);
+        assertEquals("Flush check interval just below flush interval should be accepted", justBelowFlushInterval, result);
+    }
 }

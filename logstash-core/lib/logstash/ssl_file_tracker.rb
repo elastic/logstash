@@ -42,12 +42,34 @@ module LogStash
       ssl_truststore_path
     ].freeze
 
+    # Settings key suffixes for Elasticsearch SSL connections.
+    # Used by non-pipeline consumers (ElasticsearchSource, LicenseReader) to discover paths.
+    SETTINGS_SSL_SUFFIXES = %w[
+      elasticsearch.ssl.certificate_authority
+      elasticsearch.ssl.truststore.path
+      elasticsearch.ssl.keystore.path
+      elasticsearch.ssl.certificate
+      elasticsearch.ssl.key
+    ].freeze
+
     # Holds all per-path watch state in one place.
     # stamp:        latest observed stamp. SHA-256 string for :file paths; mtime (Time) for :symlink paths.
     # callback:     the FileChangeCallback registered with FileWatchService. nil for polled paths.
     # pipeline_ids: Set of pipeline_ids referencing this path. The Java watch is removed only when pipeline_ids is empty.
     # file_type:    :file for regular files (WatchService-driven), :symlink for symlinks (mtime on each converge).
     WatchedFile = Struct.new(:stamp, :callback, :pipeline_ids, :file_type)
+
+    # Returns absolute SSL file paths configured under `namespace` in `settings`.
+    # @param settings [LogStash::Settings]
+    # @param namespace [String] e.g. "xpack.management"
+    # @return [Array<String>]
+    def self.paths_from_settings(settings, namespace)
+      SETTINGS_SSL_SUFFIXES.filter_map do |suffix|
+        val = settings.get_value("#{namespace}.#{suffix}") rescue nil
+        s = val.to_s
+        s.empty? ? nil : ::File.expand_path(s)
+      end
+    end
 
     def initialize(file_watch_service)
       @file_watch_service = file_watch_service
@@ -108,7 +130,6 @@ module LogStash
         raise
       end
     end
-    private :register_paths
 
     # Starts watching all SSL file paths for the pipeline. Paths already watched
     # by another pipeline share the same WatchedFile entry and are not re-registered.
@@ -165,11 +186,11 @@ module LogStash
     end
 
     # Refreshes mtime stamps for symlink paths belonging to the given ids.
-    # @param ids [Array, Set]
+    # @param ids [Symbol, String, Set]
     # @return [void]
     def refresh_symlink_stamps(ids)
-      return if ids.empty?
-      target_ids = Set.new(Array(ids).map(&:to_sym))
+      target_ids = Array(ids).map(&:to_sym)
+      return if target_ids.empty?
 
       # Collect unique polled paths only for the ids.
       polled_paths = @mutex.synchronize do
@@ -177,6 +198,7 @@ module LogStash
                  .select { |p| @path_watched[p]&.file_type == :symlink }
                  .uniq
       end
+      return if polled_paths.empty?
 
       # Stat outside the mutex
       new_stamps = polled_paths.to_h { |p| [p, compute_mtime(p)] }.compact
@@ -206,6 +228,32 @@ module LogStash
     # @return [Array<Symbol>]
     def stale_pipeline_ids
       @mutex.synchronize { (@stale_ids & @pipeline_ids).to_a }
+    end
+
+    # Atomically refresh the given id's stamps. When the paths were stale, clear its stale flag, and yield.
+    # If the block raises, the flag is reasserted so the next cycle can retry.
+    # @param id [Symbol, String]
+    # @yield called only when id is stale
+    # @return [Boolean] true if the block ran
+    def consume_stale(id)
+      id = id.to_sym
+      refresh_symlink_stamps(id)
+
+      was_stale = @mutex.synchronize { !@stale_ids.delete?(id).nil? }
+      return false unless was_stale
+
+      begin
+        yield if block_given?
+        true
+      rescue
+        @mutex.synchronize { @stale_ids.add(id) }
+        raise
+      end
+    end
+
+    # Closes the underlying FileWatchService. Called on agent shutdown.
+    def close
+      @file_watch_service&.close
     end
 
     private
