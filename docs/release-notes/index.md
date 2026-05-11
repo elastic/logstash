@@ -29,8 +29,8 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 Introduces new `dead_letter_queue.flush_check_interval` config for flushing the staled segment files scheduler 
 which can reduce frequent check overhead.
-If you are using intensive DLQ operations (write/read), the frequent flush check scheduler might give overhead to the pipeline, 
-means uses much CPU. Introducing configurable scheduler cadence improves the pipeline efficiency by removing frequent operations 
+If you are using intensive DLQ operations (write/read), the frequent flush check scheduler might create more overhead for the pipeline, increasing CPU usage. 
+Introducing configurable scheduler cadence improves the pipeline efficiency by removing frequent operations 
 [#19036](https://github.com/elastic/logstash/pull/19036).
 
 ### Updates to dependencies [logstash-9.4.1-dependencies]
@@ -42,7 +42,6 @@ means uses much CPU. Introducing configurable scheduler cadence improves the pip
 **Beats Input - 7.0.9**
 
 * Update Netty dependency to 4.1.133.Final [#539](https://github.com/logstash-plugins/logstash-input-beats/pull/539)
-
 
 **Http Input - 4.1.8**
 
