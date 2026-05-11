@@ -71,9 +71,11 @@ For pipelines, if one of these files changes on disk, Logstash reloads only the 
 
 For centralized pipeline management and legacy internal collection for monitoring, Logstash also picks up TLS certificate changes for the Elasticsearch connections they use to fetch pipeline definitions and ship monitoring data.
 
+:::{warning}
 This feature is not supported on Windows.
+:::
 
-Changes to the Logstash API server settings in `api.ssl.*` are not reloaded automatically. Restart Logstash to apply those changes.
+Changes to the [Logstash API server](/reference/monitoring-logstash.md#monitoring-api-security) settings in [`api.ssl.*`](/reference/logstash-settings-file.md#logstash-settings-file) are not reloaded automatically. Restart Logstash to apply those changes.
 
 
 ## Plugins that prevent automatic reloading [plugins-block-reload]
