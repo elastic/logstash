@@ -35,7 +35,7 @@ module LogStash module Instrument module PeriodicPoller
   #   otel.exporter.otlp.headers: "ApiKey xxx"  # or "Bearer xxx"
   #   otel.service.name: "logstash"
   #   otel.resource.attributes: "environment=production,cluster=us-west"
-  #   otel.metrics.dataset: "logstash"
+  #   otel.dataset: "logstash"
   #   otel.exporter.otlp.certificate: "/path/to/ca.pem"
   #   otel.exporter.otlp.client.key: "/path/to/client.key"
   #   otel.exporter.otlp.client.certificate: "/path/to/client.crt"
@@ -72,7 +72,7 @@ module LogStash module Instrument module PeriodicPoller
         .resource_attributes(settings.get("otel.resource.attributes"))
         .authorization_header(settings.get("otel.exporter.otlp.headers")&.value)
         .service_name(settings.get("otel.service.name"))
-        .dataset(settings.get("otel.metrics.dataset"))
+        .dataset(settings.get("otel.dataset"))
         .certificate_path(settings.get("otel.exporter.otlp.certificate"))
         .client_key_path(settings.get("otel.exporter.otlp.client.key"))
         .client_certificate_path(settings.get("otel.exporter.otlp.client.certificate"))

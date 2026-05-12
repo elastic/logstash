@@ -358,7 +358,7 @@
 # produces data_stream.dataset "logstash.otel" and index metrics-logstash.otel-<namespace>.
 # Use this to distinguish metrics from different Logstash deployments in the same data stream.
 #
-# otel.metrics.dataset: "logstash"
+# otel.dataset: "logstash"
 #
 # Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate.
 # Required when the endpoint uses a self-signed or private CA certificate.
