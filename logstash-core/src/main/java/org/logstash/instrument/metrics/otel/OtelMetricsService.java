@@ -52,19 +52,19 @@ import java.util.function.Supplier;
  * - Manages the lifecycle of the OTel exporter
  *
  * Configuration precedence (highest to lowest):
- * 1. Java system properties (e.g., -Dotel.exporter.otlp.metrics.endpoint=...)
+ * 1. Java system properties (e.g., -Dotel.exporter.otlp.endpoint=...)
  * 2. logstash.yml settings (passed as constructor parameters)
  *
  * Supported OTel system properties:
- * - otel.exporter.otlp.metrics.endpoint
- * - otel.exporter.otlp.metrics.protocol
+ * - otel.exporter.otlp.endpoint
+ * - otel.exporter.otlp.protocol
  * - otel.metric.export.interval (in milliseconds)
- * - otel.exporter.otlp.metrics.headers
+ * - otel.exporter.otlp.headers
  * - otel.resource.attributes
  * - otel.service.name
- * - otel.exporter.otlp.metrics.certificate
- * - otel.exporter.otlp.metrics.client.key
- * - otel.exporter.otlp.metrics.client.certificate
+ * - otel.exporter.otlp.certificate
+ * - otel.exporter.otlp.client.key
+ * - otel.exporter.otlp.client.certificate
  */
 public class OtelMetricsService {
 
@@ -72,14 +72,14 @@ public class OtelMetricsService {
 
     // OTel standard configuration names (usable as system properties)
     private static final String OTEL_SERVICE_NAME = "otel.service.name";
-    private static final String OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = "otel.exporter.otlp.metrics.endpoint";
-    private static final String OTEL_EXPORTER_OTLP_METRICS_PROTOCOL = "otel.exporter.otlp.metrics.protocol";
+    private static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
+    private static final String OTEL_EXPORTER_OTLP_PROTOCOL = "otel.exporter.otlp.protocol";
     private static final String OTEL_METRIC_EXPORT_INTERVAL = "otel.metric.export.interval";
-    private static final String OTEL_EXPORTER_OTLP_METRICS_HEADERS = "otel.exporter.otlp.metrics.headers";
+    private static final String OTEL_EXPORTER_OTLP_HEADERS = "otel.exporter.otlp.headers";
     private static final String OTEL_RESOURCE_ATTRIBUTES = "otel.resource.attributes";
-    private static final String OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE = "otel.exporter.otlp.metrics.certificate";
-    private static final String OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY = "otel.exporter.otlp.metrics.client.key";
-    private static final String OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE = "otel.exporter.otlp.metrics.client.certificate";
+    private static final String OTEL_EXPORTER_OTLP_CERTIFICATE = "otel.exporter.otlp.certificate";
+    private static final String OTEL_EXPORTER_OTLP_CLIENT_KEY = "otel.exporter.otlp.client.key";
+    private static final String OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE = "otel.exporter.otlp.client.certificate";
 
     private static final String DEFAULT_SERVICE_NAME = "logstash";
 
@@ -114,9 +114,9 @@ public class OtelMetricsService {
         this.effectiveAuthorizationHeader = resolveAuthorizationHeader(config.getAuthorizationHeader());
         String effectiveServiceName = resolveServiceName(config.getServiceName());
         String effectiveDataset = resolveDataset(config.getDataset());
-        this.effectiveTrustedCertsPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE, config.getCertificatePath()));
-        this.effectiveClientKeyPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY, config.getClientKeyPath()));
-        this.effectiveClientCertPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE, config.getClientCertificatePath()));
+        this.effectiveTrustedCertsPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_CERTIFICATE, config.getCertificatePath()));
+        this.effectiveClientKeyPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_CLIENT_KEY, config.getClientKeyPath()));
+        this.effectiveClientCertPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE, config.getClientCertificatePath()));
 
         LOGGER.info("Initializing OpenTelemetry metrics export to {} (protocol: {}, interval: {}ms)",
                 effectiveEndpoint, effectiveProtocol, effectiveIntervalMs);
@@ -180,9 +180,9 @@ public class OtelMetricsService {
      * Resolves endpoint with precedence: system property > logstash.yml.
      */
     private String resolveEndpoint(String logstashYmlEndpoint) {
-        String endpoint = getSystemProperty(OTEL_EXPORTER_OTLP_METRICS_ENDPOINT, null);
+        String endpoint = getSystemProperty(OTEL_EXPORTER_OTLP_ENDPOINT, null);
         if (endpoint != null) {
-            LOGGER.debug("Using metrics endpoint '{}' from system property {}", endpoint, OTEL_EXPORTER_OTLP_METRICS_ENDPOINT);
+            LOGGER.debug("Using metrics endpoint '{}' from system property {}", endpoint, OTEL_EXPORTER_OTLP_ENDPOINT);
             return endpoint;
         }
         return logstashYmlEndpoint;
@@ -192,9 +192,9 @@ public class OtelMetricsService {
      * Resolves protocol with precedence: system property > logstash.yml.
      */
     private String resolveProtocol(String logstashYmlProtocol) {
-        String protocol = getSystemProperty(OTEL_EXPORTER_OTLP_METRICS_PROTOCOL, null);
+        String protocol = getSystemProperty(OTEL_EXPORTER_OTLP_PROTOCOL, null);
         if (protocol != null) {
-            LOGGER.debug("Using protocol '{}' from system property {}", protocol, OTEL_EXPORTER_OTLP_METRICS_PROTOCOL);
+            LOGGER.debug("Using protocol '{}' from system property {}", protocol, OTEL_EXPORTER_OTLP_PROTOCOL);
             return normalizeProtocol(protocol);
         }
         return logstashYmlProtocol;
@@ -244,16 +244,16 @@ public class OtelMetricsService {
 
     /**
      * Resolves authorization header with precedence: system property > logstash.yml.
-     * Extracts Authorization header from otel.exporter.otlp.metrics.headers if present.
+     * Extracts Authorization header from otel.exporter.otlp.headers if present.
      */
     private String resolveAuthorizationHeader(String logstashYmlAuthHeader) {
-        String headers = getSystemProperty(OTEL_EXPORTER_OTLP_METRICS_HEADERS, null);
+        String headers = getSystemProperty(OTEL_EXPORTER_OTLP_HEADERS, null);
         if (headers != null) {
             // Parse headers format: "key1=value1,key2=value2"
             for (String header : headers.split(",")) {
                 String[] parts = header.split("=", 2);
                 if (parts.length == 2 && "Authorization".equalsIgnoreCase(parts[0].trim())) {
-                    LOGGER.debug("Using Authorization header from system property {} (value redacted)", OTEL_EXPORTER_OTLP_METRICS_HEADERS);
+                    LOGGER.debug("Using Authorization header from system property {} (value redacted)", OTEL_EXPORTER_OTLP_HEADERS);
                     return parts[1].trim();
                 }
             }

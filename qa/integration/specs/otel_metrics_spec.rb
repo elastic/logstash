@@ -57,8 +57,8 @@ describe "OpenTelemetry Metrics Export" do
 
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.exporter.otlp.metrics.endpoint" => endpoint,
-        "otel.exporter.otlp.metrics.protocol" => protocol,
+        "otel.exporter.otlp.endpoint" => endpoint,
+        "otel.exporter.otlp.protocol" => protocol,
         "otel.metric.export.interval" => "5s",
         "otel.resource.attributes" => "environment=integration-test,test.protocol=#{protocol}"
       }
@@ -114,10 +114,10 @@ describe "OpenTelemetry Metrics Export" do
     it "sends metrics to authenticated endpoint with valid Bearer token" do
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.auth_http_endpoint,
-        "otel.exporter.otlp.metrics.protocol" => "http",
+        "otel.exporter.otlp.endpoint" => @otel_collector.auth_http_endpoint,
+        "otel.exporter.otlp.protocol" => "http",
         "otel.metric.export.interval" => "5s",
-        "otel.exporter.otlp.metrics.headers" => @otel_collector.auth_header
+        "otel.exporter.otlp.headers" => @otel_collector.auth_header
       }
 
       settings_file = @logstash.application_settings_file
@@ -140,8 +140,8 @@ describe "OpenTelemetry Metrics Export" do
     it "does not deliver metrics to authenticated endpoint without a Bearer token" do
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.auth_http_endpoint,
-        "otel.exporter.otlp.metrics.protocol" => "http",
+        "otel.exporter.otlp.endpoint" => @otel_collector.auth_http_endpoint,
+        "otel.exporter.otlp.protocol" => "http",
         "otel.metric.export.interval" => "5s"
         # No headers — request will be rejected by the collector's bearertokenauth extension
       }
@@ -170,8 +170,8 @@ describe "OpenTelemetry Metrics Export" do
 
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.grpc_endpoint,
-        "otel.exporter.otlp.metrics.protocol" => "grpc",
+        "otel.exporter.otlp.endpoint" => @otel_collector.grpc_endpoint,
+        "otel.exporter.otlp.protocol" => "grpc",
         "otel.metric.export.interval" => "5s",
         "otel.service.name" => custom_service_name
       }
@@ -206,8 +206,8 @@ describe "OpenTelemetry Metrics Export" do
 
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.grpc_endpoint,
-        "otel.exporter.otlp.metrics.protocol" => "grpc",
+        "otel.exporter.otlp.endpoint" => @otel_collector.grpc_endpoint,
+        "otel.exporter.otlp.protocol" => "grpc",
         "otel.metric.export.interval" => "5s"
       }
 
@@ -245,8 +245,8 @@ describe "OpenTelemetry Metrics Export" do
     it "exports pipeline-specific metrics" do
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.grpc_endpoint,
-        "otel.exporter.otlp.metrics.protocol" => "grpc",
+        "otel.exporter.otlp.endpoint" => @otel_collector.grpc_endpoint,
+        "otel.exporter.otlp.protocol" => "grpc",
         "otel.metric.export.interval" => "5s"
       }
 
@@ -276,10 +276,10 @@ describe "OpenTelemetry Metrics Export" do
     it "uses all configuration options together" do
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.http_endpoint,
-        "otel.exporter.otlp.metrics.protocol" => "http",
+        "otel.exporter.otlp.endpoint" => @otel_collector.http_endpoint,
+        "otel.exporter.otlp.protocol" => "http",
         "otel.metric.export.interval" => "3s",
-        "otel.exporter.otlp.metrics.headers" => @otel_collector.auth_header,
+        "otel.exporter.otlp.headers" => @otel_collector.auth_header,
         "otel.resource.attributes" => "deployment.environment=test,service.version=1.0.0",
         "otel.service.name" => "full-config-logstash"
       }

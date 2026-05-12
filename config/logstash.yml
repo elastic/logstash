@@ -321,9 +321,9 @@
 #
 # OTLP metrics endpoint URL (default: "http://localhost:4317").
 # For gRPC, typically port 4317. For HTTP, typically port 4318.
-# System property: otel.exporter.otlp.metrics.endpoint
+# System property: otel.exporter.otlp.endpoint
 #
-# otel.exporter.otlp.metrics.endpoint: "http://localhost:4317"
+# otel.exporter.otlp.endpoint: "http://localhost:4317"
 #
 # Export interval with time unit, e.g., "10s", "1m" (default: "10s")
 # System property: otel.metric.export.interval
@@ -331,15 +331,15 @@
 # otel.metric.export.interval: "10s"
 #
 # Protocol to use for OTLP export: "grpc" (default) or "http"
-# System property: otel.exporter.otlp.metrics.protocol
+# System property: otel.exporter.otlp.protocol
 #
-# otel.exporter.otlp.metrics.protocol: "grpc"
+# otel.exporter.otlp.protocol: "grpc"
 #
 # Authorization header for authenticated OTLP endpoints.
 # Examples: "ApiKey xxx" or "Bearer xxx"
-# System property: otel.exporter.otlp.metrics.headers
+# System property: otel.exporter.otlp.headers
 #
-# otel.exporter.otlp.metrics.headers:
+# otel.exporter.otlp.headers:
 #
 # Additional resource attributes as comma-separated key=value pairs.
 # These are attached to all exported metrics to identify this Logstash instance.
@@ -362,16 +362,16 @@
 #
 # Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate.
 # Required when the endpoint uses a self-signed or private CA certificate.
-# System property: otel.exporter.otlp.metrics.certificate
+# System property: otel.exporter.otlp.certificate
 #
-# otel.exporter.otlp.metrics.certificate:
+# otel.exporter.otlp.certificate:
 #
 # Paths to a PEM-encoded client private key and certificate for mutual TLS (mTLS).
-# Both must be set together. System properties: otel.exporter.otlp.metrics.client.key
-# and otel.exporter.otlp.metrics.client.certificate
+# Both must be set together. System properties: otel.exporter.otlp.client.key
+# and otel.exporter.otlp.client.certificate
 #
-# otel.exporter.otlp.metrics.client.key:
-# otel.exporter.otlp.metrics.client.certificate:
+# otel.exporter.otlp.client.key:
+# otel.exporter.otlp.client.certificate:
 #
 # ------------ Debugging Settings --------------
 #

@@ -19,9 +19,9 @@ To enable OpenTelemetry metrics export, add the following settings to your `logs
 
 ```yaml
 otel.metrics.enabled: true
-otel.exporter.otlp.metrics.endpoint: "http://localhost:4317"
+otel.exporter.otlp.endpoint: "http://localhost:4317"
 otel.metric.export.interval: "10s"
-otel.exporter.otlp.metrics.protocol: "grpc"
+otel.exporter.otlp.protocol: "grpc"
 ```
 
 ### Settings
@@ -29,16 +29,16 @@ otel.exporter.otlp.metrics.protocol: "grpc"
 | Setting | Description | Default |
 | --- | --- | --- |
 | `otel.metrics.enabled` | Enable or disable OpenTelemetry metrics export. | `false` |
-| `otel.exporter.otlp.metrics.endpoint` | OTLP metrics endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
+| `otel.exporter.otlp.endpoint` | OTLP metrics endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
 | `otel.metric.export.interval` | Export interval with time unit (e.g., `10s`, `1m`). Controls how frequently metrics are sent to the endpoint. | `"10s"` |
-| `otel.exporter.otlp.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
-| `otel.exporter.otlp.metrics.headers` | Authorization header for authenticated endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
+| `otel.exporter.otlp.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
+| `otel.exporter.otlp.headers` | Authorization header for authenticated endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
 | `otel.resource.attributes` | Additional resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
 | `otel.service.name` | Service name for metrics. | `logstash` |
 | `otel.metrics.dataset` | Value for the `data_stream.dataset` resource attribute. When sending to the Elastic ingest endpoint, `.otel` is automatically appended — the default `logstash` produces `data_stream.dataset: logstash.otel` and index `metrics-logstash.otel-<namespace>`. | `logstash` |
-| `otel.exporter.otlp.metrics.certificate` | Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate. Required when the endpoint uses a self-signed or private CA. | *N/A* |
-| `otel.exporter.otlp.metrics.client.key` | Path to a PEM-encoded client private key for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.metrics.client.certificate`. | *N/A* |
-| `otel.exporter.otlp.metrics.client.certificate` | Path to a PEM-encoded client certificate for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.metrics.client.key`. | *N/A* |
+| `otel.exporter.otlp.certificate` | Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate. Required when the endpoint uses a self-signed or private CA. | *N/A* |
+| `otel.exporter.otlp.client.key` | Path to a PEM-encoded client private key for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.certificate`. | *N/A* |
+| `otel.exporter.otlp.client.certificate` | Path to a PEM-encoded client certificate for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.key`. | *N/A* |
 
 ### Configuration precedence
 
@@ -52,14 +52,14 @@ Supported system properties:
 | System Property | logstash.yml Setting |
 | --- | --- |
 | `otel.service.name` | `otel.service.name` |
-| `otel.exporter.otlp.metrics.endpoint` | `otel.exporter.otlp.metrics.endpoint` |
-| `otel.exporter.otlp.metrics.protocol` | `otel.exporter.otlp.metrics.protocol` |
+| `otel.exporter.otlp.endpoint` | `otel.exporter.otlp.endpoint` |
+| `otel.exporter.otlp.protocol` | `otel.exporter.otlp.protocol` |
 | `otel.metric.export.interval` | `otel.metric.export.interval` |
 | `otel.resource.attributes` | `otel.resource.attributes` |
-| `otel.exporter.otlp.metrics.headers` | `otel.exporter.otlp.metrics.headers` |
-| `otel.exporter.otlp.metrics.certificate` | `otel.exporter.otlp.metrics.certificate` |
-| `otel.exporter.otlp.metrics.client.key` | `otel.exporter.otlp.metrics.client.key` |
-| `otel.exporter.otlp.metrics.client.certificate` | `otel.exporter.otlp.metrics.client.certificate` |
+| `otel.exporter.otlp.headers` | `otel.exporter.otlp.headers` |
+| `otel.exporter.otlp.certificate` | `otel.exporter.otlp.certificate` |
+| `otel.exporter.otlp.client.key` | `otel.exporter.otlp.client.key` |
+| `otel.exporter.otlp.client.certificate` | `otel.exporter.otlp.client.certificate` |
 
 ## Sending metrics to Elastic Cloud
 
@@ -71,9 +71,9 @@ To send metrics directly to Elastic Cloud's native OTLP endpoint:
 
 ```yaml
 otel.metrics.enabled: true
-otel.exporter.otlp.metrics.endpoint: "https://your-deployment.apm.us-central1.gcp.cloud.es.io:443"
-otel.exporter.otlp.metrics.protocol: "http"
-otel.exporter.otlp.metrics.headers: "ApiKey your-base64-encoded-api-key"
+otel.exporter.otlp.endpoint: "https://your-deployment.apm.us-central1.gcp.cloud.es.io:443"
+otel.exporter.otlp.protocol: "http"
+otel.exporter.otlp.headers: "ApiKey your-base64-encoded-api-key"
 ```
 
 ## Sending metrics to an OpenTelemetry Collector
@@ -82,8 +82,8 @@ You can also send metrics to an OpenTelemetry Collector, which can then forward 
 
 ```yaml
 otel.metrics.enabled: true
-otel.exporter.otlp.metrics.endpoint: "http://otel-collector:4317"
-otel.exporter.otlp.metrics.protocol: "grpc"
+otel.exporter.otlp.endpoint: "http://otel-collector:4317"
+otel.exporter.otlp.protocol: "grpc"
 ```
 
 Example OpenTelemetry Collector configuration to forward to Elasticsearch:
@@ -248,7 +248,7 @@ Verify the endpoint is accessible:
 
 **Authentication errors**
 
-Ensure the `otel.exporter.otlp.metrics.headers` is correctly formatted:
+Ensure the `otel.exporter.otlp.headers` is correctly formatted:
 - For API keys: `ApiKey base64-encoded-key`
 - For Bearer tokens: `Bearer your-token`
 

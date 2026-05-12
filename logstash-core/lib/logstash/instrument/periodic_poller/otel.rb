@@ -29,16 +29,16 @@ module LogStash module Instrument module PeriodicPoller
   #
   # Configuration in logstash.yml:
   #   otel.metrics.enabled: true
-  #   otel.exporter.otlp.metrics.endpoint: "http://localhost:4317"
+  #   otel.exporter.otlp.endpoint: "http://localhost:4317"
   #   otel.metric.export.interval: "10s"
-  #   otel.exporter.otlp.metrics.protocol: "grpc"
-  #   otel.exporter.otlp.metrics.headers: "ApiKey xxx"  # or "Bearer xxx"
+  #   otel.exporter.otlp.protocol: "grpc"
+  #   otel.exporter.otlp.headers: "ApiKey xxx"  # or "Bearer xxx"
   #   otel.service.name: "logstash"
   #   otel.resource.attributes: "environment=production,cluster=us-west"
   #   otel.metrics.dataset: "logstash"
-  #   otel.exporter.otlp.metrics.certificate: "/path/to/ca.pem"
-  #   otel.exporter.otlp.metrics.client.key: "/path/to/client.key"
-  #   otel.exporter.otlp.metrics.client.certificate: "/path/to/client.crt"
+  #   otel.exporter.otlp.certificate: "/path/to/ca.pem"
+  #   otel.exporter.otlp.client.key: "/path/to/client.key"
+  #   otel.exporter.otlp.client.certificate: "/path/to/client.crt"
   #
   class Otel < Base
 
@@ -65,17 +65,17 @@ module LogStash module Instrument module PeriodicPoller
       config = OtelMetricsConfig.builder(
           agent.id,
           agent.name,
-          settings.get("otel.exporter.otlp.metrics.endpoint"),
-          settings.get("otel.exporter.otlp.metrics.protocol")
+          settings.get("otel.exporter.otlp.endpoint"),
+          settings.get("otel.exporter.otlp.protocol")
         )
         .interval_ms(@interval_ms)
         .resource_attributes(settings.get("otel.resource.attributes"))
-        .authorization_header(settings.get("otel.exporter.otlp.metrics.headers")&.value)
+        .authorization_header(settings.get("otel.exporter.otlp.headers")&.value)
         .service_name(settings.get("otel.service.name"))
         .dataset(settings.get("otel.metrics.dataset"))
-        .certificate_path(settings.get("otel.exporter.otlp.metrics.certificate"))
-        .client_key_path(settings.get("otel.exporter.otlp.metrics.client.key"))
-        .client_certificate_path(settings.get("otel.exporter.otlp.metrics.client.certificate"))
+        .certificate_path(settings.get("otel.exporter.otlp.certificate"))
+        .client_key_path(settings.get("otel.exporter.otlp.client.key"))
+        .client_certificate_path(settings.get("otel.exporter.otlp.client.certificate"))
         .build
 
       @otel_service = org.logstash.instrument.metrics.otel.OtelMetricsService.new(config)
@@ -94,7 +94,7 @@ module LogStash module Instrument module PeriodicPoller
       register_cgroup_metrics
 
       logger.info("OpenTelemetry metrics poller initialized",
-                  :endpoint => settings.get("otel.exporter.otlp.metrics.endpoint"),
+                  :endpoint => settings.get("otel.exporter.otlp.endpoint"),
                   :interval => @interval_seconds)
     end
 
