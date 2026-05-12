@@ -3924,10 +3924,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
-Notice for: jrjackson-0.4.20
+Notice for: jrjackson-0.5.0
 ----------
 
-https://github.com/guyboertje/jrjackson/blob/v0.4.6/README.md
+https://github.com/guyboertje/jrjackson/blob/v0.5.0/README.md
 
 LICENSE applicable to this library:
 

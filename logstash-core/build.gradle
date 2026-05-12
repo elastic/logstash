@@ -43,6 +43,7 @@ description = """Logstash Core Java"""
 String logstashCoreVersion = versionMap['logstash-core']
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
+String jacksonAnnotationsVersion = versionMap['jackson-annotations']
 String jrubyVersion = versionMap['jruby']['version']
 
 String log4jVersion = '2.25.4'
@@ -237,7 +238,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     implementation "com.github.luben:zstd-jni:1.5.7-4"
     api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
-    api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+    api "com.fasterxml.jackson.core:jackson-annotations:${jacksonAnnotationsVersion}"
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
