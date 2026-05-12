@@ -110,5 +110,9 @@ The `logstash.yml` file includes these settings.
 | `otel.exporter.otlp.metrics.headers` | Authorization header for authenticated OTLP endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
 | `otel.resource.attributes` | Additional OpenTelemetry resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
 | `otel.service.name` | Service name for metrics. Can also be set via `otel.service.name` system property. | `logstash` |
+| `otel.metrics.dataset` | Value for the `data_stream.dataset` resource attribute. When sending to the Elastic ingest endpoint, `.otel` is automatically appended — the default `logstash` produces `data_stream.dataset: logstash.otel` and index `metrics-logstash.otel-<namespace>`. | `logstash` |
+| `otel.exporter.otlp.metrics.certificate` | Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate. Required when the endpoint uses a self-signed or private CA. | *N/A* |
+| `otel.exporter.otlp.metrics.client.key` | Path to a PEM-encoded client private key for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.metrics.client.certificate`. | *N/A* |
+| `otel.exporter.otlp.metrics.client.certificate` | Path to a PEM-encoded client certificate for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.metrics.client.key`. | *N/A* |
 
 >>>>>>> bd159bd54 (Add documentation)
