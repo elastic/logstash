@@ -17,7 +17,12 @@ on:
         - "minor"
         - "major"
       extra_gems_minor:
-        description: 'Additional gems to bump at minor level (space-separated).'
+        description: 'Additional gems to bump at minor level (space-separated)'
+        required: false
+        default: ''
+        type: string
+      extra_gems_major:
+        description: 'Additional gems to bump at major level (space-separated)'
         required: false
         default: ''
         type: string
@@ -59,6 +64,14 @@ jobs:
           if [ -n "$GEMS" ]; then
             echo "Bumping at --minor: ${GEMS}"
             ./vendor/jruby/bin/jruby -S bundle update $GEMS --minor --strict --conservative
+          fi
+      - name: Bump selected deps at major level
+        if: ${{ inputs.bump != 'major' && inputs.extra_gems_major != '' }}
+        run: |
+          GEMS=$(echo "${{ inputs.extra_gems_major }}" | xargs)
+          if [ -n "$GEMS" ]; then
+            echo "Bumping at --major: ${GEMS}"
+            ./vendor/jruby/bin/jruby -S bundle update $GEMS --major --strict --conservative
           fi
       - run: mv Gemfile.lock Gemfile.jruby-*.lock.release
       - run: echo "T=$(date +%s)" >> $GITHUB_ENV
