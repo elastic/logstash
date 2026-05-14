@@ -16,6 +16,11 @@ on:
         - "patch"
         - "minor"
         - "major"
+      extra_gems_minor:
+        description: 'Additional gems to bump at minor level (space-separated).'
+        required: false
+        default: ''
+        type: string
     
 permissions:
   pull-requests: write
@@ -45,6 +50,16 @@ jobs:
       - run: git config --global user.name "logstashmachine"
       - run: ./gradlew clean installDefaultGems
       - run: ./vendor/jruby/bin/jruby -S bundle update --all --${{ github.event.inputs.bump }} --strict
+      - name: Bump selected deps at minor level
+        if: ${{ inputs.bump == 'patch' }}
+        run: |
+          AWS_GEMS=$(./vendor/jruby/bin/jruby -S bundle list --name-only | grep '^aws-')
+          EXTRA="${{ inputs.extra_gems_minor }}"
+          GEMS=$(echo "${AWS_GEMS} sequel ${EXTRA}" | xargs)
+          if [ -n "$GEMS" ]; then
+            echo "Bumping at --minor: ${GEMS}"
+            ./vendor/jruby/bin/jruby -S bundle update $GEMS --minor --strict --conservative
+          fi
       - run: mv Gemfile.lock Gemfile.jruby-*.lock.release
       - run: echo "T=$(date +%s)" >> $GITHUB_ENV
       - run: echo "BRANCH=update_lock_${{ env.INPUTS_BRANCH }}_${T}" >> $GITHUB_ENV
