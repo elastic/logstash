@@ -22,6 +22,7 @@ def versionMap = gradle.ext.versions
 description = """Logstash Dependency Reporting Utility"""
 version = versionMap['logstash-core']
 String jacksonVersion = versionMap['jackson']
+String jacksonAnnotationsVersion = versionMap['jackson-annotations']
 
 repositories {
   mavenCentral()
@@ -42,7 +43,7 @@ dependencies {
   implementation 'org.apache.commons:commons-csv:1.7'
   implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
   implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-  implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+  implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonAnnotationsVersion}"
   testImplementation 'junit:junit:4.13.2'
 }
 

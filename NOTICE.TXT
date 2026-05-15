@@ -537,7 +537,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: com.fasterxml.jackson.core:jackson-annotations-2.15.4
+Notice for: com.fasterxml.jackson.core:jackson-annotations-2.21
 ----------
 
 This copy of Jackson JSON processor annotations is licensed under the
@@ -754,7 +754,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    limitations under the License.
 
 ==========
-Notice for: com.fasterxml.jackson.core:jackson-core-2.15.4
+Notice for: com.fasterxml.jackson.core:jackson-core-2.21.2
 ----------
 
 # Jackson JSON processor
@@ -981,7 +981,7 @@ from the source code management (SCM) system project uses.
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.core:jackson-databind-2.15.4
+Notice for: com.fasterxml.jackson.core:jackson-databind-2.21.2
 ----------
 
 # Jackson JSON processor
@@ -1217,7 +1217,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.dataformat:jackson-dataformat-cbor-2.16.2
+Notice for: com.fasterxml.jackson.dataformat:jackson-dataformat-cbor-2.21.2
 ----------
 
 This copy of Jackson JSON processor databind module is licensed under the
@@ -1432,7 +1432,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.module:jackson-module-afterburner-2.15.4
+Notice for: com.fasterxml.jackson.module:jackson-module-afterburner-2.21.2
 ----------
 
 This copy of Jackson JSON processor databind module is licensed under the
@@ -3924,10 +3924,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
-Notice for: jrjackson-0.4.20
+Notice for: jrjackson-0.5.0
 ----------
 
-https://github.com/guyboertje/jrjackson/blob/v0.4.6/README.md
+https://github.com/guyboertje/jrjackson/blob/v0.5.0/README.md
 
 LICENSE applicable to this library:
 
