@@ -5,7 +5,7 @@ on:
       branch:
         description: 'Release Branch'     
         required: true
-        default: '8.4'
+        default: '8.19'
         type: string
       bump:
         description: 'Bump type'     
