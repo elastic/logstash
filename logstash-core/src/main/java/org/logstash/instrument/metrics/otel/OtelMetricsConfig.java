@@ -31,7 +31,7 @@ package org.logstash.instrument.metrics.otel;
  * OtelMetricsConfig config = OtelMetricsConfig
  *     .builder(nodeId, nodeName, endpoint, protocol)
  *     .intervalMs(10_000L)
- *     .authorizationHeader("ApiKey my-key")
+ *     .headers("Authorization=ApiKey my-key")
  *     .build();
  * }</pre>
  */
@@ -43,7 +43,7 @@ public class OtelMetricsConfig {
     private final long intervalMs;
     private final String protocol;
     private final String resourceAttributes;
-    private final String authorizationHeader;
+    private final String headers;
     private final String serviceName;
     private final String dataset;
     private final String certificatePath;
@@ -57,7 +57,7 @@ public class OtelMetricsConfig {
         this.intervalMs = builder.intervalMs;
         this.protocol = builder.protocol;
         this.resourceAttributes = builder.resourceAttributes;
-        this.authorizationHeader = builder.authorizationHeader;
+        this.headers = builder.headers;
         this.serviceName = builder.serviceName;
         this.dataset = builder.dataset;
         this.certificatePath = builder.certificatePath;
@@ -75,7 +75,7 @@ public class OtelMetricsConfig {
     public long getIntervalMs() { return intervalMs; }
     public String getProtocol() { return protocol; }
     public String getResourceAttributes() { return resourceAttributes; }
-    public String getAuthorizationHeader() { return authorizationHeader; }
+    public String getHeaders() { return headers; }
     public String getServiceName() { return serviceName; }
     public String getDataset() { return dataset; }
     public String getCertificatePath() { return certificatePath; }
@@ -90,7 +90,7 @@ public class OtelMetricsConfig {
         private final String protocol;
         private long intervalMs = 10_000L;
         private String resourceAttributes;
-        private String authorizationHeader;
+        private String headers;
         private String serviceName;
         private String dataset = "logstash";
         private String certificatePath;
@@ -114,8 +114,8 @@ public class OtelMetricsConfig {
             return this;
         }
 
-        public Builder authorizationHeader(String authorizationHeader) {
-            this.authorizationHeader = authorizationHeader;
+        public Builder headers(String headers) {
+            this.headers = headers;
             return this;
         }
 

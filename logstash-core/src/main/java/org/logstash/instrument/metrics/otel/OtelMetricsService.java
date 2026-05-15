@@ -39,7 +39,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
@@ -59,7 +62,7 @@ import java.util.function.Supplier;
  * - otel.exporter.otlp.endpoint
  * - otel.exporter.otlp.protocol
  * - otel.metric.export.interval (in milliseconds)
- * - otel.exporter.otlp.headers
+ * - otel.exporter.otlp.headers (key=value,key=value format, e.g. Authorization=ApiKey xxx)
  * - otel.resource.attributes
  * - otel.service.name
  * - otel.exporter.otlp.certificate
@@ -92,7 +95,7 @@ public class OtelMetricsService {
     private final List<ObservableLongGauge> gauges = new CopyOnWriteArrayList<>();
     private final List<ObservableLongCounter> observableCounters = new CopyOnWriteArrayList<>();
 
-    private final String effectiveAuthorizationHeader;
+    private final Map<String, String> effectiveHeaders;
     private final byte[] effectiveTrustedCertsPem;
     private final byte[] effectiveClientKeyPem;
     private final byte[] effectiveClientCertPem;
@@ -111,7 +114,7 @@ public class OtelMetricsService {
         String effectiveProtocol = resolveProtocol(config.getProtocol());
         long effectiveIntervalMs = resolveIntervalMs(config.getIntervalMs());
         String effectiveResourceAttrs = resolveResourceAttributes(config.getResourceAttributes());
-        this.effectiveAuthorizationHeader = resolveAuthorizationHeader(config.getAuthorizationHeader());
+        this.effectiveHeaders = resolveHeaders(config.getHeaders());
         String effectiveServiceName = resolveServiceName(config.getServiceName());
         String effectiveDataset = resolveDataset(config.getDataset());
         this.effectiveTrustedCertsPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_CERTIFICATE, config.getCertificatePath()));
@@ -243,23 +246,42 @@ public class OtelMetricsService {
     }
 
     /**
-     * Resolves authorization header with precedence: system property > logstash.yml.
-     * Extracts Authorization header from otel.exporter.otlp.headers if present.
+     * Resolves headers with precedence: system property > logstash.yml.
+     * Both sources use the same {@code key=value,key=value} format.
      */
-    private String resolveAuthorizationHeader(String logstashYmlAuthHeader) {
-        String headers = getSystemProperty(OTEL_EXPORTER_OTLP_HEADERS, null);
-        if (headers != null) {
-            // Parse headers format: "key1=value1,key2=value2"
-            for (String header : headers.split(",")) {
-                String[] parts = header.split("=", 2);
-                if (parts.length == 2 && "Authorization".equalsIgnoreCase(parts[0].trim())) {
-                    LOGGER.debug("Using Authorization header from system property {} (value redacted)", OTEL_EXPORTER_OTLP_HEADERS);
-                    return parts[1].trim();
-                }
+    private Map<String, String> resolveHeaders(String logstashYmlHeaders) {
+        String sysPropHeaders = getSystemProperty(OTEL_EXPORTER_OTLP_HEADERS, null);
+        if (sysPropHeaders != null) {
+            LOGGER.debug("Using headers from system property {} (values redacted)", OTEL_EXPORTER_OTLP_HEADERS);
+            return parseHeaders(sysPropHeaders);
+        }
+        if (logstashYmlHeaders != null && !logstashYmlHeaders.isEmpty()) {
+            return parseHeaders(logstashYmlHeaders);
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Parses a {@code key=value,key=value} header string into a map.
+     * Values may contain {@code =} (split is limited to 2 parts).
+     * Empty entries are silently skipped; malformed entries log a warning and are skipped.
+     * Package-private for testing.
+     */
+    static Map<String, String> parseHeaders(String headers) {
+        Map<String, String> result = new LinkedHashMap<>();
+        for (String pair : headers.split(",")) {
+            String trimmedPair = pair.trim();
+            if (trimmedPair.isEmpty()) {
+                continue;
+            }
+            String[] keyValue = trimmedPair.split("=", 2);
+            if (keyValue.length == 2) {
+                result.put(keyValue[0].trim(), keyValue[1].trim());
+            } else {
+                LOGGER.warn("Ignoring malformed header '{}': expected format 'key=value'", trimmedPair);
             }
         }
-
-        return logstashYmlAuthHeader;
+        return result;
     }
 
     /**
@@ -320,9 +342,7 @@ public class OtelMetricsService {
             var builder = OtlpHttpMetricExporter.builder()
                     .setEndpoint(normalizeHttpEndpoint(endpoint))
                     .setTimeout(Duration.ofSeconds(10));
-            if (effectiveAuthorizationHeader != null && !effectiveAuthorizationHeader.isEmpty()) {
-                builder.addHeader("Authorization", effectiveAuthorizationHeader);
-            }
+            effectiveHeaders.forEach(builder::addHeader);
             if (effectiveTrustedCertsPem != null) {
                 builder.setTrustedCertificates(effectiveTrustedCertsPem);
             }
@@ -335,9 +355,7 @@ public class OtelMetricsService {
             var builder = OtlpGrpcMetricExporter.builder()
                     .setEndpoint(endpoint)
                     .setTimeout(Duration.ofSeconds(10));
-            if (effectiveAuthorizationHeader != null && !effectiveAuthorizationHeader.isEmpty()) {
-                builder.addHeader("Authorization", effectiveAuthorizationHeader);
-            }
+            effectiveHeaders.forEach(builder::addHeader);
             if (effectiveTrustedCertsPem != null) {
                 builder.setTrustedCertificates(effectiveTrustedCertsPem);
             }
@@ -448,6 +466,8 @@ public class OtelMetricsService {
                         Long value = valueSupplier.get();
                         if (value != null && value >= 0) {
                             measurement.record(value, attributes);
+                        } else if (value != null) {
+                            LOGGER.debug("Skipping negative counter value for {}: {}", name, value);
                         }
                     } catch (Exception e) {
                         LOGGER.debug("Error collecting observable counter {}: {}", name, e.getMessage());

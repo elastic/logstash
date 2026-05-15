@@ -33,7 +33,7 @@ class OtelcollectorService < Service
 
   # Bearer token required by the authenticated endpoint
   AUTH_TOKEN = "test-integration-key"
-  AUTH_HEADER = "Bearer #{AUTH_TOKEN}"
+  AUTH_HEADER = "Authorization=Bearer #{AUTH_TOKEN}"
 
   def initialize(settings)
     super("otelcollector", settings)

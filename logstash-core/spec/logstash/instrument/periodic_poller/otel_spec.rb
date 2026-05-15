@@ -89,7 +89,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           interval_ms: 10000,
           protocol: "grpc",
           resource_attributes: nil,
-          authorization_header: nil,
+          headers: nil,
           service_name: nil,
           dataset: "logstash",
           certificate_path: nil,
@@ -102,7 +102,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
     end
 
     context "with authorization header (ApiKey)" do
-      let(:auth_password) { LogStash::Util::Password.new("ApiKey my-secret-key") }
+      let(:auth_password) { LogStash::Util::Password.new("Authorization=ApiKey my-secret-key") }
       let(:settings) do
         double("settings").tap do |s|
           allow(s).to receive(:get).with("otel.exporter.otlp.endpoint").and_return("https://apm.example.com")
@@ -122,7 +122,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         expect(OtelMetricsService).to receive(:new).with(
           have_attributes(
             endpoint: "https://apm.example.com",
-            authorization_header: "ApiKey my-secret-key"
+            headers: "Authorization=ApiKey my-secret-key"
           )
         ).and_return(otel_service)
 
@@ -131,7 +131,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
     end
 
     context "with authorization header (Bearer token)" do
-      let(:auth_password) { LogStash::Util::Password.new("Bearer my-bearer-token") }
+      let(:auth_password) { LogStash::Util::Password.new("Authorization=Bearer my-bearer-token") }
       let(:settings) do
         double("settings").tap do |s|
           allow(s).to receive(:get).with("otel.exporter.otlp.endpoint").and_return("https://apm.example.com")
@@ -151,7 +151,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         expect(OtelMetricsService).to receive(:new).with(
           have_attributes(
             endpoint: "https://apm.example.com",
-            authorization_header: "Bearer my-bearer-token"
+            headers: "Authorization=Bearer my-bearer-token"
           )
         ).and_return(otel_service)
 
@@ -179,7 +179,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         expect(OtelMetricsService).to receive(:new).with(
           have_attributes(
             endpoint: "https://apm.example.com",
-            authorization_header: nil
+            headers: nil
           )
         ).and_return(otel_service)
 

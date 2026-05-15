@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -364,6 +365,56 @@ public class OtelMetricsServiceTest {
         assertThatThrownBy(() -> OtelMetricsService.readPemFile("/nonexistent/path/ca.pem"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("/nonexistent/path/ca.pem");
+    }
+
+    // ========================================
+    // parseHeaders tests
+    // ========================================
+
+    @Test
+    public void parseHeadersParsesAuthorizationHeader() {
+        Map<String, String> headers = OtelMetricsService.parseHeaders("Authorization=ApiKey my-key");
+        assertThat(headers).containsEntry("Authorization", "ApiKey my-key");
+        assertThat(headers).hasSize(1);
+    }
+
+    @Test
+    public void parseHeadersParsesMultipleHeaders() {
+        Map<String, String> headers = OtelMetricsService.parseHeaders("Authorization=Bearer token,X-Custom=foo");
+        assertThat(headers).containsEntry("Authorization", "Bearer token");
+        assertThat(headers).containsEntry("X-Custom", "foo");
+        assertThat(headers).hasSize(2);
+    }
+
+    @Test
+    public void parseHeadersHandlesValueContainingEquals() {
+        // Base64-encoded API keys contain '=' padding
+        Map<String, String> headers = OtelMetricsService.parseHeaders("Authorization=ApiKey abc123==");
+        assertThat(headers).containsEntry("Authorization", "ApiKey abc123==");
+    }
+
+    @Test
+    public void parseHeadersTrimsWhitespace() {
+        Map<String, String> headers = OtelMetricsService.parseHeaders(" Authorization = Bearer token , X-Custom = foo ");
+        assertThat(headers).containsEntry("Authorization", "Bearer token");
+        assertThat(headers).containsEntry("X-Custom", "foo");
+    }
+
+    @Test
+    public void parseHeadersSkipsEmptyEntries() {
+        Map<String, String> headers = OtelMetricsService.parseHeaders("Authorization=Bearer token,,X-Custom=foo,");
+        assertThat(headers).hasSize(2);
+        assertThat(testAppender.getLogMessages()).isEmpty();
+    }
+
+    @Test
+    public void parseHeadersWarnsOnMalformedEntry() {
+        logger.setLevel(Level.WARN);
+        Map<String, String> headers = OtelMetricsService.parseHeaders("Authorization=Bearer token,malformed");
+        assertThat(headers).containsEntry("Authorization", "Bearer token");
+        assertThat(headers).hasSize(1);
+        assertThat(testAppender.getLogMessages()).hasSize(1);
+        assertThat(testAppender.getLogMessages().get(0)).contains("malformed");
     }
 
     /**

@@ -335,8 +335,8 @@
 #
 # otel.exporter.otlp.protocol: "grpc"
 #
-# Authorization header for authenticated OTLP endpoints.
-# Examples: "ApiKey xxx" or "Bearer xxx"
+# HTTP headers as comma-separated key=value pairs to include in every OTLP request.
+# Examples: "Authorization=ApiKey xxx" or "Authorization=Bearer xxx,X-Custom=foo"
 # System property: otel.exporter.otlp.headers
 #
 # otel.exporter.otlp.headers:

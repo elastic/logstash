@@ -32,7 +32,7 @@ module LogStash module Instrument module PeriodicPoller
   #   otel.exporter.otlp.endpoint: "http://localhost:4317"
   #   otel.metric.export.interval: "10s"
   #   otel.exporter.otlp.protocol: "grpc"
-  #   otel.exporter.otlp.headers: "ApiKey xxx"  # or "Bearer xxx"
+  #   otel.exporter.otlp.headers: "Authorization=ApiKey xxx"  # key=value,key=value format
   #   otel.service.name: "logstash"
   #   otel.resource.attributes: "environment=production,cluster=us-west"
   #   otel.dataset: "logstash"
@@ -70,7 +70,7 @@ module LogStash module Instrument module PeriodicPoller
         )
         .interval_ms(@interval_ms)
         .resource_attributes(settings.get("otel.resource.attributes"))
-        .authorization_header(settings.get("otel.exporter.otlp.headers")&.value)
+        .headers(settings.get("otel.exporter.otlp.headers")&.value)
         .service_name(settings.get("otel.service.name"))
         .dataset(settings.get("otel.dataset"))
         .certificate_path(settings.get("otel.exporter.otlp.certificate"))

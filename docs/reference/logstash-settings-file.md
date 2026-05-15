@@ -102,13 +102,13 @@ The `logstash.yml` file includes these settings.
 | `allow_superuser` | Setting to `true` to allow or `false` to block running Logstash as a superuser. | `false` |
 | `pipeline.buffer.type` | Determine where to allocate memory buffers, for plugins that leverage them.Defaults to `heap` but can be switched to `direct` to instruct Logstash to prefer allocation of buffers in direct memory. | `heap` Check out [Buffer Allocation types](/reference/jvm-settings.md#off-heap-buffers-allocation) for more info. |
 | `otel.metrics.enabled` | Enable or disable OpenTelemetry metrics export. See [Monitoring with OpenTelemetry](/reference/monitoring-with-opentelemetry.md). | `false` |
-| `otel.exporter.otlp.endpoint` | OTLP metrics endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
+| `otel.exporter.otlp.endpoint` | OTLP metrics endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. When using HTTP protocol, `/v1/metrics` is automatically appended if not already present, and the default port (80 for `http://`, 443 for `https://`) is added if no port is specified. | `http://localhost:4317` |
 | `otel.metric.export.interval` | Export interval with time unit (e.g., `"10s"`, `"1m"`). Controls how frequently metrics are sent to the OTLP endpoint. | `"10s"` |
 | `otel.exporter.otlp.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
-| `otel.exporter.otlp.headers` | Authorization header for authenticated OTLP endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
+| `otel.exporter.otlp.headers` | HTTP headers as comma-separated `key=value` pairs to include in every OTLP request. Example: `Authorization=ApiKey xxx` or `Authorization=Bearer xxx,X-Custom=foo`. | *N/A* |
 | `otel.resource.attributes` | Additional OpenTelemetry resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
 | `otel.service.name` | Service name for metrics. Can also be set via `otel.service.name` system property. | `logstash` |
-| `otel.dataset` | Value for the `data_stream.dataset` resource attribute. When sending to the Elastic ingest endpoint, `.otel` is automatically appended — the default `logstash` produces `data_stream.dataset: logstash.otel` and index `metrics-logstash.otel-<namespace>`. | `logstash` |
+| `otel.dataset` | Value for the `data_stream.dataset` resource attribute. When sending to the Elastic ingest endpoint, `.otel` is automatically appended — the default `logstash` produces `data_stream.dataset: logstash.otel` and index `metrics-logstash.otel-<namespace>`. This setting is only configurable via `logstash.yml` and has no corresponding system property. | `logstash` |
 | `otel.exporter.otlp.certificate` | Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate. Required when the endpoint uses a self-signed or private CA. | *N/A* |
 | `otel.exporter.otlp.client.key` | Path to a PEM-encoded client private key for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.certificate`. | *N/A* |
 | `otel.exporter.otlp.client.certificate` | Path to a PEM-encoded client certificate for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.key`. | *N/A* |
