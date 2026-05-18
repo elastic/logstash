@@ -64,8 +64,8 @@ Supported system properties and their Logstash setting equivalents:
 
 To send metrics directly to Elastic Cloud's native OTLP endpoint:
 
-1. Get your Elastic Cloud OTLP endpoint from your deployment's APM integration settings
-2. Create an API key with appropriate permissions
+1. Get your Elastic Cloud OTLP endpoint from your deployment's APM integration settings.
+2. Create an API key with appropriate permissions.
 3. Configure Logstash:
 
 ```yaml
