@@ -223,7 +223,7 @@ When sending metrics to Elastic Cloud via the native OTLP endpoint, metrics are 
 2. Query metrics directly in **Observability → Metrics Explorer**.
 3. Search the `metrics-apm.app.logstash-*` data view using **Discover**.
 
-When using an OpenTelemetry Collector with the Elasticsearch exporter, create a data view matching your configured index pattern (e.g., `metrics-otel-*`).
+When using an OpenTelemetry Collector with the Elasticsearch exporter, create a data view matching your configured index pattern. For example, `metrics-otel-*`.
 
 ## Troubleshooting
 
