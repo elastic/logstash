@@ -21,7 +21,7 @@ module ServiceTester
   module SystemD
     def running?(package, jdk_path = '/usr/share/logstash/jdk/bin/java')
       stdout = ""
-      cmd = sudo_exec!("service #{package} status")
+      cmd = sudo_exec!("systemctl status #{package} --no-pager")
       stdout = cmd.stdout
       stdout.force_encoding(Encoding::UTF_8)
       (
@@ -32,7 +32,7 @@ module ServiceTester
     end
 
     def service_manager(service, action)
-      sudo_exec!("service #{service} #{action}")
+      sudo_exec!("systemctl #{action} #{service}")
     end
   end
 
