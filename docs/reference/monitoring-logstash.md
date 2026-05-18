@@ -20,7 +20,7 @@ You can use monitoring APIs provided by Logstash to retrieve these metrics. Thes
 
 Alternatively, you can:
 
-* [Export metrics via OpenTelemetry](monitoring-with-opentelemetry.md) to send metrics to any OTLP-compatible backend, including Elastic Cloud's native OTLP endpoint.
+* [Export metrics using OpenTelemetry](monitoring-with-opentelemetry.md) to send metrics to any OTLP-compatible backend, including Elastic Cloud's native OTLP endpoint.
 * [Configure Elastic Stack monitoring features](monitoring-logstash-legacy.md) to send data to a monitoring cluster.
 
 ## APIs for monitoring Logstash [monitoring]
