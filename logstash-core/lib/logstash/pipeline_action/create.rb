@@ -52,6 +52,9 @@ module LogStash module PipelineAction
         new_pipeline.start # block until the pipeline is correctly started or crashed
       end
 
+      unless success
+        new_pipeline.shutdown
+      end
       LogStash::ConvergeResult::ActionResult.create(self, success)
     end
 
