@@ -46,7 +46,7 @@ OpenTelemetry settings can be configured using Java system properties or by edit
 1. **Java system properties** (highest priority). For example, `-Dotel.service.name=my-service`
 2. **logstash.yml** (lowest priority)
 
-Supported system properties:
+Supported system properties and their Logstash setting equivalents:
 
 | System Property | logstash.yml Setting |
 | --- | --- |
