@@ -11,7 +11,7 @@ Logstash can export metrics to any OpenTelemetry Protocol (OTLP) compatible back
 
 ## Overview
 
-The OpenTelemetry metrics exporter sends Logstash runtime metrics directly via OTLP (OpenTelemetry Protocol). This provides a standardized way to collect and export metrics without requiring an intermediate collector, though you can also route metrics through an OpenTelemetry Collector if needed.
+The OpenTelemetry metrics exporter sends Logstash runtime metrics directly using the OpenTelemetry Protocol (OTLP). This provides a standardized way to collect and export metrics without requiring an intermediate collector, though you can also route metrics through an OpenTelemetry Collector if needed.
 
 ## Configuration
 
