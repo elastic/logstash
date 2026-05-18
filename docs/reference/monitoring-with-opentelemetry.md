@@ -29,7 +29,7 @@ otel.exporter.otlp.protocol: "grpc"
 | Setting | Description | Default |
 | --- | --- | --- |
 | `otel.metrics.enabled` | Enable or disable OpenTelemetry metrics export. | `false` |
-| `otel.exporter.otlp.endpoint` | OTLP metrics endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. When using HTTP protocol, `/v1/metrics` is automatically appended if not already present, and the default port (80 for `http://`, 443 for `https://`) is added if no port is specified. | `http://localhost:4317` |
+| `otel.exporter.otlp.endpoint` | OTLP metrics endpoint URL. For gRPC, the default port is 4317. For HTTP the default port is 4318. When using the HTTP protocol, `/v1/metrics` is automatically appended if not already present, and the default port (80 for `http://`, 443 for `https://`) is added if no port is specified. | `http://localhost:4317` |
 | `otel.metric.export.interval` | Export interval with time unit (e.g., `10s`, `1m`). Controls how frequently metrics are sent to the endpoint. | `"10s"` |
 | `otel.exporter.otlp.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
 | `otel.exporter.otlp.headers` | HTTP headers as comma-separated `key=value` pairs to include in every OTLP request. Example: `Authorization=ApiKey xxx` or `Authorization=Bearer xxx,X-Custom=foo`. | *N/A* |
