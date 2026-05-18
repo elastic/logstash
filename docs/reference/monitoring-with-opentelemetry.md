@@ -191,7 +191,7 @@ Plugin metrics include `pipeline.id`, `plugin.type`, and `plugin.id` attributes.
 
 ### Cgroup metrics (Linux only)
 
-These metrics are available when running on Linux with cgroups enabled (e.g., in containers).
+These metrics are available when running on Linux with cgroups enabled, for example in containers.
 
 | Metric name | Type | Unit | Description |
 | --- | --- | --- | --- |
