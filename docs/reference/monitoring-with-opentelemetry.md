@@ -7,7 +7,7 @@ applies_to:
 
 # Monitoring Logstash with OpenTelemetry
 
-Logstash can export metrics to any OpenTelemetry Protocol (OTLP) compatible backend, enabling integration with observability platforms like Elastic, Prometheus, etc.
+Logstash can export metrics to any OpenTelemetry Protocol (OTLP) compatible backend, like Elastic, Prometheus, and others.
 
 ## Overview
 
