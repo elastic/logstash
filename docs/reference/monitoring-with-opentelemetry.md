@@ -31,13 +31,13 @@ otel.exporter.otlp.protocol: "grpc"
 | `otel.exporter.otlp.endpoint` | OTLP metrics endpoint URL. For gRPC, the default port is 4317. For HTTP the default port is 4318. When using the HTTP protocol, `/v1/metrics` is automatically appended if not already present, and the default port (80 for `http://`, 443 for `https://`) is added if no port is specified. | `http://localhost:4317` |
 | `otel.metric.export.interval` | Export interval with time unit. Controls how frequently metrics are sent to the endpoint. For example: `10s` or `1m`. | `"10s"` |
 | `otel.exporter.otlp.protocol` | Protocol to use for OTLP export. Valid values are `grpc` and `http`. | `grpc` |
-| `otel.exporter.otlp.headers` | HTTP headers as comma-separated `key=value` pairs to include in every OTLP request. Example: `Authorization=ApiKey xxx` or `Authorization=Bearer xxx,X-Custom=foo`. | *N/A* |
-| `otel.resource.attributes` | Additional resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
+| `otel.exporter.otlp.headers` | HTTP headers as comma-separated `key=value` pairs to include in every OTLP request. Example: `Authorization=ApiKey xxx` or `Authorization=Bearer xxx,X-Custom=foo`. | Not applicable |
+| `otel.resource.attributes` | Additional resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | Not applicable |
 | `otel.service.name` | Service name for metrics. | `logstash` |
 | `otel.dataset` | Value for the `data_stream.dataset` resource attribute. When sending to the Elastic ingest endpoint, `.otel` is automatically appended — the default `logstash` produces `data_stream.dataset: logstash.otel` and index `metrics-logstash.otel-<namespace>`. This setting is only configurable via `logstash.yml` and has no corresponding system property. | `logstash` |
-| `otel.exporter.otlp.certificate` | Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate. Required when the endpoint uses a self-signed or private CA. | *N/A* |
-| `otel.exporter.otlp.client.key` | Path to a PEM-encoded client private key for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.certificate`. | *N/A* |
-| `otel.exporter.otlp.client.certificate` | Path to a PEM-encoded client certificate for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.key`. | *N/A* |
+| `otel.exporter.otlp.certificate` | Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate. Required when the endpoint uses a self-signed or private CA. | Not applicable |
+| `otel.exporter.otlp.client.key` | Path to a PEM-encoded client private key for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.certificate`. | Not applicable |
+| `otel.exporter.otlp.client.certificate` | Path to a PEM-encoded client certificate for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.key`. | Not applicable |
 
 ### Configuration precedence
 
