@@ -219,9 +219,9 @@ Additional resource attributes can be added using the `otel.resource.attributes`
 
 When sending metrics to Elastic Cloud via the native OTLP endpoint, metrics are stored in APM data streams (`.ds-metrics-apm.app.logstash-*`). You can view them in:
 
-1. **Observability > APM > Services** - Find your Logstash service
-2. **Observability > Metrics Explorer** - Query metrics directly
-3. **Discover** - Search the `metrics-apm.app.logstash-*` data view
+1. Find your Logstash service under **Observability → APM → Services**.
+2. Query metrics directly in **Observability → Metrics Explorer**.
+3. Search the `metrics-apm.app.logstash-*` data view using **Discover**.
 
 When using an OpenTelemetry Collector with the Elasticsearch exporter, create a data view matching your configured index pattern (e.g., `metrics-otel-*`).
 
