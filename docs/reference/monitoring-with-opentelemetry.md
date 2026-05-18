@@ -41,7 +41,7 @@ otel.exporter.otlp.protocol: "grpc"
 
 ### Configuration precedence
 
-OpenTelemetry settings can be configured via Java system properties or `logstash.yml`. The resolution order is:
+OpenTelemetry settings can be configured using Java system properties or by editing the `logstash.yml` file. The resolution order is:
 
 1. **Java system properties** (highest priority) - e.g., `-Dotel.service.name=my-service`
 2. **logstash.yml** (lowest priority)
