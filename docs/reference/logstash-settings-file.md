@@ -103,7 +103,7 @@ The `logstash.yml` file includes these settings.
 | `pipeline.buffer.type` | Determine where to allocate memory buffers, for plugins that leverage them.Defaults to `heap` but can be switched to `direct` to instruct Logstash to prefer allocation of buffers in direct memory. | `heap` Check out [Buffer Allocation types](/reference/jvm-settings.md#off-heap-buffers-allocation) for more info. |
 | `otel.metrics.enabled` | Enable or disable OpenTelemetry metrics export. See [Monitoring with OpenTelemetry](/reference/monitoring-with-opentelemetry.md). | `false` |
 | `otel.exporter.otlp.endpoint` | OTLP metrics endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. When using HTTP protocol, `/v1/metrics` is automatically appended if not already present, and the default port (80 for `http://`, 443 for `https://`) is added if no port is specified. | `http://localhost:4317` |
-| `otel.metric.export.interval` | Export interval with time unit (e.g., `"10s"`, `"1m"`). Controls how frequently metrics are sent to the OTLP endpoint. | `"10s"` |
+| `otel.metric.export.interval` {applies_to}`stack: preview 9.5.0+` | Export interval with time unit. Controls how frequently metrics are sent to the OTLP endpoint. For example, `"10s"`, `"1m"`. | `"10s"` |
 | `otel.exporter.otlp.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
 | `otel.exporter.otlp.headers` | HTTP headers as comma-separated `key=value` pairs to include in every OTLP request. Example: `Authorization=ApiKey xxx` or `Authorization=Bearer xxx,X-Custom=foo`. | *N/A* |
 | `otel.resource.attributes` | Additional OpenTelemetry resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
