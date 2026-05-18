@@ -2,7 +2,8 @@
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/monitoring-with-opentelemetry.html
 applies_to:
-  stack: preview
+  stack: preview 9.5.0+
+  serverless: preview
 ---
 
 # Monitoring Logstash with OpenTelemetry
