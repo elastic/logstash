@@ -17,7 +17,7 @@ PATH
       i18n (~> 1)
       jar-dependencies (= 0.4.1)
       jrjackson (= 0.4.20)
-      jruby-openssl (~> 0.15.4)
+      jruby-openssl (~> 0.16.0)
       manticore (~> 0.6)
       minitar (~> 1)
       pry (~> 0.12)
@@ -178,7 +178,7 @@ GEM
     jruby-jms (1.3.0-java)
       gene_pool
       semantic_logger
-    jruby-openssl (0.15.7-java)
+    jruby-openssl (0.16.0-java)
     jruby-stdin-channel (0.2.0-java)
     json (2.12.2-java)
     json-schema (2.8.1)
