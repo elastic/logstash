@@ -36,7 +36,6 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "com.github.luben:zstd-jni:1.5.7-4",https://github.com/luben/zstd-jni,BSD-2-Clause
 "com.google.googlejavaformat:google-java-format:",https://github.com/google/google-java-format,Apache-2.0
 "com.google.guava:guava:",https://github.com/google/guava,Apache-2.0
-"com.google.j2objc:j2objc-annotations:",https://github.com/google/j2objc/,Apache-2.0
 "commons-codec:commons-codec:",http://commons.apache.org/proper/commons-codec/,Apache-2.0
 "commons-logging:commons-logging:",http://commons.apache.org/proper/commons-logging/,Apache-2.0
 "concurrent-ruby:",http://www.concurrent-ruby.com,MIT
@@ -97,6 +96,11 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "io-console:",https://github.com/ruby/io-console,BSD-2-Clause
 "io-wait:",https://github.com/ruby/io-wait,BSD-2-Clause
 "io.netty:netty-all:",https://github.com/netty/netty,Apache-2.0
+"io.opentelemetry:opentelemetry-api:",https://github.com/open-telemetry/opentelemetry-java,Apache-2.0
+"io.opentelemetry:opentelemetry-bom:",https://github.com/open-telemetry/opentelemetry-java,Apache-2.0
+"io.opentelemetry:opentelemetry-exporter-otlp:",https://github.com/open-telemetry/opentelemetry-java,Apache-2.0
+"io.opentelemetry:opentelemetry-sdk:",https://github.com/open-telemetry/opentelemetry-java,Apache-2.0
+"io.opentelemetry:opentelemetry-sdk-metrics:",https://github.com/open-telemetry/opentelemetry-java,Apache-2.0
 "ipaddr:",https://github.com/ruby/ipaddr,BSD-2-Clause
 "irb:",https://github.com/ruby/irb,BSD-2-Clause
 "jar-dependencies:",https://github.com/mkristian/jar-dependencies,MIT

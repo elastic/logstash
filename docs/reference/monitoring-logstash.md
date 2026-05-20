@@ -18,8 +18,10 @@ The metrics collected by Logstash include:
 
 You can use monitoring APIs provided by Logstash to retrieve these metrics. These APIs are available by default without requiring any extra configuration.
 
-Alternatively, you can [configure Elastic Stack monitoring features](monitoring-logstash-legacy.md) to send
-data to a monitoring cluster.
+Alternatively, you can:
+
+* [Export metrics using OpenTelemetry](monitoring-with-opentelemetry.md) to send metrics to any OTLP-compatible backend, including Elastic Cloud's native OTLP endpoint.
+* [Configure Elastic Stack monitoring features](monitoring-logstash-legacy.md) to send data to a monitoring cluster.
 
 ## APIs for monitoring Logstash [monitoring]
 

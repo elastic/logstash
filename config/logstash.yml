@@ -307,6 +307,72 @@
 #
 # path.dead_letter_queue:
 #
+# ------------ OpenTelemetry Metrics Settings --------------
+# Export Logstash metrics to an OpenTelemetry-compatible backend via OTLP.
+# This allows you to send Logstash metrics to any OTLP-compatible collector
+# or monitoring platform (e.g., Prometheus via OTLP receiver, Elastic, Grafana Cloud).
+#
+# System properties take precedence over logstash.yml settings.
+# Use -D<property>=<value> to set system properties (e.g., -Dotel.service.name=my-logstash).
+#
+# Enable OpenTelemetry metrics export (default: false)
+#
+# otel.metrics.enabled: false
+#
+# OTLP metrics endpoint URL (default: "http://localhost:4317").
+# For gRPC, typically port 4317. For HTTP, typically port 4318.
+# System property: otel.exporter.otlp.endpoint
+#
+# otel.exporter.otlp.endpoint: "http://localhost:4317"
+#
+# Export interval with time unit, e.g., "10s", "1m" (default: "10s")
+# System property: otel.metric.export.interval
+#
+# otel.metric.export.interval: "10s"
+#
+# Protocol to use for OTLP export: "grpc" (default) or "http"
+# System property: otel.exporter.otlp.protocol
+#
+# otel.exporter.otlp.protocol: "grpc"
+#
+# HTTP headers as comma-separated key=value pairs to include in every OTLP request.
+# Examples: "Authorization=ApiKey xxx" or "Authorization=Bearer xxx,X-Custom=foo"
+# System property: otel.exporter.otlp.headers
+#
+# otel.exporter.otlp.headers:
+#
+# Additional resource attributes as comma-separated key=value pairs.
+# These are attached to all exported metrics to identify this Logstash instance.
+# Example: "environment=production,cluster=us-west,team=platform"
+# System property: otel.resource.attributes
+#
+# otel.resource.attributes:
+#
+# Service name for metrics (default: "logstash").
+# System property: otel.service.name
+#
+# otel.service.name: "logstash"
+#
+# Value for the data_stream.dataset resource attribute (default: "logstash").
+# When sending to the Elastic ingest endpoint, ".otel" is automatically appended, so the default
+# produces data_stream.dataset "logstash.otel" and index metrics-logstash.otel-<namespace>.
+# Use this to distinguish metrics from different Logstash deployments in the same data stream.
+#
+# otel.dataset: "logstash"
+#
+# Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate.
+# Required when the endpoint uses a self-signed or private CA certificate.
+# System property: otel.exporter.otlp.certificate
+#
+# otel.exporter.otlp.certificate:
+#
+# Paths to a PEM-encoded client private key and certificate for mutual TLS (mTLS).
+# Both must be set together. System properties: otel.exporter.otlp.client.key
+# and otel.exporter.otlp.client.certificate
+#
+# otel.exporter.otlp.client.key:
+# otel.exporter.otlp.client.certificate:
+#
 # ------------ Debugging Settings --------------
 #
 # Options for log.level:

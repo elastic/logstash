@@ -101,6 +101,10 @@ public class TimeValue {
         return timeUnit.toNanos(duration);
     }
 
+    public long toMillis() {
+        return timeUnit.toMillis(duration);
+    }
+
     public long toSeconds() {
         return timeUnit.toSeconds(duration);
     }
