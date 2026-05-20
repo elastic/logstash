@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-16,Logstash 8.19.16>>
 * <<logstash-8-19-15,Logstash 8.19.15>>
 * <<logstash-8-19-14,Logstash 8.19.14>>
 * <<logstash-8-19-13,Logstash 8.19.13>>
@@ -106,6 +107,49 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-16]]
+=== Logstash 8.19.16 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.16
+
+=== Logstash Commits between 8.19 and 8.19.15
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.15..8.19"
+
+2110e2c82 - (HEAD -> 8.19, origin/8.19) bump lock file for 8.19 (#19137) (23 hours ago) <github-actions[bot]>
+22d6aef78 - Update jruby-openssl to 0.16.0 (#19114) (29 hours ago) <Cas Donoghue>
+c2a86688b - Add RHEL 10, Oracle Linux 10, Rocky Linux 10, and Alma Linux 10 to exhaustive tests (#19123) (#19134) (2 days ago) <mergify[bot]>
+c850c609a - chore: deps(updatecli): Bump updatecli version to v0.117.0 (#19128) (#19131) (2 days ago) <mergify[bot]>
+91d58e170 - [8.19] (backport #19091) Clear pipeline metrics when a pipeline fails to start (#19122) (2 days ago) <mergify[bot]>
+9d5becdb3 - [8.19] (backport #19103) Upgrade jrjackson and fasterxml.jackson. (#19124) (5 days ago) <mergify[bot]>
+b0fe605f7 - [8.19] (backport #19067) Bump tspascoal/get-user-teams-membership from 3.0.0 to 4.0.1 in the github-actions group across 1 directory (#19076) (2 weeks ago) <mergify[bot]>
+8102c8716 - Retry transient curl errors when checking JDK (#19073) (#19080) (2 weeks ago) <mergify[bot]>
+6546c1c0c - Update bundled JDK to 21.0.11 build 10 (#19068) (2 weeks ago) <github-actions[bot]>
+ef5486ab2 - Bump logstash version 8.19.16 (#19062) (3 weeks ago) <github-actions[bot]>
+dc2961a4c - Pin image used to source filebeat for observabilitySRE testing (#19059) (3 weeks ago) <Cas Donoghue>
+f398b4b48 - Exclude non-runtime dependencies for snyk scans of jar dependencies (#19039) (#19054) (3 weeks ago) <mergify[bot]>
+e54e90844 - Release notes for 8.19.15 (#19043) (3 weeks ago) <github-actions[bot]>
+cd40c2dd7 - chore: deps(updatecli): Bump updatecli version to v0.116.3 (#19047) (#19048) (3 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.19.15..8.19 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 8.19.4 -> 8.19.6
+logstash-integration-kafka: 11.8.8 -> 11.8.9
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 8.19.6*
+
+404: Not Found
+
+*Kafka Integration - 11.8.9*
+
+* Upgrades jackson.core to 2.21.2 version https://github.com/logstash-plugins/logstash-integration-kafka/pull/255[#255]
+
 
 [[logstash-8-19-15]]
 === Logstash 8.19.15 Release Notes
