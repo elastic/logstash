@@ -104,7 +104,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
             int queueSize = batchSize * workers;
             return new JrubyWrappedSynchronousQueueExt(
                     context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
-            ).initialize(context, queueSize);
+            ).initialize(context, context.runtime.newFixnum(queueSize));
         } else {
             throw context.runtime.newRaiseException(
                 RubyUtil.CONFIGURATION_ERROR_CLASS,
