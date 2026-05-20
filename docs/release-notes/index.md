@@ -23,43 +23,19 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.3.5 [logstash-9.3.5-release-notes]
 
+### Updates to dependencies [logstash-9.3.5-dependencies]
+
+* Updated bundled JDK to 21.0.11 build 10 [#19069](https://github.com/elastic/logstash/pull/19069)
+* Updated jruby-openssl to 0.16.0 [#19115](https://github.com/elastic/logstash/pull/19115)
+* Upgraded jrjackson and fasterxml.jackson [#19103](https://github.com/elastic/logstash/pull/19103)
+
 ### Features and enhancements [logstash-9.3.5-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.3.5
+* Introduces new `dead_letter_queue.flush_check_interval` config for flushing the staled segment files scheduler which can reduce frequent check overhead [#19036](https://github.com/elastic/logstash/pull/19036)
 
-=== Logstash Commits between 9.3 and 9.3.4
+### Fixes [logstash-9.3.5-fixes]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.3.4..9.3"
-
-75cbe86cf - (HEAD -> 9.3, origin/9.3) bump lock file for 9.3 (#19138) (23 hours ago) <github-actions[bot]>
-c4442af2c - Update jruby-openssl to 0.16.0 (#19115) (29 hours ago) <Cas Donoghue>
-aa09b7fc4 - Add RHEL 10, Oracle Linux 10, Rocky Linux 10, and Alma Linux 10 to exhaustive tests (#19123) (#19133) (2 days ago) <mergify[bot]>
-41782e6b1 - chore: deps(updatecli): Bump updatecli version to v0.117.0 (#19128) (#19130) (2 days ago) <mergify[bot]>
-c71a158bf - [9.3] (backport #19091) Clear pipeline metrics when a pipeline fails to start (#19121) (2 days ago) <mergify[bot]>
-9f8ed2854 - [9.3] (backport #19103) Upgrade jrjackson and fasterxml.jackson. (#19125) (5 days ago) <mergify[bot]>
-cc23cc4a2 - Update patch plugin versions in gemfile lock (#19100) (8 days ago) <github-actions[bot]>
-015e0e702 - (origin/mergify/bp/9.3/pr-19070) [9.3] (backport #19036) `dead_letter_queue.flush_check_interval` new config for flushing staled segment files. (#19089) (13 days ago) <mergify[bot]>
-abf047722 - chore: Update logstash-release-track in versions.yml (#19087) (2 weeks ago) <github-actions[bot]>
-5a5763098 - Bump tspascoal/get-user-teams-membership (#19067) (#19077) (2 weeks ago) <mergify[bot]>
-67c4c23c5 - Retry transient curl errors when checking JDK (#19073) (#19081) (2 weeks ago) <mergify[bot]>
-cc2b740e9 - [9.3] (backport #19051) Allow to pull elasticsearch 9.x ruby client versions. (#19074) (2 weeks ago) <mergify[bot]>
-d8156acdd - Update bundled JDK to 21.0.11 build 10 (#19069) (2 weeks ago) <github-actions[bot]>
-dea244b02 - Bump logstash version 9.3.5 (#19060) (3 weeks ago) <github-actions[bot]>
-931b6a189 - Exclude non-runtime dependencies for snyk scans of jar dependencies (#19039) (#19055) (3 weeks ago) <mergify[bot]>
-b34cd5e36 - Release notes for 9.3.4 (#19042) (3 weeks ago) <github-actions[bot]>
-71561c5b8 - chore: deps(updatecli): Bump updatecli version to v0.116.3 (#19047) (#19049) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.3.4..9.3 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 9.3.2 -> 9.3.5
-logstash-input-beats: 7.0.8 -> 7.0.9
-logstash-input-elasticsearch: 5.2.1 -> 5.2.2
-logstash-input-http: 4.1.7 -> 4.1.8
-logstash-input-tcp: 7.0.7 -> 7.0.9
-logstash-integration-kafka: 11.8.8 -> 11.8.9
----------- GENERATED CONTENT ENDS HERE ------------
+* Fixes a metric leak in `_node/stats` when a pipeline repeatedly fails to start with `config.reload.automatic: true`. Previously, each retry left a fresh set of plugin metric entries in the collector, causing the stats payload to grow indefinitely [#19091](https://github.com/elastic/logstash/pull/19091)
 
 ### Plugins [logstash-plugin-9.3.5-changes]
 
