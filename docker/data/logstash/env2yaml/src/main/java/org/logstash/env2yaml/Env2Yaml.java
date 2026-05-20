@@ -81,7 +81,7 @@ public class Env2Yaml {
                 "xpack.management.elasticsearch.ssl.truststore.path", "xpack.management.elasticsearch.ssl.truststore.password",
                 "xpack.management.elasticsearch.ssl.keystore.path", "xpack.management.elasticsearch.ssl.keystore.password",
                 "xpack.management.elasticsearch.ssl.certificate", "xpack.management.elasticsearch.ssl.key",
-                "xpack.management.elasticsearch.ssl.cipher_suites",                 "xpack.geoip.download.endpoint",
+                "xpack.management.elasticsearch.ssl.cipher_suites", "xpack.geoip.download.endpoint",
                 "xpack.geoip.downloader.enabled",
                 "otel.metrics.enabled", "otel.exporter.otlp.endpoint",
                 "otel.metric.export.interval", "otel.exporter.otlp.protocol",
