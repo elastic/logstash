@@ -121,7 +121,6 @@ module LogStash
    Setting::PasswordSetting.new("otel.exporter.otlp.headers", nil, false).nullable, # e.g., "ApiKey xxx" or "Bearer xxx"
     Setting::NullableStringSetting.new("otel.service.name"), # defaults to "logstash" if not set
    Setting::NullableStringSetting.new("otel.resource.attributes", nil, false), # key=value,key2=value2 format
-   Setting::StringSetting.new("otel.dataset", "logstash"), # sets data_stream.dataset resource attribute; Elastic ingest endpoint appends ".otel", routing to metrics-logstash.otel-<namespace>
    Setting::NullableStringSetting.new("otel.exporter.otlp.certificate", nil, false), # path to PEM-encoded trusted CA certificate
    Setting::NullableStringSetting.new("otel.exporter.otlp.client.key", nil, false), # path to PEM-encoded client private key (mTLS)
    Setting::NullableStringSetting.new("otel.exporter.otlp.client.certificate", nil, false) # path to PEM-encoded client certificate (mTLS)

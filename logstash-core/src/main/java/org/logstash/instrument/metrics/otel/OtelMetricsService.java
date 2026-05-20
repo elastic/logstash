@@ -85,6 +85,7 @@ public class OtelMetricsService {
     private static final String OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE = "otel.exporter.otlp.client.certificate";
 
     private static final String DEFAULT_SERVICE_NAME = "logstash";
+    private static final String DEFAULT_DATASET = "logstash";
 
     private final SdkMeterProvider meterProvider;
     private final Meter meter;
@@ -116,7 +117,6 @@ public class OtelMetricsService {
         String effectiveResourceAttrs = resolveResourceAttributes(config.getResourceAttributes());
         this.effectiveHeaders = resolveHeaders(config.getHeaders());
         String effectiveServiceName = resolveServiceName(config.getServiceName());
-        String effectiveDataset = resolveDataset(config.getDataset());
         this.effectiveTrustedCertsPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_CERTIFICATE, config.getCertificatePath()));
         this.effectiveClientKeyPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_CLIENT_KEY, config.getClientKeyPath()));
         this.effectiveClientCertPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE, config.getClientCertificatePath()));
@@ -129,7 +129,7 @@ public class OtelMetricsService {
                 .put(AttributeKey.stringKey("service.name"), effectiveServiceName)
                 .put(AttributeKey.stringKey("service.instance.id"), config.getNodeId())
                 .put(AttributeKey.stringKey("host.name"), config.getNodeName())
-                .put(AttributeKey.stringKey("data_stream.dataset"), effectiveDataset);
+                .put(AttributeKey.stringKey("data_stream.dataset"), DEFAULT_DATASET);
 
         // Parse additional resource attributes if provided
         if (effectiveResourceAttrs != null && !effectiveResourceAttrs.isEmpty()) {
@@ -284,19 +284,6 @@ public class OtelMetricsService {
         return result;
     }
 
-    /**
-     * Resolves the data_stream.dataset value, falling back to "logstash" if not provided.
-     * The Elastic ingest endpoint appends ".otel" to this value when routing, so "logstash"
-     * becomes "logstash.otel" in the stored data_stream.dataset field and the index name
-     * becomes metrics-logstash.otel-default.
-     * Package-private for testing.
-     */
-    static String resolveDataset(String logstashYmlDataset) {
-        if (logstashYmlDataset != null && !logstashYmlDataset.isEmpty()) {
-            return logstashYmlDataset;
-        }
-        return "logstash";
-    }
 
     /**
      * Resolves a file path with precedence: system property > logstash.yml.

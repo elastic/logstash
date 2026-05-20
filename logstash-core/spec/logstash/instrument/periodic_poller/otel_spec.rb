@@ -51,7 +51,6 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
       allow(s).to receive(:get).with("otel.exporter.otlp.headers").and_return(nil)
       allow(s).to receive(:get).with("otel.service.name").and_return(nil)
-      allow(s).to receive(:get).with("otel.dataset").and_return("logstash")
       allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return(nil)
       allow(s).to receive(:get).with("otel.exporter.otlp.client.key").and_return(nil)
       allow(s).to receive(:get).with("otel.exporter.otlp.client.certificate").and_return(nil)
@@ -111,8 +110,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.headers").and_return(auth_password)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
-          allow(s).to receive(:get).with("otel.dataset").and_return(nil)
-          allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return(nil)
+              allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.client.key").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.client.certificate").and_return(nil)
         end
@@ -140,8 +138,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.headers").and_return(auth_password)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
-          allow(s).to receive(:get).with("otel.dataset").and_return(nil)
-          allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return(nil)
+              allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.client.key").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.client.certificate").and_return(nil)
         end
@@ -168,8 +165,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.headers").and_return(nil)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
-          allow(s).to receive(:get).with("otel.dataset").and_return(nil)
-          allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return(nil)
+              allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.client.key").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.client.certificate").and_return(nil)
         end
@@ -196,8 +192,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.headers").and_return(nil)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
-          allow(s).to receive(:get).with("otel.dataset").and_return(nil)
-          allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return("/path/to/ca.pem")
+              allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return("/path/to/ca.pem")
           allow(s).to receive(:get).with("otel.exporter.otlp.client.key").and_return("/path/to/client.key")
           allow(s).to receive(:get).with("otel.exporter.otlp.client.certificate").and_return("/path/to/client.crt")
         end
@@ -226,31 +221,6 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
             client_key_path: nil,
             client_certificate_path: nil
           )
-        ).and_return(otel_service)
-
-        otel_poller
-      end
-    end
-
-    context "with dataset setting" do
-      let(:settings) do
-        double("settings").tap do |s|
-          allow(s).to receive(:get).with("otel.exporter.otlp.endpoint").and_return("http://localhost:4317")
-          allow(s).to receive(:get).with("otel.metric.export.interval").and_return(interval_time_value)
-          allow(s).to receive(:get).with("otel.exporter.otlp.protocol").and_return("grpc")
-          allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
-          allow(s).to receive(:get).with("otel.exporter.otlp.headers").and_return(nil)
-          allow(s).to receive(:get).with("otel.service.name").and_return(nil)
-          allow(s).to receive(:get).with("otel.dataset").and_return("my-dataset")
-          allow(s).to receive(:get).with("otel.exporter.otlp.certificate").and_return(nil)
-          allow(s).to receive(:get).with("otel.exporter.otlp.client.key").and_return(nil)
-          allow(s).to receive(:get).with("otel.exporter.otlp.client.certificate").and_return(nil)
-        end
-      end
-
-      it "passes user-defined dataset to OtelMetricsService" do
-        expect(OtelMetricsService).to receive(:new).with(
-          have_attributes(dataset: "my-dataset")
         ).and_return(otel_service)
 
         otel_poller

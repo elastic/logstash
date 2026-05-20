@@ -86,7 +86,7 @@ public class Env2Yaml {
                 "otel.metrics.enabled", "otel.exporter.otlp.endpoint",
                 "otel.metric.export.interval", "otel.exporter.otlp.protocol",
                 "otel.exporter.otlp.headers", "otel.resource.attributes",
-                "otel.service.name", "otel.dataset",
+                "otel.service.name",
                 "otel.exporter.otlp.certificate", "otel.exporter.otlp.client.key",
                 "otel.exporter.otlp.client.certificate"
             };

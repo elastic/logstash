@@ -34,7 +34,6 @@ otel.exporter.otlp.protocol: "grpc"
 | `otel.exporter.otlp.headers` | HTTP headers as comma-separated `key=value` pairs to include in every OTLP request. Example: `Authorization=ApiKey xxx` or `Authorization=Bearer xxx,X-Custom=foo`. | Not applicable |
 | `otel.resource.attributes` | Additional resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | Not applicable |
 | `otel.service.name` | Service name for metrics. | `logstash` |
-| `otel.dataset` | Value for the `data_stream.dataset` resource attribute. When sending to the Elastic ingest endpoint, `.otel` is automatically appended — the default `logstash` produces `data_stream.dataset: logstash.otel` and index `metrics-logstash.otel-<namespace>`. This setting is only configurable via `logstash.yml` and has no corresponding system property. | `logstash` |
 | `otel.exporter.otlp.certificate` | Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate. Required when the endpoint uses a self-signed or private CA. | Not applicable |
 | `otel.exporter.otlp.client.key` | Path to a PEM-encoded client private key for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.certificate`. | Not applicable |
 | `otel.exporter.otlp.client.certificate` | Path to a PEM-encoded client certificate for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.key`. | Not applicable |
@@ -211,7 +210,7 @@ The following resource attributes are automatically added to all metrics:
 | `service.name` | Defaults to `logstash`; configurable via `otel.service.name` |
 | `service.instance.id` | The Logstash node ID |
 | `host.name` | The Logstash node name (`node.name`) |
-| `data_stream.dataset` | Set to the value of `otel.dataset` (default `logstash`); the Elastic ingest endpoint appends `.otel`, resulting in `logstash.otel` |
+| `data_stream.dataset` | Always `logstash`; the Elastic ingest endpoint appends `.otel`, resulting in `logstash.otel` |
 
 Additional resource attributes can be added using the `otel.resource.attributes` setting.
 
