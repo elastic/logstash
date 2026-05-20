@@ -172,6 +172,10 @@ module LogStash module Instrument module PeriodicPoller
         get_metric_value(:stats, :events, :filtered)
       end
 
+      register_observable_counter("logstash.events.duration", "Total time spent processing events", "ms") do
+        get_metric_value(:stats, :events, :duration_in_millis)
+      end
+
       # Global queue gauge (total across all pipelines)
       register_gauge("logstash.queue.events", "Total events in queues", "{event}") do
         get_total_queue_events
@@ -332,6 +336,46 @@ module LogStash module Instrument module PeriodicPoller
       attrs = create_pipeline_attributes(pipeline_id)
 
       register_gauge(
+        "logstash.pipeline.workers",
+        "Number of worker threads for the pipeline",
+        "{thread}",
+        attrs
+      ) do
+        get_pipeline_metric_value(pipeline_id, :config, :workers)
+      end
+
+      register_gauge(
+        "logstash.pipeline.batch.size",
+        "Number of events processed per batch",
+        "{event}",
+        attrs
+      ) do
+        get_pipeline_metric_value(pipeline_id, :config, :batch_size)
+      end
+
+      register_gauge(
+        "logstash.pipeline.batch.delay",
+        "Delay in milliseconds before a batch is flushed",
+        "ms",
+        attrs
+      ) do
+        get_pipeline_metric_value(pipeline_id, :config, :batch_delay)
+      end
+
+      register_gauge(
+        "logstash.pipeline.queue.type",
+        "Queue type: 0 = memory, 1 = persisted",
+        "1",
+        attrs
+      ) do
+        queue_type = get_pipeline_metric_value(pipeline_id, :queue, :type)
+        case queue_type
+        when "persisted" then 1
+        when "memory" then 0
+        end
+      end
+
+      register_gauge(
         "logstash.pipeline.queue.events",
         "Events in pipeline queue",
         "{event}",
@@ -417,6 +461,42 @@ module LogStash module Instrument module PeriodicPoller
       ) do
         get_pipeline_metric_value(pipeline_id, :events, :filtered)
       end
+
+      register_observable_counter(
+        "logstash.pipeline.events.duration",
+        "Time spent processing events by pipeline",
+        "ms",
+        attrs
+      ) do
+        get_pipeline_metric_value(pipeline_id, :events, :duration_in_millis)
+      end
+
+      register_observable_counter(
+        "logstash.pipeline.events.queue_push_duration",
+        "Time spent pushing events to the queue",
+        "ms",
+        attrs
+      ) do
+        get_pipeline_metric_value(pipeline_id, :events, :queue_push_duration_in_millis)
+      end
+
+      register_gauge(
+        "logstash.pipeline.batch.byte_size",
+        "Current batch byte size",
+        "By",
+        attrs
+      ) do
+        get_batch_current_byte_size(pipeline_id)
+      end
+
+      register_gauge(
+        "logstash.pipeline.batch.event_count",
+        "Current batch event count",
+        "{event}",
+        attrs
+      ) do
+        get_batch_current_event_count(pipeline_id)
+      end
     end
 
     def register_gauge(name, description, unit, attributes = Attributes.empty, &block)
@@ -478,11 +558,12 @@ module LogStash module Instrument module PeriodicPoller
       )
     end
 
-    def create_plugin_attributes(pipeline_id, plugin_type, plugin_id)
+    def create_plugin_attributes(pipeline_id, plugin_type, plugin_id, plugin_name)
       Attributes.of(
         AttributeKey.stringKey("pipeline.id"), pipeline_id.to_s,
         AttributeKey.stringKey("plugin.type"), plugin_type.to_s,
-        AttributeKey.stringKey("plugin.id"), plugin_id.to_s
+        AttributeKey.stringKey("plugin.id"), plugin_id.to_s,
+        AttributeKey.stringKey("plugin.name"), plugin_name.to_s
       )
     end
 
@@ -495,13 +576,29 @@ module LogStash module Instrument module PeriodicPoller
           plugin_key = "#{pipeline_id}:#{plugin_type}:#{plugin_id}"
           next if @registered_plugins.include?(plugin_key)
 
+          plugin_name = get_plugin_metric_value(pipeline_id, plugin_type, plugin_id, :name) || plugin_id
           logger.debug("Registering Otel metrics for plugin",
                        :pipeline_id => pipeline_id,
                        :plugin_type => plugin_type,
-                       :plugin_id => plugin_id)
-          register_plugin_counters_for(pipeline_id, plugin_type, plugin_id)
+                       :plugin_id => plugin_id,
+                       :plugin_name => plugin_name)
+          register_plugin_counters_for(pipeline_id, plugin_type, plugin_id, plugin_name)
           @registered_plugins.add(plugin_key)
         end
+      end
+
+      codec_ids = get_plugin_ids(pipeline_id, :codecs)
+      codec_ids.each do |codec_id|
+        plugin_key = "#{pipeline_id}:codecs:#{codec_id}"
+        next if @registered_plugins.include?(plugin_key)
+
+        codec_name = get_codec_metric_value(pipeline_id, codec_id, :name) || codec_id
+        logger.debug("Registering Otel metrics for codec",
+                     :pipeline_id => pipeline_id,
+                     :codec_id => codec_id,
+                     :codec_name => codec_name)
+        register_codec_counters_for(pipeline_id, codec_id, codec_name)
+        @registered_plugins.add(plugin_key)
       end
     end
 
@@ -516,8 +613,8 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
-    def register_plugin_counters_for(pipeline_id, plugin_type, plugin_id)
-      attrs = create_plugin_attributes(pipeline_id, plugin_type, plugin_id)
+    def register_plugin_counters_for(pipeline_id, plugin_type, plugin_id, plugin_name)
+      attrs = create_plugin_attributes(pipeline_id, plugin_type, plugin_id, plugin_name)
 
       register_observable_counter(
         "logstash.plugin.events.in",
@@ -545,11 +642,101 @@ module LogStash module Instrument module PeriodicPoller
       ) do
         get_plugin_metric_value(pipeline_id, plugin_type, plugin_id, :events, :duration_in_millis)
       end
+
+      register_observable_counter(
+        "logstash.plugin.events.queue_push_duration",
+        "Time spent pushing events to the queue",
+        "ms",
+        attrs
+      ) do
+        get_plugin_metric_value(pipeline_id, plugin_type, plugin_id, :events, :queue_push_duration_in_millis)
+      end
+    end
+
+    def register_codec_counters_for(pipeline_id, codec_id, codec_name)
+      encode_attrs = create_plugin_attributes(pipeline_id, "codec.encode", codec_id, codec_name)
+      decode_attrs = create_plugin_attributes(pipeline_id, "codec.decode", codec_id, codec_name)
+
+      register_observable_counter(
+        "logstash.plugin.writes_in",
+        "Events written to plugin",
+        "{event}",
+        encode_attrs
+      ) do
+        get_codec_metric_value(pipeline_id, codec_id, :encode, :writes_in)
+      end
+
+      register_observable_counter(
+        "logstash.plugin.events.duration",
+        "Time spent processing events",
+        "ms",
+        encode_attrs
+      ) do
+        get_codec_metric_value(pipeline_id, codec_id, :encode, :duration_in_millis)
+      end
+
+      register_observable_counter(
+        "logstash.plugin.writes_in",
+        "Events written to plugin",
+        "{event}",
+        decode_attrs
+      ) do
+        get_codec_metric_value(pipeline_id, codec_id, :decode, :writes_in)
+      end
+
+      register_observable_counter(
+        "logstash.plugin.writes_out",
+        "Events written out by plugin",
+        "{event}",
+        decode_attrs
+      ) do
+        get_codec_metric_value(pipeline_id, codec_id, :decode, :out)
+      end
+
+      register_observable_counter(
+        "logstash.plugin.events.duration",
+        "Time spent processing events",
+        "ms",
+        decode_attrs
+      ) do
+        get_codec_metric_value(pipeline_id, codec_id, :decode, :duration_in_millis)
+      end
+    end
+
+    def get_batch_current_byte_size(pipeline_id)
+      get_batch_current_value(pipeline_id, 1)
+    end
+
+    def get_batch_current_event_count(pipeline_id)
+      get_batch_current_value(pipeline_id, 0)
+    end
+
+    def get_batch_current_value(pipeline_id, index)
+      store = @snapshot.metric_store
+      current = store.get_shallow(:stats, :pipelines, pipeline_id.to_sym, :batch, :current)
+      current&.value&.[](index)
+    rescue LogStash::Instrument::MetricStore::MetricNotFound
+      nil
     end
 
     def get_plugin_metric_value(pipeline_id, plugin_type, plugin_id, *path)
       full_path = [:stats, :pipelines, pipeline_id.to_sym, :plugins, plugin_type, plugin_id.to_sym] + path
       get_metric_value(*full_path)
+    end
+
+    def get_codec_metric_value(pipeline_id, codec_id, *path)
+      store = @snapshot.metric_store
+      codecs_hash = store.get_shallow(:stats, :pipelines, pipeline_id.to_sym, :plugins, :codecs)
+      return nil unless codecs_hash.is_a?(Hash)
+      node = codecs_hash[codec_id]
+      return nil unless node.is_a?(Hash)
+      value = path.reduce(node) do |acc, key|
+        break nil unless acc.is_a?(Hash)
+        acc[key]
+      end
+      value.is_a?(Hash) ? nil : value&.value
+    rescue LogStash::Instrument::MetricStore::MetricNotFound
+      nil
     end
   end
 end; end; end
