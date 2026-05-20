@@ -13,6 +13,24 @@
 # - pipeline.id: another_test
 #   queue.type: persisted
 #   path.config: "/tmp/logstash/*.config"
+
+- pipeline.id: upstream
+  config.string: |
+      input { generator { count => 1 message => "test" } }
+      filter {
+        ruby {
+          code => 'event.set("[nested][ts]", event.get("@timestamp"))'
+        }
+      }
+      output {
+        pipeline { send_to => ["p2p_addr"] }
+      }
+      
+- pipeline.id: downstream
+  queue.type: persisted
+  config.string: |
+      input { pipeline { address => "p2p_addr" } }
+      output { sink{} }
 #
 # Available options:
 #

@@ -20,6 +20,7 @@
 
 package org.logstash;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
@@ -42,8 +43,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
-import static org.hamcrest.CoreMatchers.is;
+//import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -587,6 +590,28 @@ public final class EventTest extends RubyTestBase {
 
         assertNull(event.getField(Event.TAGS_FAILURE));
         assertEquals(event.getField("[tags]"), List.of("foo", "bar"));
+    }
+
+    @Test
+    public void givenEventWithTimestampNestedFieldWhenEstimateTheSizeThenNoExceptionIsRaised() throws IOException {
+//        ConvertedMap nested = ConvertedMap.newFromMap(Map.of("ts", new Timestamp()));
+//        final Event event = new Event(ConvertedMap.newFromMap(nested));
+//        
+//        long size = event.estimateMemory();
+//        assertThat(size, is(greaterThan(0L)));
+
+//        ConvertedMap nested = new ConvertedMap();
+//        nested.putInterned("bar", new Timestamp());  // Java Timestamp, no Valuefier
+////        ConvertedMap data = new ConvertedMap();
+////        data.putInterned("foo", nested);
+////        Event e = new Event(data);
+//        Event e = new Event(nested);
+//        e.estimateMemory();
+
+        Event evt = new Event();
+        evt.setField("[foo][bar]", new Timestamp());  // stored as RubyTimestamp
+        Event roundTripped = Event.deserialize(evt.serialize());
+        roundTripped.estimateMemory();
     }
 
     static byte[] loadAnnotatedCBORFixture(String name) throws IOException {
