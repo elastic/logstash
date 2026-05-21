@@ -25,32 +25,13 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.4.2-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.4.2
+* Clear pipeline metrics when a pipeline fails to start [#19120](https://github.com/elastic/logstash/pull/19120)
 
-=== Logstash Commits between 9.4 and 9.4.1
+### Updates to dependencies [logstash-9.4.2-dependencies]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.1..9.4"
-
-f297c04b6 - (HEAD -> 9.4, origin/9.4) Update patch plugin versions in gemfile lock (#19147) (15 hours ago) <github-actions[bot]>
-8f32fc185 - Make asciidoc RN generator org aware (#19145) (#19148) (17 hours ago) <mergify[bot]>
-114917020 - Update jruby-openssl to 0.16.0 (#19116) (2 days ago) <Cas Donoghue>
-b3bb901a9 - Add RHEL 10, Oracle Linux 10, Rocky Linux 10, and Alma Linux 10 to exhaustive tests (#19123) (#19132) (3 days ago) <mergify[bot]>
-3349aa2f5 - chore: deps(updatecli): Bump updatecli version to v0.117.0 (#19128) (#19129) (3 days ago) <mergify[bot]>
-e95e2f673 - [9.4] (backport #19091) Clear pipeline metrics when a pipeline fails to start (#19120) (3 days ago) <mergify[bot]>
-c9c8a4b61 - Remove cgi pin in Gemfile (#19119) (#19127) (6 days ago) <mergify[bot]>
-cf1f4c2f1 - Upgrade jrjackson and fasterxml.jackson. (#19103) (#19126) (6 days ago) <mergify[bot]>
-c5acc348d - Update patch plugin versions in gemfile lock (#19099) (9 days ago) <github-actions[bot]>
-afcac68f9 - Bump logstash version 9.4.2 (#19102) (9 days ago) <github-actions[bot]>
-bf58c3dd1 - Request to install JDK 21 in bump gems workflow (#19093) (#19098) (10 days ago) <mergify[bot]>
-4a304895a - Release notes for 9.4.1 (#19096) (10 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.4.1..9.4 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 9.4.1 -> 9.4.3
-logstash-integration-kafka: 11.8.8 -> 11.8.9
----------- GENERATED CONTENT ENDS HERE ------------
+* Updated jruby-openssl to 0.16.0 [#19116](https://github.com/elastic/logstash/pull/19116)
+* Upgraded jrjackson and fasterxml.jackson [#19126](https://github.com/elastic/logstash/pull/19126)
+* Remove cgi pin in Gemfile to align on JRuby shipped version [#19119](https://github.com/elastic/logstash/pull/19119)
 
 ### Plugins [logstash-plugin-9.4.2-changes]
 
