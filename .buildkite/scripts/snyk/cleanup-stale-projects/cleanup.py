@@ -2,32 +2,27 @@
 """
 Cleanup stale Snyk projects created by the Logstash artifact scan pipeline.
 
-Queries the Snyk REST API for projects imported by the service account that
-haven't been monitored recently, and performs either deactivation or deletion.
-
-Usage:
-  python3 cleanup.py --action deactivate
-  python3 cleanup.py --action delete
+Fetches the current active Logstash versions from logstash-versions.yml and
+deletes any Snyk artifact-scan projects whose version is no longer tracked.
 
 Environment variables:
-  SNYK_TOKEN       - Snyk API token (required)
-  STALENESS_DAYS   - Number of days before a project is considered stale (default: 2)
-  DRY_RUN          - If "true", only log actions without performing them (default: "false")
+  SNYK_TOKEN  - Snyk API token (required)
+  DRY_RUN     - If "true", only log actions without performing them (default: "false")
 """
 
-import argparse
 import os
 import subprocess
 import sys
-from datetime import datetime, timedelta, timezone
 
 import requests
+import yaml
 from requests.adapters import HTTPAdapter, Retry
 
 SNYK_REST_BASE = "https://api.snyk.io"
 SNYK_REST_VERSION = "2024-10-15"
 # Only clean up projects created by the artifact scan pipeline
 ARTIFACT_SCAN_REMOTE_REPO_URL = "logstash-artifact"
+VERSIONS_URL = "https://raw.githubusercontent.com/logstash-plugins/.ci/1.x/logstash-versions.yml"
 IN_BUILDKITE = os.environ.get("BUILDKITE") == "true"
 
 class Annotation:
@@ -60,10 +55,9 @@ def get_env():
         print("Error: SNYK_TOKEN environment variable is required", file=sys.stderr)
         sys.exit(1)
 
-    staleness_days = int(os.environ.get("STALENESS_DAYS", "2"))
     dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
 
-    return token, staleness_days, dry_run
+    return token, dry_run
 
 
 def create_session(token: str) -> requests.Session:
@@ -75,6 +69,27 @@ def create_session(token: str) -> requests.Session:
         "Content-Type": "application/vnd.api+json",
     })
     return session
+
+
+def fetch_active_versions() -> set:
+    """Fetch current active versions from logstash-versions.yml."""
+
+    try:
+        resp = requests.get(VERSIONS_URL, timeout=30)
+        resp.raise_for_status()
+        data = yaml.safe_load(resp.text)
+    except Exception as e:
+        print(f"Error: Failed to fetch logstash versions: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    versions = set()
+    for section in ("releases", "snapshots"):
+        if section in data:
+            for version in data[section].values():
+                versions.add(version)
+
+    print(f"Active versions from logstash-versions.yml: {sorted(versions)}")
+    return versions
 
 
 def resolve_org_id(session: requests.Session) -> str:
@@ -121,47 +136,15 @@ def list_projects(session: requests.Session, org_id: str, **params) -> list:
     return projects
 
 
-def list_stale_artifact_projects(session: requests.Session, org_id: str,
-                                 cutoff_str: str) -> list:
-    """List active artifact-scan projects monitored before the cutoff date."""
-    projects = list_projects(session, org_id, cli_monitored_before=cutoff_str)
-    print(f"Total projects monitored before cutoff: {len(projects)}")
+def list_artifact_projects(session: requests.Session, org_id: str) -> list:
+    """List all artifact-scan projects (target display_name = logstash-artifact)."""
+    projects = list_projects(session, org_id)
+    print(f"Total projects fetched: {len(projects)}")
     return [
         p for p in projects
-        if p.get("attributes", {}).get("status") == "active"
-        and (p.get("relationships", {}).get("target", {}).get("data", {})
+        if (p.get("relationships", {}).get("target", {}).get("data", {})
              .get("attributes", {}).get("display_name", "")) == ARTIFACT_SCAN_REMOTE_REPO_URL
     ]
-
-
-def list_inactive_artifact_projects(session: requests.Session, org_id: str,
-                                     cutoff_str: str) -> list:
-    """List inactive artifact-scan projects monitored before the cutoff date."""
-    projects = list_projects(session, org_id, cli_monitored_before=cutoff_str)
-    return [
-        p for p in projects
-        if p.get("attributes", {}).get("status") == "inactive"
-        and (p.get("relationships", {}).get("target", {}).get("data", {})
-             .get("attributes", {}).get("display_name", "")) == ARTIFACT_SCAN_REMOTE_REPO_URL
-    ]
-
-
-def deactivate_project(session: requests.Session, org_id: str, project_id: str, project_name: str, dry_run: bool) -> bool:
-    """Deactivate a single project. Returns True on success, False on failure."""
-    if dry_run:
-        print(f"  [DRY RUN] Would deactivate: {project_name} ({project_id})")
-        return True
-
-    url = f"{SNYK_REST_BASE}/v1/org/{org_id}/project/{project_id}/deactivate"
-    try:
-        resp = session.post(url)
-        if resp.status_code in (200, 422):
-            print(f"  Deactivated: {project_name} ({project_id})")
-            return True
-        resp.raise_for_status()
-    except requests.HTTPError as e:
-        print(f"  Failed to deactivate: {project_name} ({project_id}): {e}", file=sys.stderr)
-    return False
 
 
 def delete_project(session: requests.Session, org_id: str, project_id: str, project_name: str, dry_run: bool) -> bool:
@@ -182,103 +165,43 @@ def delete_project(session: requests.Session, org_id: str, project_id: str, proj
     return False
 
 
-def delete_target(session: requests.Session, org_id: str, target_id: str, dry_run: bool) -> bool:
-    """Delete an empty target. Returns True on success, False on failure."""
-    if dry_run:
-        print(f"  [DRY RUN] Would delete target: {target_id}")
-        return True
+def main():
+    token, dry_run = get_env()
+    session = create_session(token)
 
-    url = f"{SNYK_REST_BASE}/rest/orgs/{org_id}/targets/{target_id}"
-    try:
-        resp = session.delete(url, params={"version": SNYK_REST_VERSION})
-        if resp.status_code == 204:
-            print(f"  Deleted target: {target_id}")
-            return True
-        resp.raise_for_status()
-    except requests.HTTPError as e:
-        print(f"  Failed to delete target: {target_id}: {e}", file=sys.stderr)
-    return False
+    mode_label = "[DRY RUN] " if dry_run else ""
+    print(f"{mode_label}Starting cleanup of stale Snyk artifact-scan projects")
 
+    active_versions = fetch_active_versions()
+    org_id = resolve_org_id(session)
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Cleanup stale Snyk artifact-scan projects")
-    parser.add_argument("--action", required=True, choices=["deactivate", "delete"],
-                        help="Action to perform: deactivate stale projects or delete inactive projects")
-    return parser.parse_args()
+    all_projects = list_artifact_projects(session, org_id)
+    print(f"Total artifact-scan projects in Snyk: {len(all_projects)}")
 
+    stale_projects = [
+        p for p in all_projects
+        if p.get("attributes", {}).get("target_reference", "") not in active_versions
+    ]
+    print(f"Stale projects to delete (version not in logstash-versions.yml): {len(stale_projects)}")
 
-def action_deactivate(session: requests.Session, org_id: str, staleness_days: int, dry_run: bool):
-    """Find and deactivate stale active artifact-scan projects."""
-    cutoff_str = (datetime.now(timezone.utc) - timedelta(days=staleness_days)).isoformat()
-    print(f"Cutoff date: {cutoff_str}")
+    if not stale_projects:
+        print("No stale projects found. Nothing to do.")
+        return
 
-    stale_projects = list_stale_artifact_projects(session, org_id, cutoff_str)
-    print(f"Found {len(stale_projects)} stale active artifact-scan project(s)")
-
-    success = Annotation("successfully_deactivated_projects",
-                              "<details><summary>Deactivated projects:</summary>", "success")
-    failure = Annotation("unsuccessfully_deactivated_projects",
-                              "<details><summary>Projects failed to deactivate:</summary>", "error")
+    proj_success = Annotation("successfully_deleted_projects",
+                              "<details><summary>Deleted projects:</summary>", "success")
+    proj_failure = Annotation("unsuccessfully_deleted_projects",
+                              "<details><summary>Projects failed to delete:</summary>", "error")
 
     for project in stale_projects:
         project_id = project["id"]
         project_name = project.get("attributes", {}).get("name", "unknown")
-        if deactivate_project(session, org_id, project_id, project_name, dry_run):
-            success.add(f"{project_name} ({project_id})<br>")
+        target_ref = project.get("attributes", {}).get("target_reference", "unknown")
+        label = f"{project_name} (version: {target_ref})"
+        if delete_project(session, org_id, project_id, label, dry_run):
+            proj_success.add(f"{label}<br>")
         else:
-            failure.add(f"{project_name} ({project_id})<br>")
-
-
-def action_delete(session: requests.Session, org_id: str, staleness_days: int, dry_run: bool):
-    """Find and delete inactive artifact-scan projects, then clean up empty targets."""
-    cutoff_str = (datetime.now(timezone.utc) - timedelta(days=staleness_days)).isoformat()
-    inactive_projects = list_inactive_artifact_projects(session, org_id, cutoff_str)
-    print(f"Found {len(inactive_projects)} inactive artifact-scan project(s) to delete")
-
-    proj_success = Annotation("successfully_deleted_projects",
-                                   "<details><summary>Deleted projects:</summary>", "success")
-    proj_failure = Annotation("unsuccessfully_deleted_projects",
-                                   "<details><summary>Projects failed to delete:</summary>", "error")
-    tgt_success = Annotation("successfully_deleted_targets",
-                                  "<details><summary>Deleted targets:</summary>", "success")
-    tgt_failure = Annotation("unsuccessfully_deleted_targets",
-                                  "<details><summary>Targets failed to delete:</summary>", "error")
-
-    # Delete projects and collect target IDs for cleanup
-    target_ids = set()
-    for project in inactive_projects:
-        project_id = project["id"]
-        project_name = project.get("attributes", {}).get("name", "unknown")
-        target_ref = project.get("relationships", {}).get("target", {}).get("data", {}).get("id")
-        if delete_project(session, org_id, project_id, project_name, dry_run):
-            proj_success.add(f"{project_name} ({project_id})<br>")
-            if target_ref:
-                target_ids.add(target_ref)
-        else:
-            proj_failure.add(f"{project_name} ({project_id})<br>")
-
-    # Clean up empty targets
-    for target_id in target_ids:
-        if delete_target(session, org_id, target_id, dry_run):
-            tgt_success.add(f"{target_id}<br>")
-        else:
-            tgt_failure.add(f"{target_id}<br>")
-
-
-def main():
-    args = parse_args()
-    token, staleness_days, dry_run = get_env()
-    session = create_session(token)
-
-    mode_label = "[DRY RUN] " if dry_run else ""
-    print(f"{mode_label}Action: {args.action} | Staleness threshold: {staleness_days} days")
-
-    org_id = resolve_org_id(session)
-
-    if args.action == "deactivate":
-        action_deactivate(session, org_id, staleness_days, dry_run)
-    elif args.action == "delete":
-        action_delete(session, org_id, staleness_days, dry_run)
+            proj_failure.add(f"{label}<br>")
 
 
 if __name__ == "__main__":
