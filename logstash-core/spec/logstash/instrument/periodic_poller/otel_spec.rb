@@ -90,7 +90,6 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           resource_attributes: nil,
           headers: nil,
           service_name: nil,
-          dataset: "logstash",
           certificate_path: nil,
           client_key_path: nil,
           client_certificate_path: nil
