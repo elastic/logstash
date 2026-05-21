@@ -41,7 +41,7 @@ extract:
   issues: true
   # Remove square-bracket prefixes from PR titles (default: false)
   # When enabled (true or via --strip-title-prefix), titles like "[ES|QL] Fix bug" become "Fix bug".
-  strip_title_prefix: false
+  strip_title_prefix: true
 
 # Available lifecycle values (strongly typed: preview, beta, ga)
 lifecycles:
@@ -190,9 +190,32 @@ bundle:
     - elastic/elasticsearch
     - elastic/kibana
     - elastic/logstash
-    - elastic/logstash-docs
-    - logstash-plugins/logstash-output-elasticsearch
+    - elastic/logstash-filter-elastic_integration
     - elastic/roadmap
+    - logstash-plugins/logstash-codec-collectd
+    - logstash-plugins/logstash-codec-netflow
+    - logstash-plugins/logstash-input-azure_event_hubs
+    - logstash-plugins/logstash-input-beats
+    - logstash-plugins/logstash-input-dead_letter_queue
+    - logstash-plugins/logstash-input-file
+    - logstash-plugins/logstash-input-http
+    - logstash-plugins/logstash-filter-aggregate
+    - logstash-plugins/logstash-filter-dissect
+    - logstash-plugins/logstash-filter-de_dot
+    - logstash-plugins/logstash-filter-date
+    - logstash-plugins/logstash-filter-fingerprint
+    - logstash-plugins/logstash-filter-geoip
+    - logstash-plugins/logstash-filter-grok
+    - logstash-plugins/logstash-filter-mutate
+    - logstash-plugins/logstash-input-gelf
+    - logstash-plugins/logstash-input-tcp
+    - logstash-plugins/logstash-input-unix
+    - logstash-plugins/logstash-integration-aws
+    - logstash-plugins/logstash-integration-jdbc
+    - logstash-plugins/logstash-integration-kafka
+    - logstash-plugins/logstash-output-elasticsearch
+    - logstash-plugins/logstash-output-nagios
+    - logstash-plugins/logstash-output-webhdfs
   # Optional: default GitHub repo name applied to all profiles that do not specify their own.
   repo: logstash
   # Optional: default GitHub owner applied to all profiles that do not specify their own.
