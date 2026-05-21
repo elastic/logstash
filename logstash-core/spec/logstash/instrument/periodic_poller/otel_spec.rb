@@ -641,6 +641,11 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
     end
 
     before do
+      # Reset cached cgroup resolution state so mocks take effect regardless of test order
+      LogStash::Instrument::PeriodicPoller::Cgroup.instance_variable_set(:@resolved, false)
+      LogStash::Instrument::PeriodicPoller::Cgroup.instance_variable_set(:@active_resources, nil)
+      LogStash::Instrument::PeriodicPoller::Cgroup.instance_variable_set(:@active_label, nil)
+      LogStash::Instrument::PeriodicPoller::Cgroup.instance_variable_set(:@logged_empty, false)
       allow(::File).to receive(:exist?).and_return(true)
       allow(IO).to receive(:readlines).with("/sys/fs/cgroup/cpuacct#{relative_path}/cpuacct.usage").and_return([cpuacct_usage])
       allow(IO).to receive(:readlines).with("/sys/fs/cgroup/cpu#{relative_path}/cpu.cfs_period_us").and_return([cpu_period_micros])
