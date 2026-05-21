@@ -110,7 +110,7 @@ def resolve_org_id(session: requests.Session) -> str:
 
 
 def list_projects(session: requests.Session, org_id: str, **params) -> list:
-    """List projects with pagination."""
+    """List projects for the given org."""
     url = f"{SNYK_REST_BASE}/rest/orgs/{org_id}/projects"
     query = {
         "version": SNYK_REST_VERSION,
@@ -118,21 +118,9 @@ def list_projects(session: requests.Session, org_id: str, **params) -> list:
     }
     query.update(params)
 
-    projects = []
-    while url:
-        resp = session.get(url, params=query)
-        resp.raise_for_status()
-        data = resp.json()
-        projects.extend(data.get("data", []))
-
-        next_link = data.get("links", {}).get("next")
-        if next_link:
-            url = f"{SNYK_REST_BASE}{next_link}" if next_link.startswith("/") else next_link
-            query = {}
-        else:
-            url = None
-
-    return projects
+    resp = session.get(url, params=query)
+    resp.raise_for_status()
+    return resp.json().get("data", [])
 
 
 def resolve_target_id(session: requests.Session, org_id: str) -> str:
