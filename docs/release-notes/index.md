@@ -23,15 +23,14 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.4.2 [logstash-9.4.2-release-notes]
 
-### Features and enhancements [logstash-9.4.2-features-enhancements]
+### Fixes [logstash-9.4.2-fixes]
 
-* Clear pipeline metrics when a pipeline fails to start [#19120](https://github.com/elastic/logstash/pull/19120)
+* Fixes a metric leak in `_node/stats` when a pipeline repeatedly fails to start with `config.reload.automatic: true`. Previously, each retry left a fresh set of plugin metric entries in the collector, causing the stats payload to grow indefinitely [#19120](https://github.com/elastic/logstash/pull/19120)
 
 ### Updates to dependencies [logstash-9.4.2-dependencies]
 
 * Updated jruby-openssl to 0.16.0 [#19116](https://github.com/elastic/logstash/pull/19116)
 * Upgraded jrjackson and fasterxml.jackson [#19126](https://github.com/elastic/logstash/pull/19126)
-* Remove cgi pin in Gemfile to align on JRuby shipped version [#19119](https://github.com/elastic/logstash/pull/19119)
 
 ### Plugins [logstash-plugin-9.4.2-changes]
 
