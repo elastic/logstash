@@ -261,10 +261,10 @@ spec:
         everyone:
           access_level: READ_ONLY
       schedules:
-        Daily Artifacts Snyk cleanup:
+        Weekly Artifacts Snyk cleanup:
           branch: main
-          cronline: "@daily"
-          message: "Cleanup stale Snyk artifact-scan projects every day."
+          cronline: "@weekly"
+          message: "Cleanup stale Snyk artifact-scan projects weekly."
 
 # ***********************************
 # Declare artifacts acceptance test pipeline
