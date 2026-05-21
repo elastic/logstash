@@ -110,12 +110,11 @@ def resolve_org_id(session: requests.Session) -> str:
 
 
 def list_projects(session: requests.Session, org_id: str, **params) -> list:
-    """List all projects with pagination."""
+    """List projects with pagination."""
     url = f"{SNYK_REST_BASE}/rest/orgs/{org_id}/projects"
     query = {
         "version": SNYK_REST_VERSION,
         "limit": 100,
-        "expand": "target",
     }
     query.update(params)
 
@@ -136,15 +135,31 @@ def list_projects(session: requests.Session, org_id: str, **params) -> list:
     return projects
 
 
+def resolve_target_id(session: requests.Session, org_id: str) -> str:
+    """Find the target ID for the 'logstash-artifact' target."""
+    url = f"{SNYK_REST_BASE}/rest/orgs/{org_id}/targets"
+    resp = session.get(url, params={
+        "version": SNYK_REST_VERSION,
+        "display_name": ARTIFACT_SCAN_REMOTE_REPO_URL,
+        "source_types": "cli",
+    })
+    resp.raise_for_status()
+    data = resp.json()
+
+    for target in data.get("data", []):
+        if target.get("attributes", {}).get("display_name") == ARTIFACT_SCAN_REMOTE_REPO_URL:
+            target_id = target["id"]
+            print(f"Resolved target '{ARTIFACT_SCAN_REMOTE_REPO_URL}' UUID: {target_id}")
+            return target_id
+
+    print(f"Error: Could not find target '{ARTIFACT_SCAN_REMOTE_REPO_URL}'", file=sys.stderr)
+    sys.exit(1)
+
+
 def list_artifact_projects(session: requests.Session, org_id: str) -> list:
-    """List all artifact-scan projects (target display_name = logstash-artifact)."""
-    projects = list_projects(session, org_id)
-    print(f"Total projects fetched: {len(projects)}")
-    return [
-        p for p in projects
-        if (p.get("relationships", {}).get("target", {}).get("data", {})
-             .get("attributes", {}).get("display_name", "")) == ARTIFACT_SCAN_REMOTE_REPO_URL
-    ]
+    """List artifact-scan projects by target ID."""
+    target_id = resolve_target_id(session, org_id)
+    return list_projects(session, org_id, target_id=[target_id])
 
 
 def delete_project(session: requests.Session, org_id: str, project_id: str, project_name: str, dry_run: bool) -> bool:
