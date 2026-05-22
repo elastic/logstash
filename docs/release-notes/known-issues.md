@@ -108,7 +108,7 @@ If there is a performance drop originated by the filtering of log lines, the log
 logger.batch_metrics.level = OFF
 ```
 
-Details of the bug are included in [the issue](https://github.com/elastic/logstash/issues/19066), which will be included in a future version of Logstash.
+For details, checkout [the issue](https://github.com/elastic/logstash/issues/19066). A fix will be included in future version.
 ::::
 
 **Logstash will not start if a Persistent Queue has been defined with a size greater than 2 GiB**
