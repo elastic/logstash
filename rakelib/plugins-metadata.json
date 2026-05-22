@@ -529,7 +529,7 @@
     "skip-list": false
   },
   "logstash-output-pipe": {
-    "default-plugins": true,
+    "default-plugins": false,
     "skip-list": false
   },
   "logstash-output-rabbitmq": {
