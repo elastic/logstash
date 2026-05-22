@@ -978,7 +978,7 @@ spec:
           access_level: MANAGE_BUILD_AND_READ
         ingest-eng-prod:
           access_level: MANAGE_BUILD_AND_READ
-        release-eng:
+        artifact-management:
           access_level: BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
