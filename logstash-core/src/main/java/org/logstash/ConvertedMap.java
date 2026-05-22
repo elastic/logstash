@@ -238,6 +238,10 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             // wraps an java.time.Instant which is made of long and int
             return Long.BYTES + Integer.BYTES;
         }
+        if (o instanceof Timestamp) {
+            // wraps an java.time.Instant which is made of long and int and a Joda DateTime which contains a long  
+            return 2 * Long.BYTES + Integer.BYTES;
+        }
         if (o instanceof BigInteger) {
             return ((BigInteger) o).toByteArray().length;
         }

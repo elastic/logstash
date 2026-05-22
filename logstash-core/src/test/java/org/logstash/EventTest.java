@@ -594,24 +594,11 @@ public final class EventTest extends RubyTestBase {
 
     @Test
     public void givenEventWithTimestampNestedFieldWhenEstimateTheSizeThenNoExceptionIsRaised() throws IOException {
-//        ConvertedMap nested = ConvertedMap.newFromMap(Map.of("ts", new Timestamp()));
-//        final Event event = new Event(ConvertedMap.newFromMap(nested));
-//        
-//        long size = event.estimateMemory();
-//        assertThat(size, is(greaterThan(0L)));
-
-//        ConvertedMap nested = new ConvertedMap();
-//        nested.putInterned("bar", new Timestamp());  // Java Timestamp, no Valuefier
-////        ConvertedMap data = new ConvertedMap();
-////        data.putInterned("foo", nested);
-////        Event e = new Event(data);
-//        Event e = new Event(nested);
-//        e.estimateMemory();
-
         Event evt = new Event();
         evt.setField("[foo][bar]", new Timestamp());  // stored as RubyTimestamp
         Event roundTripped = Event.deserialize(evt.serialize());
-        roundTripped.estimateMemory();
+        long result = roundTripped.estimateMemory();
+        assertThat("Estimate of event containing Timestamp field shouldn't fail", result, is(greaterThan(0L)));
     }
 
     static byte[] loadAnnotatedCBORFixture(String name) throws IOException {
