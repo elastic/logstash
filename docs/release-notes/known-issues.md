@@ -86,6 +86,31 @@ As a workaround, users can provide an external and compatible JDK using the `LS_
 
 ## 9.2.0 [logstash-ki-9.2.0]
 
+**Batch size metric calculation could exception if found a type it doesn't recognize**
+
+Applies to: {{ls}} 9.2.0
+
+::::{dropdown} Details
+
+Computation of batch's byte size estimation could throw an error if it doesn't recognize the type in a field of Logstash event. In such case the processing of the batch is not influenced but generates imprecise estimate and log errors.
+
+If the amount of generated logs becomes too noisy, that log lines could be silenced by adding the following definition to the `config/log4j1.properties` file:
+```properties
+logger.batch_metrics.name = org.logstash.execution.QueueReadClientBatchMetrics
+logger.batch_metrics.filter.match_unsupported_type.type = StringMatchFilter
+logger.batch_metrics.filter.match_unsupported_type.text = Failed to calculate batch byte size for metrics
+logger.batch_metrics.filter.match_unsupported_type.onMatch = DENY
+logger.batch_metrics.filter.match_unsupported_type.onMismatch = NEUTRAL
+```
+
+If there is a performance drop originated by the filtering of log lines, the logger can be disabled by setting the level to `OFF`:
+```properties
+logger.batch_metrics.level = OFF
+```
+
+Details of the bug are included in [the issue](https://github.com/elastic/logstash/issues/19066), which will be included in a future version of Logstash.
+::::
+
 **Logstash will not start if a Persistent Queue has been defined with a size greater than 2 GiB**
 
 Applies to: {{ls}} 9.2.0
