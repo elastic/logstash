@@ -870,7 +870,6 @@ PLATFORMS
   java
   universal-java-11
   universal-java-17
-  universal-java-21
 
 DEPENDENCIES
   belzebuth
