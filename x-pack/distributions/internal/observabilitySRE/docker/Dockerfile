@@ -15,8 +15,7 @@ RUN apk add --no-cache \
     make \
     gcc \
     java-cacerts \
-    glibc-dev \
-    openssl
+    glibc-dev
 
 # Create directories with correct ownership
 RUN mkdir -p /etc/java/security && \
