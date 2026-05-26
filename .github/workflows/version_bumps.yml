@@ -5,7 +5,7 @@ on:
       branch:
         description: 'Release Branch'     
         required: true
-        default: '8.4'
+        default: '9.4'
         type: string
       bump:
         description: 'Bump type'     
@@ -38,6 +38,8 @@ jobs:
     env:
       INPUTS_BRANCH: "${{ inputs.branch }}"
       INPUTS_BUMP: "${{ inputs.bump }}"
+      INPUTS_EXTRA_GEMS_MINOR: "${{ inputs.extra_gems_minor }}"
+      INPUTS_EXTRA_GEMS_MAJOR: "${{ inputs.extra_gems_major }}"
       BACKPORT_LABEL: "backport-${{ inputs.branch }}"
     steps:
       - name: Set up JDK 21
@@ -68,8 +70,7 @@ jobs:
         if: ${{ inputs.bump == 'patch' }}
         run: |
           AWS_GEMS=$(./vendor/jruby/bin/jruby -S bundle list --name-only | grep '^aws-')
-          EXTRA="${{ inputs.extra_gems_minor }}"
-          GEMS=$(echo "${AWS_GEMS} ${EXTRA}" | xargs)
+          GEMS=$(echo "${AWS_GEMS} ${INPUTS_EXTRA_GEMS_MINOR}" | xargs)
           if [ -n "$GEMS" ]; then
             echo "Bumping at --minor: ${GEMS}"
             ./vendor/jruby/bin/jruby -S bundle update $GEMS --minor --strict --conservative
@@ -77,7 +78,7 @@ jobs:
       - name: Bump selected deps at major level
         if: ${{ inputs.bump != 'major' && inputs.extra_gems_major != '' }}
         run: |
-          GEMS=$(echo "${{ inputs.extra_gems_major }}" | xargs)
+          GEMS=$(echo "${INPUTS_EXTRA_GEMS_MAJOR}" | xargs)
           if [ -n "$GEMS" ]; then
             echo "Bumping at --major: ${GEMS}"
             ./vendor/jruby/bin/jruby -S bundle update $GEMS --major --strict --conservative
