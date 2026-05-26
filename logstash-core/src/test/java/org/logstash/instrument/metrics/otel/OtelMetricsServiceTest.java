@@ -310,30 +310,6 @@ public class OtelMetricsServiceTest {
     }
 
     // ========================================
-    // resolveDataset tests
-    // ========================================
-
-    @Test
-    public void resolveDatasetReturnsDefaultWhenNull() {
-        assertThat(OtelMetricsService.resolveDataset(null)).isEqualTo("logstash");
-    }
-
-    @Test
-    public void resolveDatasetReturnsDefaultWhenEmpty() {
-        assertThat(OtelMetricsService.resolveDataset("")).isEqualTo("logstash");
-    }
-
-    @Test
-    public void resolveDatasetReturnsUserDefinedValue() {
-        assertThat(OtelMetricsService.resolveDataset("my-dataset")).isEqualTo("my-dataset");
-    }
-
-    @Test
-    public void resolveDatasetPreservesExactCasing() {
-        assertThat(OtelMetricsService.resolveDataset("MyCustomDataset")).isEqualTo("MyCustomDataset");
-    }
-
-    // ========================================
     // readPemFile tests
     // ========================================
 

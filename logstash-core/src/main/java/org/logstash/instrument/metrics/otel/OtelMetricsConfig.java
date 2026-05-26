@@ -45,7 +45,6 @@ public class OtelMetricsConfig {
     private final String resourceAttributes;
     private final String headers;
     private final String serviceName;
-    private final String dataset;
     private final String certificatePath;
     private final String clientKeyPath;
     private final String clientCertificatePath;
@@ -59,7 +58,6 @@ public class OtelMetricsConfig {
         this.resourceAttributes = builder.resourceAttributes;
         this.headers = builder.headers;
         this.serviceName = builder.serviceName;
-        this.dataset = builder.dataset;
         this.certificatePath = builder.certificatePath;
         this.clientKeyPath = builder.clientKeyPath;
         this.clientCertificatePath = builder.clientCertificatePath;
@@ -77,7 +75,6 @@ public class OtelMetricsConfig {
     public String getResourceAttributes() { return resourceAttributes; }
     public String getHeaders() { return headers; }
     public String getServiceName() { return serviceName; }
-    public String getDataset() { return dataset; }
     public String getCertificatePath() { return certificatePath; }
     public String getClientKeyPath() { return clientKeyPath; }
     public String getClientCertificatePath() { return clientCertificatePath; }
@@ -92,7 +89,6 @@ public class OtelMetricsConfig {
         private String resourceAttributes;
         private String headers;
         private String serviceName;
-        private String dataset = "logstash";
         private String certificatePath;
         private String clientKeyPath;
         private String clientCertificatePath;
@@ -121,11 +117,6 @@ public class OtelMetricsConfig {
 
         public Builder serviceName(String serviceName) {
             this.serviceName = serviceName;
-            return this;
-        }
-
-        public Builder dataset(String dataset) {
-            this.dataset = dataset;
             return this;
         }
 
