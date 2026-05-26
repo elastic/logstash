@@ -20,7 +20,6 @@
 
 package org.logstash;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
@@ -43,7 +42,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
-//import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.greaterThan;
