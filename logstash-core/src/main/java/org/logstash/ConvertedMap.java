@@ -178,15 +178,15 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         return internStringForUseAsKey(key.asJavaString());
     }
 
-    public long estimateMemory() {
-        return values().stream()
-                .map(this::estimateMemory)
+    public long estimateMemory(String fieldPath) {
+        return entrySet().stream()
+                .map(e -> estimateMemory(fieldPath + "[" + e.getKey() + "]", e.getValue()))
                 .mapToLong(Long::longValue)
                 .sum();
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private long estimateMemory(Object o) {
+    private long estimateMemory(String fieldPath, Object o) {
         if (o instanceof Boolean) {
             return Byte.BYTES;
         }
@@ -221,15 +221,17 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         if (o instanceof Collection) {
             Collection c = (Collection) o;
             long memory = 0L;
+            int index = 0;
             for (Object v : c) {
-                memory += estimateMemory(v);
+                memory += estimateMemory(fieldPath + "[" + index + "]", v);
+                index++;
             }
             return memory;
         }
 
         if (o instanceof ConvertedMap) {
             ConvertedMap c = (ConvertedMap) o;
-            return c.estimateMemory();
+            return c.estimateMemory(fieldPath);
         }
 
         if (o instanceof Map) {
@@ -237,8 +239,8 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             Map<String, Object> m = (Map<String, Object>) o;
             long memory = 0L;
             for (Map.Entry e : m.entrySet()) {
-                memory += estimateMemory(e.getKey());
-                memory += estimateMemory(e.getValue());
+                memory += estimateMemory(fieldPath + ".key", e.getKey());
+                memory += estimateMemory(fieldPath + ".value", e.getValue());
             }
             return memory;
         }
@@ -264,7 +266,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         if (o instanceof RubyBigDecimal) {
             RubyBigDecimal rbd = (RubyBigDecimal) o;
             // wraps a Java BigDecimal so we can return the size of that:
-            return estimateMemory(rbd.getValue());
+            return estimateMemory(fieldPath, rbd.getValue());
         }
         if (o instanceof RubyFixnum) {
             // like an int value
@@ -287,12 +289,12 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
              ObjectOutputStream serializer = new ObjectOutputStream(rawBytes)) {
             serializer.writeObject(o);
             serializer.flush();
-            LOG.debug("Used Java serialization to estimate ConvertedMap field of type {}", o.getClass());
+            LOG.debug("Used Java serialization to estimate ConvertedMap field <{}> of type {}", fieldPath, o.getClass());
             return rawBytes.size();
         } catch (NotSerializableException e) {
             throw new IllegalArgumentException(
-                    "Unsupported type encountered in estimateMemory: " + o.getClass() +
-                            ". Please ensure all objects passed to estimateMemory are of supported types. " +
+                    "Unsupported type encountered in estimateMemory: " + o.getClass() + " on field <" + fieldPath + ">. " +
+                            "Please ensure all objects passed to estimateMemory are of supported types. " +
                             "Refer to the ConvertedMap.estimateMemory method for the list of supported types.",
                     e);
         } catch (IOException e) {
