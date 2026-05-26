@@ -20,6 +20,10 @@
 
 package org.logstash;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -29,6 +33,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
@@ -59,6 +65,8 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
     private static final long serialVersionUID = 1L;
 
+    private static final Logger LOG = LogManager.getLogger(ConvertedMap.class);
+    
     private static final ConcurrentHashMap<String,String> KEY_CACHE = new ConcurrentHashMap<>(100, 0.2F, 16);
 
     /**
@@ -274,11 +282,22 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         if (o instanceof RubyFloat) {
             return Double.BYTES;
         }
-
-        throw new IllegalArgumentException(
-                "Unsupported type encountered in estimateMemory: " + o.getClass().getName() +
-                        ". Please ensure all objects passed to estimateMemory are of supported types. " +
-                        "Refer to the ConvertedMap.estimateMemory method for the list of supported types."
-        );
+        
+        try (ByteArrayOutputStream rawBytes = new ByteArrayOutputStream();
+             ObjectOutputStream serializer = new ObjectOutputStream(rawBytes)) {
+            serializer.writeObject(o);
+            serializer.flush();
+            LOG.debug("Used Java serialization to estimate ConvertedMap field of type {}", o.getClass());
+            return rawBytes.size();
+        } catch (NotSerializableException e) {
+            throw new IllegalArgumentException(
+                    "Unsupported type encountered in estimateMemory: " + o.getClass() +
+                            ". Please ensure all objects passed to estimateMemory are of supported types. " +
+                            "Refer to the ConvertedMap.estimateMemory method for the list of supported types.",
+                    e);
+        } catch (IOException e) {
+            // this shouldn't happen because it's serializing to memory buffer and not touching any IO device.
+            throw new RuntimeException(e);
+        }
     }
 }
