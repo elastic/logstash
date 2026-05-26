@@ -5,7 +5,7 @@ on:
       branch:
         description: 'Release Branch'     
         required: true
-        default: '8.4'
+        default: '9.4'
         type: string
       bump:
         description: 'Bump type'     
@@ -16,6 +16,16 @@ on:
         - "patch"
         - "minor"
         - "major"
+      extra_gems_minor:
+        description: 'Additional gems to bump at minor level (space-separated). AWS gems are always included automatically. Only used during patch runs.'
+        required: false
+        default: ''
+        type: string
+      extra_gems_major:
+        description: 'Gems to also bump at major level (space-separated). Used during patch or minor runs.'
+        required: false
+        default: ''
+        type: string
     
 permissions:
   pull-requests: write
@@ -25,6 +35,15 @@ jobs:
   version_bumper:
     name: Bump versions
     runs-on: ubuntu-latest
+<<<<<<< HEAD
+=======
+    env:
+      INPUTS_BRANCH: "${{ inputs.branch }}"
+      INPUTS_BUMP: "${{ inputs.bump }}"
+      INPUTS_EXTRA_GEMS_MINOR: "${{ inputs.extra_gems_minor }}"
+      INPUTS_EXTRA_GEMS_MAJOR: "${{ inputs.extra_gems_major }}"
+      BACKPORT_LABEL: "backport-${{ inputs.branch }}"
+>>>>>>> f71e27b49 (Improve version bump flexibility and automate AWS deps updates to minor automatically while patching dependencies(#19118))
     steps:
       - name: Fetch logstash-core team member list
         uses: tspascoal/get-user-teams-membership@818140d631d5f29f26b151afbe4179f87d9ceb5e #v4.0.1
@@ -44,7 +63,28 @@ jobs:
       - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
       - run: git config --global user.name "logstashmachine"
       - run: ./gradlew clean installDefaultGems
+<<<<<<< HEAD
       - run: ./vendor/jruby/bin/jruby -S bundle update --all --${{ github.event.inputs.bump }} --strict
+=======
+      - run: ./vendor/jruby/bin/jruby -S bundle update --all --${{ env.INPUTS_BUMP }} --strict
+      - name: Bump selected deps at minor level
+        if: ${{ inputs.bump == 'patch' }}
+        run: |
+          AWS_GEMS=$(./vendor/jruby/bin/jruby -S bundle list --name-only | grep '^aws-')
+          GEMS=$(echo "${AWS_GEMS} ${INPUTS_EXTRA_GEMS_MINOR}" | xargs)
+          if [ -n "$GEMS" ]; then
+            echo "Bumping at --minor: ${GEMS}"
+            ./vendor/jruby/bin/jruby -S bundle update $GEMS --minor --strict --conservative
+          fi
+      - name: Bump selected deps at major level
+        if: ${{ inputs.bump != 'major' && inputs.extra_gems_major != '' }}
+        run: |
+          GEMS=$(echo "${INPUTS_EXTRA_GEMS_MAJOR}" | xargs)
+          if [ -n "$GEMS" ]; then
+            echo "Bumping at --major: ${GEMS}"
+            ./vendor/jruby/bin/jruby -S bundle update $GEMS --major --strict --conservative
+          fi
+>>>>>>> f71e27b49 (Improve version bump flexibility and automate AWS deps updates to minor automatically while patching dependencies(#19118))
       - run: mv Gemfile.lock Gemfile.jruby-*.lock.release
       - run: echo "T=$(date +%s)" >> $GITHUB_ENV
       - run: echo "BRANCH=update_lock_${{ env.INPUTS_BRANCH }}_${T}" >> $GITHUB_ENV
