@@ -106,7 +106,7 @@ GEM
     diff-lcs (1.6.2)
     docile (1.4.1)
     domain_name (0.6.20240107)
-    dotenv (3.2.0)
+    dotenv (2.8.1)
     down (5.2.4)
       addressable (~> 2.8)
     e2mmap (0.1.0)
@@ -725,10 +725,10 @@ GEM
     parser (3.3.11.1)
       ast (~> 2.4.1)
       racc
-    pleaserun (0.0.32)
+    pleaserun (0.0.34)
       cabin (> 0)
       clamp
-      dotenv
+      dotenv (~> 2)
       insist
       mustache (= 0.99.8)
       stud
