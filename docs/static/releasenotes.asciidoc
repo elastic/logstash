@@ -129,6 +129,22 @@ This section summarizes the changes in the following releases:
 
 * Upgrades `tools.jackson.core` dependency to 3.1.1 https://github.com/elastic/logstash-filter-elastic_integration/pull/452[#452]
 
+*Beats Input - 6.9.9*
+
+* Update Netty dependency to 4.1.134.Final https://github.com/logstash-plugins/logstash-input-beats/pull/540[#540]
+
+*Http Input - 3.10.8*
+
+* Update Netty dependency to 4.1.134.Final https://github.com/logstash-plugins/logstash-input-http/pull/218[#218]
+
+*Tcp Input - 6.4.12*
+
+* Update Netty dependency to 4.1.134.Final https://github.com/logstash-plugins/logstash-input-tcp/pull/258[#258]
+
+*Pipe Output - 3.0.7*
+
+* [DOC] Document `command` string form limitation https://github.com/logstash-plugins/logstash-output-pipe/pull/6[#6]
+
 *Kafka Integration - 11.8.9*
 
 * Upgrades jackson.core to 2.21.2 version https://github.com/logstash-plugins/logstash-integration-kafka/pull/255[#255]
