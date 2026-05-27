@@ -47,24 +47,28 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Upgrades `tools.jackson.core` dependency to 3.1.1 [#453](https://github.com/elastic/logstash-filter-elastic_integration/pull/453)
 
-**Beats Input - 7.0.9**
+**Beats Input - 7.0.10**
 
-* Update Netty dependency to 4.1.133.Final [#539](https://github.com/logstash-plugins/logstash-input-beats/pull/539)
+* Update Netty dependency to 4.1.134.Final [#541](https://github.com/logstash-plugins/logstash-input-beats/pull/541)
 
 **Elasticsearch Input - 5.2.2**
 
 * [DOC] Note that `search_after` requires permissions on underlying indices/data streams, not aliases [#251](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/TBD)
 
-**Http Input - 4.1.8**
+**Http Input - 4.1.9**
 
-* Update Netty dependency to 4.1.133.Final [#216](https://github.com/logstash-plugins/logstash-input-http/pull/216)
+* Update Netty dependency to 4.1.134.Final [#217](https://github.com/logstash-plugins/logstash-input-http/pull/217)
 
-**Tcp Input - 7.0.9**
+**Tcp Input - 7.0.10**
 
-* Update Netty dependency to 4.1.133.Final [#256](https://github.com/logstash-plugins/logstash-input-tcp/pull/256)
+* Update Netty dependency to 4.1.134.Final [#257](https://github.com/logstash-plugins/logstash-input-tcp/pull/257)
 
 * When configured to use a port that is already in use, the failure is now propagated to the pipeline [#250](https://github.com/logstash-plugins/logstash-input-tcp/pull/250)
     This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy. 
+
+**Pipe Output - 3.0.7**
+
+* [DOC] Document `command` string form limitation [#6](https://github.com/logstash-plugins/logstash-output-pipe/pull/6)
 
 **Kafka Integration - 11.8.9**
 
