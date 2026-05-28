@@ -44,6 +44,17 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Upgrades jackson.core to 2.21.2 version [#255](https://github.com/logstash-plugins/logstash-integration-kafka/pull/255)
 
+**Beats Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#541](https://github.com/logstash-plugins/logstash-input-beats/pull/541)
+
+**Http Input - 4.1.9**
+
+* Update Netty dependency to 4.1.134.Final [#217](https://github.com/logstash-plugins/logstash-input-http/pull/217)
+
+**Tcp Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#257](https://github.com/logstash-plugins/logstash-input-tcp/pull/257)
 
 ## 9.4.1 [logstash-9.4.1-release-notes]
 
