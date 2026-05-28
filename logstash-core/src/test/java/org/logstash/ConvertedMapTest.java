@@ -78,8 +78,8 @@ public class ConvertedMapTest {
     }
     
     @Test
-    public void givenUnknowSerializableInstanceWhenEstimateSizeThenLogDebugAndReturnValue() {
-        ConvertedMap nested = ConvertedMap.newFromMap(Map.of("serializable", "to replate"));
+    public void givenUnknownSerializableInstanceWhenEstimateSizeThenLogDebugAndReturnValue() {
+        ConvertedMap nested = ConvertedMap.newFromMap(Map.of("serializable", "to replace"));
         nested.putInterned("serializable", new MySerializableClass("Mitchell"));
         ConvertedMap sut = ConvertedMap.newFromMap(Map.of("known", "Pete", "nested", nested));
         
@@ -93,8 +93,8 @@ public class ConvertedMapTest {
     }
 
     @Test
-    public void givenUnknowNotSerializableInstanceWhenEstimateSizeThenThrowException() {
-        ConvertedMap nested = ConvertedMap.newFromMap(Map.of("notserializable", "to replate"));
+    public void givenUnknownNotSerializableInstanceWhenEstimateSizeThenThrowException() {
+        ConvertedMap nested = ConvertedMap.newFromMap(Map.of("notserializable", "to replace"));
         nested.putInterned("notserializable", new MyNonSerializableClass("Mitchell"));
         ConvertedMap sut = ConvertedMap.newFromMap(Map.of("known", "Pete", "nested", nested));
 
