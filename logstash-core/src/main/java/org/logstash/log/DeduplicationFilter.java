@@ -38,11 +38,12 @@ import java.nio.charset.StandardCharsets;
  * yields {@link Result#NEUTRAL}; subsequent occurrences yield {@link Result#DENY}.
  * </p>
  * <p>
- * Example {@code log4j2.properties} wiring on an appender:
+ * Example {@code log4j2.properties} wiring on a logger:
  * </p>
  * <pre>
- * appender.rolling.filter.dedup.type = DeduplicationFilter
- * appender.rolling.filter.dedup.falsePositiveProbability = 0.01
+ * logger.periodic_flusher.name = org.logstash.execution.PeriodicFlush
+ * logger.periodic_flusher.level = DEBUG
+ * logger.periodic_flusher.filter.dedup.type = DeduplicationFilter
  * </pre>
  */
 @Plugin(name = "DeduplicationFilter", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE, printObject = true)
@@ -79,11 +80,16 @@ public final class DeduplicationFilter extends AbstractFilter {
     public Result filter(final LogEvent event) {
         final String key = dedupKey(event);
         synchronized (seenKeys) {
-            if (seenKeys.mightContain(key)) {
-                return Result.DENY;
+            if (!seenKeys.mightContain(key)) {
+                seenKeys.put(key);
+                return Result.NEUTRAL;
             }
-            seenKeys.put(key);
-            return Result.NEUTRAL;
+            return Result.DENY;
+//            if (seenKeys.mightContain(key)) {
+//                return Result.DENY;
+//            }
+//            seenKeys.put(key);
+//            return Result.NEUTRAL;
         }
     }
 
