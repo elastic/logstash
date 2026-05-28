@@ -20,6 +20,10 @@
 
 package org.logstash;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -29,14 +33,9 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jruby.RubyBignum;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyFixnum;
-import org.jruby.RubyFloat;
-import org.jruby.RubyHash;
-import org.jruby.RubyNil;
-import org.jruby.RubyString;
-import org.jruby.RubySymbol;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jruby.*;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -59,6 +58,8 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
     private static final long serialVersionUID = 1L;
 
+    private static final Logger LOG = LogManager.getLogger(ConvertedMap.class);
+    
     private static final ConcurrentHashMap<String,String> KEY_CACHE = new ConcurrentHashMap<>(100, 0.2F, 16);
 
     /**
@@ -170,15 +171,18 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         return internStringForUseAsKey(key.asJavaString());
     }
 
-    public long estimateMemory() {
-        return values().stream()
-                .map(this::estimateMemory)
+    public long estimateMemory(String fieldPath) {
+        return entrySet().stream()
+                .map(e -> estimateMemory(fieldPath + "[" + e.getKey() + "]", e.getValue()))
                 .mapToLong(Long::longValue)
                 .sum();
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private long estimateMemory(Object o) {
+    private long estimateMemory(String fieldPath, Object o) {
+        if (o == null) {
+            return 0L;
+        }
         if (o instanceof Boolean) {
             return Byte.BYTES;
         }
@@ -213,15 +217,17 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         if (o instanceof Collection) {
             Collection c = (Collection) o;
             long memory = 0L;
+            int index = 0;
             for (Object v : c) {
-                memory += estimateMemory(v);
+                memory += estimateMemory(fieldPath + "[" + index + "]", v);
+                index++;
             }
             return memory;
         }
 
         if (o instanceof ConvertedMap) {
             ConvertedMap c = (ConvertedMap) o;
-            return c.estimateMemory();
+            return c.estimateMemory(fieldPath);
         }
 
         if (o instanceof Map) {
@@ -229,8 +235,8 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             Map<String, Object> m = (Map<String, Object>) o;
             long memory = 0L;
             for (Map.Entry e : m.entrySet()) {
-                memory += estimateMemory(e.getKey());
-                memory += estimateMemory(e.getValue());
+                memory += estimateMemory(fieldPath + ".key", e.getKey());
+                memory += estimateMemory(fieldPath + ".value", e.getValue());
             }
             return memory;
         }
@@ -238,25 +244,28 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             // wraps an java.time.Instant which is made of long and int
             return Long.BYTES + Integer.BYTES;
         }
+        if (o instanceof Timestamp) {
+            // wraps an java.time.Instant which is made of long and int and a Joda DateTime which contains a long  
+            return 2 * Long.BYTES + Integer.BYTES;
+        }
         if (o instanceof BigInteger) {
-            return ((BigInteger) o).toByteArray().length;
+            return estimateMemory((BigInteger) o);
         }
         if (o instanceof BigDecimal) {
-            // BigInteger has 4 fields, one reference 2 ints (scale and precision) and a long.
-            return 8 + 2 * Integer.BYTES + Long.BYTES;
+            // BigInteger has 4 fields, one BigInteger reference, 2 ints (scale and precision) and a long.
+            return estimateMemory(BigInteger.ONE) + 2 * Integer.BYTES + Long.BYTES;
         }
         if (o instanceof RubyBignum) {
             RubyBignum rbn = (RubyBignum) o;
-            return rbn.asBigInteger(RubyUtil.RUBY.getCurrentContext()).bitLength() / 8 + 1;
+            return estimateMemory(rbn.asBigInteger(RubyUtil.RUBY.getCurrentContext()));
         }
         if (o instanceof RubyBigDecimal) {
             RubyBigDecimal rbd = (RubyBigDecimal) o;
             // wraps a Java BigDecimal so we can return the size of that:
-            return estimateMemory(rbd.getValue());
+            return estimateMemory(fieldPath, rbd.getValue());
         }
         if (o instanceof RubyFixnum) {
-            // like an int value
-            return Integer.BYTES;
+            return Long.BYTES;
         }
         if (o instanceof RubyBoolean) {
             return Byte.BYTES;
@@ -265,16 +274,33 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             return 8 + Integer.BYTES; // object reference, one int
         }
         if (o instanceof RubySymbol) {
-            return estimateMemory(((RubySymbol) o).asJavaString());
+            return estimateMemory(fieldPath + ".string", ((RubySymbol) o).asJavaString());
         }
         if (o instanceof RubyFloat) {
             return Double.BYTES;
         }
+        
+        try (ByteArrayOutputStream rawBytes = new ByteArrayOutputStream();
+             ObjectOutputStream serializer = new ObjectOutputStream(rawBytes)) {
+            serializer.writeObject(o);
+            serializer.flush();
+            LOG.debug("Used Java serialization to estimate ConvertedMap field <{}> of type {}", fieldPath, o.getClass());
+            return rawBytes.size();
+        } catch (NotSerializableException e) {
+            throw new IllegalArgumentException(
+                    "Unsupported type encountered in estimateMemory: " + o.getClass() + " on field <" + fieldPath + ">. " +
+                            "Please ensure all objects passed to estimateMemory are of supported types. " +
+                            "Refer to the ConvertedMap.estimateMemory method for the list of supported types.",
+                    e);
+        } catch (IOException e) {
+            // this shouldn't happen because it's serializing to memory buffer and not touching any IO device.
+            throw new RuntimeException(e);
+        }
+    }
 
-        throw new IllegalArgumentException(
-                "Unsupported type encountered in estimateMemory: " + o.getClass().getName() +
-                        ". Please ensure all objects passed to estimateMemory are of supported types. " +
-                        "Refer to the ConvertedMap.estimateMemory method for the list of supported types."
-        );
+    private static int estimateMemory(BigInteger o) {
+        // BigInteger is composed of sign (int) plus an array of bytes (magnitude) which is variable.
+        // A good estimation is (bitLength() + 7) / 8 
+        return (o.bitLength() + 7) / 8 + Integer.BYTES;
     }
 }
