@@ -27,10 +27,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -187,6 +184,9 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private long estimateMemory(String fieldPath, Object o) {
+        if (o == null) {
+            return 0L;
+        }
         if (o instanceof Boolean) {
             return Byte.BYTES;
         }
@@ -269,8 +269,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             return estimateMemory(fieldPath, rbd.getValue());
         }
         if (o instanceof RubyFixnum) {
-            // like an int value
-            return Integer.BYTES;
+            return Long.BYTES;
         }
         if (o instanceof RubyBoolean) {
             return Byte.BYTES;
