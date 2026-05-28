@@ -279,7 +279,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             return 8 + Integer.BYTES; // object reference, one int
         }
         if (o instanceof RubySymbol) {
-            return estimateMemory(((RubySymbol) o).asJavaString());
+            return estimateMemory(fieldPath + ".string", ((RubySymbol) o).asJavaString());
         }
         if (o instanceof RubyFloat) {
             return Double.BYTES;
