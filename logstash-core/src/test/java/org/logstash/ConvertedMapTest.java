@@ -98,14 +98,14 @@ public class ConvertedMapTest {
         nested.putInterned("notserializable", new MyNonSerializableClass("Mitchell"));
         ConvertedMap sut = ConvertedMap.newFromMap(Map.of("known", "Pete", "nested", nested));
 
-        try {
-            sut.estimateMemory("");
-            Assert.fail("Expected to throw an error on not serializable instance");
-        } catch (IllegalArgumentException e) {
-            Throwable wrapped = e.getCause();
-            assertThat(wrapped, Matchers.instanceOf(NotSerializableException.class));
-            assertThat(e.getMessage(), containsString("Please ensure all objects passed to estimateMemory are of supported types"));
-            assertThat(e.getMessage(), containsString("on field <[nested][notserializable]>"));
-        }
+        IllegalArgumentException e = Assert.assertThrows(
+                "Expected to throw an error on not serializable instance",
+                IllegalArgumentException.class,
+                () -> sut.estimateMemory("")
+        );
+        Throwable wrapped = e.getCause();
+        assertThat(wrapped, Matchers.instanceOf(NotSerializableException.class));
+        assertThat(e.getMessage(), containsString("Please ensure all objects passed to estimateMemory are of supported types"));
+        assertThat(e.getMessage(), containsString("on field <[nested][notserializable]>"));
      }
 }
