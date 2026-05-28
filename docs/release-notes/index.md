@@ -21,6 +21,46 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.2 [logstash-9.4.2-release-notes]
+
+### Fixes [logstash-9.4.2-fixes]
+
+* Fixes a metric leak in `_node/stats` when a pipeline repeatedly fails to start with `config.reload.automatic: true`. Previously, each retry left a fresh set of plugin metric entries in the collector, causing the stats payload to grow indefinitely [#19120](https://github.com/elastic/logstash/pull/19120)
+
+### Updates to dependencies [logstash-9.4.2-dependencies]
+
+* Updated jruby-openssl to 0.16.0 [#19116](https://github.com/elastic/logstash/pull/19116)
+* Upgraded jrjackson and fasterxml.jackson [#19126](https://github.com/elastic/logstash/pull/19126)
+
+### Plugins [logstash-plugin-9.4.2-changes]
+
+**Elastic_integration Filter - 9.4.3**
+
+* Fixes an issue where a field set by an integration pipeline to `java.util.Date` value-object representing a timestamp could not be converted to a timestamp [#462](https://github.com/elastic/logstash-filter-elastic_integration/issues/462)
+
+* Include httpclient5/httpcore5 from the `elasticsearch-java` artifact [#458](https://github.com/elastic/logstash-filter-elastic_integration/pull/458)
+
+**Kafka Integration - 11.8.9**
+
+* Upgrades jackson.core to 2.21.2 version [#255](https://github.com/logstash-plugins/logstash-integration-kafka/pull/255)
+
+**Beats Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#541](https://github.com/logstash-plugins/logstash-input-beats/pull/541)
+
+**Http Input - 4.1.9**
+
+* Update Netty dependency to 4.1.134.Final [#217](https://github.com/logstash-plugins/logstash-input-http/pull/217)
+
+**Tcp Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#257](https://github.com/logstash-plugins/logstash-input-tcp/pull/257)
+
+**Pipe Output - 3.0.7**
+
+* [DOC] Document `command` string form limitation [#6](https://github.com/logstash-plugins/logstash-output-pipe/pull/6)
+
+
 ## 9.4.1 [logstash-9.4.1-release-notes]
 
 ### Features and enhancements [logstash-9.4.1-features-enhancements]
@@ -160,6 +200,60 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 **Gelf Input - 3.4.0**
 
 * Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
+
+
+## 9.3.5 [logstash-9.3.5-release-notes]
+
+### Updates to dependencies [logstash-9.3.5-dependencies]
+
+* Updated bundled JDK to 21.0.11 build 10 [#19069](https://github.com/elastic/logstash/pull/19069)
+* Updated jruby-openssl to 0.16.0 [#19115](https://github.com/elastic/logstash/pull/19115)
+* Upgraded jrjackson and fasterxml.jackson [#19103](https://github.com/elastic/logstash/pull/19103)
+
+### Features and enhancements [logstash-9.3.5-features-enhancements]
+
+* Introduces new `dead_letter_queue.flush_check_interval` config for flushing the staled segment files scheduler which can reduce frequent check overhead [#19036](https://github.com/elastic/logstash/pull/19036)
+
+### Fixes [logstash-9.3.5-fixes]
+
+* Fixes a metric leak in `_node/stats` when a pipeline repeatedly fails to start with `config.reload.automatic: true`. Previously, each retry left a fresh set of plugin metric entries in the collector, causing the stats payload to grow indefinitely [#19091](https://github.com/elastic/logstash/pull/19091)
+
+### Plugins [logstash-plugin-9.3.5-changes]
+
+**Elastic_integration Filter - 9.3.5**
+
+* Fixes an issue where a field set by an integration pipeline to `java.util.Date` value-object representing a timestamp could not be converted to a timestamp [#464](https://github.com/elastic/logstash-filter-elastic_integration/issues/464)
+
+* Include httpclient5/httpcore5 from the `elasticsearch-java` artifact [#457](https://github.com/elastic/logstash-filter-elastic_integration/pull/457)
+
+* Upgrades `tools.jackson.core` dependency to 3.1.1 [#453](https://github.com/elastic/logstash-filter-elastic_integration/pull/453)
+
+**Beats Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#541](https://github.com/logstash-plugins/logstash-input-beats/pull/541)
+
+**Elasticsearch Input - 5.2.2**
+
+* [DOC] Note that `search_after` requires permissions on underlying indices/data streams, not aliases [#251](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/TBD)
+
+**Http Input - 4.1.9**
+
+* Update Netty dependency to 4.1.134.Final [#217](https://github.com/logstash-plugins/logstash-input-http/pull/217)
+
+**Tcp Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#257](https://github.com/logstash-plugins/logstash-input-tcp/pull/257)
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#250](https://github.com/logstash-plugins/logstash-input-tcp/pull/250)
+  This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Pipe Output - 3.0.7**
+
+* [DOC] Document `command` string form limitation [#6](https://github.com/logstash-plugins/logstash-output-pipe/pull/6)
+
+**Kafka Integration - 11.8.9**
+
+* Upgrades jackson.core to 2.21.2 version [#255](https://github.com/logstash-plugins/logstash-integration-kafka/pull/255)
 
 
 ## 9.3.4 [logstash-9.3.4-release-notes]
