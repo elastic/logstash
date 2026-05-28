@@ -41,7 +41,7 @@ public class DeduplicationFilterTest {
     }
 
     @Test
-    public void givenAStringAtInfoLevelWhenAppearsMultipleTimesThenIsDenied() {
+    public void givenAStringAtWarnLevelWhenAppearsMultipleTimesThenIsDenied() {
         final DeduplicationFilter filter = DeduplicationFilter.createFilter(
                 DeduplicationFilter.DEFAULT_FALSE_POSITIVE_PROBABILITY);
 
