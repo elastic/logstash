@@ -27,7 +27,10 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -254,7 +257,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         }
         if (o instanceof RubyBignum) {
             RubyBignum rbn = (RubyBignum) o;
-            return rbn.asBigInteger(RubyUtil.RUBY.getCurrentContext()).bitLength() / 8 + 1;
+            return estimateMemory(rbn.asBigInteger(RubyUtil.RUBY.getCurrentContext()));
         }
         if (o instanceof RubyBigDecimal) {
             RubyBigDecimal rbd = (RubyBigDecimal) o;
