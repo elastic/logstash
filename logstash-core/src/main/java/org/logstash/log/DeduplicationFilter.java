@@ -85,11 +85,6 @@ public final class DeduplicationFilter extends AbstractFilter {
                 return Result.NEUTRAL;
             }
             return Result.DENY;
-//            if (seenKeys.mightContain(key)) {
-//                return Result.DENY;
-//            }
-//            seenKeys.put(key);
-//            return Result.NEUTRAL;
         }
     }
 
