@@ -56,6 +56,10 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Update Netty dependency to 4.1.134.Final [#257](https://github.com/logstash-plugins/logstash-input-tcp/pull/257)
 
+**Pipe Output - 3.0.7**
+
+* [DOC] Document `command` string form limitation [#6](https://github.com/logstash-plugins/logstash-output-pipe/pull/6)
+
 ## 9.4.1 [logstash-9.4.1-release-notes]
 
 ### Features and enhancements [logstash-9.4.1-features-enhancements]
