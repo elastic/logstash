@@ -32,14 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jruby.RubyBignum;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyFixnum;
-import org.jruby.RubyFloat;
-import org.jruby.RubyHash;
-import org.jruby.RubyNil;
-import org.jruby.RubyString;
-import org.jruby.RubySymbol;
+import org.jruby.*;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -253,11 +246,11 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             return 2 * Long.BYTES + Integer.BYTES;
         }
         if (o instanceof BigInteger) {
-            return ((BigInteger) o).toByteArray().length;
+            return estimateMemory((BigInteger) o);
         }
         if (o instanceof BigDecimal) {
-            // BigInteger has 4 fields, one reference 2 ints (scale and precision) and a long.
-            return 8 + 2 * Integer.BYTES + Long.BYTES;
+            // BigInteger has 4 fields, one BigInteger reference, 2 ints (scale and precision) and a long.
+            return estimateMemory(BigInteger.ONE) + 2 * Integer.BYTES + Long.BYTES;
         }
         if (o instanceof RubyBignum) {
             RubyBignum rbn = (RubyBignum) o;
@@ -300,5 +293,11 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             // this shouldn't happen because it's serializing to memory buffer and not touching any IO device.
             throw new RuntimeException(e);
         }
+    }
+
+    private static int estimateMemory(BigInteger o) {
+        // BigInteger is composed of sign (int) plus an array of bytes (magnitude) which is variable.
+        // A good estimation is (bitLength() + 7) / 8 
+        return (o.bitLength() + 7) / 8 + Integer.BYTES;
     }
 }
