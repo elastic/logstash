@@ -51,7 +51,7 @@ public final class DeduplicationFilter extends AbstractFilter {
     static final double DEFAULT_FALSE_POSITIVE_PROBABILITY = 0.01;
     private static final int DEFAULT_EXPECTED_INSERTIONS = 1_000_000;
 
-    private final BloomFilter<CharSequence> seenKeys;
+    private final BloomFilter<String> seenKeys;
 
     @PluginFactory
     public static DeduplicationFilter createFilter(
@@ -77,7 +77,7 @@ public final class DeduplicationFilter extends AbstractFilter {
 
     @Override
     public Result filter(final LogEvent event) {
-        final CharSequence key = dedupKey(event);
+        final String key = dedupKey(event);
         synchronized (seenKeys) {
             if (seenKeys.mightContain(key)) {
                 return Result.DENY;
@@ -87,7 +87,7 @@ public final class DeduplicationFilter extends AbstractFilter {
         }
     }
 
-    private static CharSequence dedupKey(final LogEvent event) {
+    private static String dedupKey(final LogEvent event) {
         return event.getLevel().name() + '\0' + event.getMessage().getFormattedMessage();
     }
 }
