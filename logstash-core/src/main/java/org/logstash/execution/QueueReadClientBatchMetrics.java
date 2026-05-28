@@ -89,7 +89,7 @@ class QueueReadClientBatchMetrics {
             pipelineMetricBatchByteSizeFlowHistogram.recordValue(totalByteSize);
             pipelineMetricBatchEventCountFlowHistogram.recordValue(batchEventCount);
         } catch (IllegalArgumentException e) {
-            LOG.error("Failed to calculate batch byte size for metrics", e);
+            LOG.warn("Failed to calculate batch byte size for metrics", e);
         }
     }
 
