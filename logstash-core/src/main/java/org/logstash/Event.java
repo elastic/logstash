@@ -576,8 +576,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
      * */
     public long estimateMemory() {
         long total = 0;
-        total += data.estimateMemory();
-        total += metadata.estimateMemory();
+        total += data.estimateMemory("<data>");
+        total += metadata.estimateMemory("<meta>");
         return total;
     }
 }
