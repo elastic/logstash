@@ -75,7 +75,7 @@ For centralized pipeline management and legacy internal collection for monitorin
 This feature is not supported on Windows.
 :::
 
-The Logstash API server automatically picks up changes to the keystore file referenced by `api.ssl.keystore.path`. Replacing the file on disk does not require restarting Logstash.
+The [Logstash API server](/reference/monitoring-logstash.md#monitoring-api-security) supports the same behavior for its keystore file, regardless of `ssl.reload.automatic`. When the file referenced by `api.ssl.keystore.path` is replaced on disk, the API server uses the new certificate on subsequent client connections without requiring a Logstash restart.
 
 
 ## Plugins that prevent automatic reloading [plugins-block-reload]
