@@ -76,7 +76,7 @@ class QueueReadClientBatchMetrics {
             pipelineMetricBatchByteSize.increment(totalByteSize);
             currentBatchDimensions.set(Arrays.asList(batch.filteredSize(), totalByteSize));
         } catch (IllegalArgumentException e) {
-            LOG.error("Failed to calculate batch byte size for metrics", e);
+            LOG.warn("Failed to calculate batch byte size for metrics", e);
         }
     }
 }

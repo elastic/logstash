@@ -42,8 +42,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -587,6 +588,15 @@ public final class EventTest extends RubyTestBase {
 
         assertNull(event.getField(Event.TAGS_FAILURE));
         assertEquals(event.getField("[tags]"), List.of("foo", "bar"));
+    }
+
+    @Test
+    public void givenEventWithTimestampNestedFieldWhenEstimateTheSizeThenNoExceptionIsRaised() throws IOException {
+        Event evt = new Event();
+        evt.setField("[foo][bar]", new Timestamp());  // stored as RubyTimestamp
+        Event roundTripped = Event.deserialize(evt.serialize());
+        long result = roundTripped.estimateMemory();
+        assertThat("Estimate of event containing Timestamp field shouldn't fail", result, is(greaterThan(0L)));
     }
 
     static byte[] loadAnnotatedCBORFixture(String name) throws IOException {
