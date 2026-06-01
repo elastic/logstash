@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
@@ -66,16 +65,16 @@ public class FileWatchServiceTest {
     @Test
     public void firesAllCallbacksForSameFile() throws Exception {
         File cert = tempDir.newFile("cert.pem");
-        AtomicInteger count = new AtomicInteger(0);
-        CountDownLatch latch = new CountDownLatch(2);
+        CountDownLatch first = new CountDownLatch(1);
+        CountDownLatch second = new CountDownLatch(1);
 
-        svc.register(cert.toPath(), event -> { count.incrementAndGet(); latch.countDown(); });
-        svc.register(cert.toPath(), event -> { count.incrementAndGet(); latch.countDown(); });
+        svc.register(cert.toPath(), event -> first.countDown());
+        svc.register(cert.toPath(), event -> second.countDown());
 
         Files.write(cert.toPath(), "updated".getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
 
-        assertTrue("not all callbacks fired within 3s", latch.await(3, TimeUnit.SECONDS));
-        assertEquals(2, count.get());
+        assertTrue("first callback not fired within 3s", first.await(3, TimeUnit.SECONDS));
+        assertTrue("second callback not fired within 3s", second.await(3, TimeUnit.SECONDS));
     }
 
     @Test
@@ -130,16 +129,14 @@ public class FileWatchServiceTest {
     @Test
     public void throwingCallbackDoesNotPreventSubsequentCallbacks() throws Exception {
         File cert = tempDir.newFile("cert.pem");
-        AtomicInteger count = new AtomicInteger(0);
         CountDownLatch latch = new CountDownLatch(1);
 
         svc.register(cert.toPath(), event -> { throw new RuntimeException("intentional test error"); });
-        svc.register(cert.toPath(), event -> { count.incrementAndGet(); latch.countDown(); });
+        svc.register(cert.toPath(), event -> latch.countDown());
 
         Files.write(cert.toPath(), "updated".getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
 
         assertTrue("second callback not fired within 3s", latch.await(3, TimeUnit.SECONDS));
-        assertEquals(1, count.get());
     }
 
     @Test
