@@ -26,6 +26,7 @@ import co.elastic.logstash.api.NamespacedMetric;
 import org.jruby.RubyArray;
 import org.jruby.RubyObject;
 import org.jruby.RubySymbol;
+import org.jruby.api.Create;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Rubyfier;
@@ -42,7 +43,7 @@ import java.util.stream.Stream;
  * metrics and other namespaces to it.
  */
 public class NamespacedMetricImpl implements NamespacedMetric {
-
+    
     private final ThreadContext threadContext;
 
     private final AbstractNamespacedMetricExt metrics;
@@ -64,7 +65,7 @@ public class NamespacedMetricImpl implements NamespacedMetric {
 
     @Override
     public co.elastic.logstash.api.TimerMetric timer(final String metric) {
-        return TimerMetric.fromRubyBase(metrics, threadContext.getRuntime().newString(metric).intern());
+        return TimerMetric.fromRubyBase(metrics, threadContext.getRuntime().newString(metric).intern(threadContext));
     }
 
     @Override
@@ -108,7 +109,7 @@ public class NamespacedMetricImpl implements NamespacedMetric {
 
         for (final Object o : this.metrics.namespaceName(this.threadContext)) {
             if (o instanceof RubyObject) {
-                names.add(((RubyObject) o).to_s().toString());
+                names.add(((RubyObject) o).to_s(this.threadContext).toString());
             }
         }
 
@@ -121,7 +122,7 @@ public class NamespacedMetricImpl implements NamespacedMetric {
     }
 
     private RubySymbol getSymbol(final String s) {
-        return this.threadContext.getRuntime().newString(s).intern();
+        return this.threadContext.getRuntime().newString(s).intern(this.threadContext);
     }
 
     private IRubyObject convert(final Object o) {

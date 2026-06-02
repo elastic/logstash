@@ -51,6 +51,17 @@ module LogStash
           cached_built_in_gem(spec)
         end
       end
+
+      # JRuby 10 bundler includes a self-manager feature that tries to restart bundler
+      # with a locked version. This causes issues in our embedded environment.
+      # Disable it by making restart_with_locked_bundler_if_needed a no-op.
+      if defined?(::Bundler::SelfManager)
+        ::Bundler::SelfManager.module_exec do
+          def restart_with_locked_bundler_if_needed(*)
+            # No-op: don't attempt to restart with locked bundler
+          end
+        end
+      end
     end
 
     # prepare bundler's environment variables, but do not invoke ::Bundler::setup
@@ -121,7 +132,7 @@ module LogStash
         )
       end
       # create Gemfile.jruby-1.9.lock from template iff a template exists it itself does not exist
-      lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-3.1.lock.release")
+      lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-3.4.lock.release")
       if ::File.exist?(lock_template) && !::File.exist?(Environment::LOCKFILE)
         FileUtils.copy(lock_template, Environment::LOCKFILE)
       end
@@ -195,13 +206,18 @@ module LogStash
     end
 
     def specific_platforms(platforms = ::Gem.platforms)
-      platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os == 'java' && !plat.cpu.nil?}
+      platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os == 'java' && !plat.cpu.nil? && !plat.version.nil?}
     end
 
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java'})
       specific_platforms.each do |platform|
-        output << LogStash::Bundler.invoke!({:remove_platform => platform})
+        begin
+          output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
+        rescue => e
+          # Ignore errors if platform doesn't exist in lockfile
+          $stderr.puts("Note: Could not remove platform #{platform}: #{e.message}") if ENV["DEBUG"]
+        end
       end
       output
     end
