@@ -46,14 +46,14 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1253.0)
-    aws-sdk-cloudfront (1.149.0)
+    aws-partitions (1.1257.0)
+    aws-sdk-cloudfront (1.150.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-cloudwatch (1.138.0)
+    aws-sdk-cloudwatch (1.139.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-core (3.249.0)
+    aws-sdk-core (3.251.0)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
@@ -61,20 +61,20 @@ GEM
       bigdecimal
       jmespath (~> 1, >= 1.6.1)
       logger
-    aws-sdk-kms (1.128.0)
+    aws-sdk-kms (1.129.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-resourcegroups (1.98.0)
+    aws-sdk-resourcegroups (1.99.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.224.0)
+    aws-sdk-s3 (1.225.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
     aws-sdk-sns (1.116.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-sqs (1.115.0)
+    aws-sdk-sqs (1.116.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
     aws-sigv4 (1.12.1)
@@ -117,7 +117,7 @@ GEM
     elastic-enterprise-search (8.18.0)
       elastic-transport (~> 8.1)
       jwt (>= 1.5, < 3.0)
-    elastic-transport (8.4.1)
+    elastic-transport (8.4.2)
       faraday (< 3)
       multi_json
     elasticsearch (8.18.1)
@@ -132,7 +132,7 @@ GEM
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
-    faraday-net_http (3.4.3)
+    faraday-net_http (3.4.4)
       net-http (~> 0.5)
     ffi (1.17.4-java)
     filesize (0.2.0)
@@ -707,7 +707,7 @@ GEM
       hitimes (~> 1.1)
     mini_mime (1.1.5)
     minitar (1.0.2)
-    msgpack (1.8.0-java)
+    msgpack (1.8.1-java)
     multi_json (1.15.0)
     multipart-post (2.4.1)
     murmurhash3 (0.1.6-java)
@@ -871,6 +871,7 @@ PLATFORMS
   java
   universal-java-11
   universal-java-17
+  universal-java-21
 
 DEPENDENCIES
   belzebuth
