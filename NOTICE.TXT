@@ -120,8 +120,12 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: addressable-2.8.7
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: addressable-2.9.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright © Bob Aman
@@ -754,10 +758,14 @@ Notice for: aws-eventstream-1.4.0
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: aws-partitions-1.1253.0
 =======
 Notice for: aws-partitions-1.1116.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: aws-partitions-1.1257.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -964,11 +972,15 @@ Notice for: aws-partitions-1.1116.0
    limitations under the License.
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: aws-sdk-cloudfront-1.149.0
 =======
 Notice for: aws-sdk-cloudfront-1.119.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: aws-sdk-cloudfront-1.150.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -1175,11 +1187,15 @@ Notice for: aws-sdk-cloudfront-1.119.0
    limitations under the License.
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: aws-sdk-cloudwatch-1.138.0
 =======
 Notice for: aws-sdk-cloudwatch-1.116.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: aws-sdk-cloudwatch-1.139.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -1386,11 +1402,15 @@ Notice for: aws-sdk-cloudwatch-1.116.0
    limitations under the License.
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: aws-sdk-core-3.249.0
 =======
 Notice for: aws-sdk-core-3.225.2
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: aws-sdk-core-3.251.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -1597,11 +1617,15 @@ Notice for: aws-sdk-core-3.225.2
    limitations under the License.
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: aws-sdk-kms-1.128.0
 =======
 Notice for: aws-sdk-kms-1.105.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: aws-sdk-kms-1.129.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -1808,11 +1832,15 @@ Notice for: aws-sdk-kms-1.105.0
    limitations under the License.
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: aws-sdk-resourcegroups-1.98.0
 =======
 Notice for: aws-sdk-resourcegroups-1.83.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: aws-sdk-resourcegroups-1.99.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -2019,11 +2047,15 @@ Notice for: aws-sdk-resourcegroups-1.83.0
    limitations under the License.
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: aws-sdk-s3-1.224.0
 =======
 Notice for: aws-sdk-s3-1.189.1
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: aws-sdk-s3-1.225.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -2230,11 +2262,15 @@ Notice for: aws-sdk-s3-1.189.1
    limitations under the License.
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: aws-sdk-sns-1.116.0
 =======
 Notice for: aws-sdk-sns-1.100.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: aws-sdk-sns-1.116.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -2442,10 +2478,14 @@ Notice for: aws-sdk-sns-1.100.0
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: aws-sdk-sqs-1.115.0
 =======
 Notice for: aws-sdk-sqs-1.96.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: aws-sdk-sqs-1.116.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -2905,10 +2945,41 @@ SUCH DAMAGE.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: bigdecimal-3.2.3
 =======
 Notice for: bigdecimal-3.2.2
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: benchmark-0.2.0
+----------
+
+Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+==========
+Notice for: bigdecimal-3.3.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 # source: https://github.com/ruby/bigdecimal/blob/v3.1.4/LICENSE
@@ -3107,10 +3178,14 @@ limitations under the License.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: cgi-0.3.7
 =======
 Notice for: cgi-0.3.6
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: cgi-0.3.7
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -3136,6 +3211,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 <<<<<<< HEAD
+<<<<<<< HEAD
 ==========
 Notice for: clamp-1.3.3
 =======
@@ -3143,6 +3219,10 @@ Notice for: clamp-1.3.3
 ==========
 Notice for: clamp-1.3.2
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+==========
+Notice for: clamp-1.5.2
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (c) 2010 Mike Williams <mdub@dogbiscuit.org>
@@ -5335,6 +5415,160 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+Notice for: debug-0.2.1
+----------
+
+Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+==========
+Notice for: delegate-0.2.0
+----------
+
+Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+==========
+Notice for: did_you_mean-1.6.1
+----------
+
+Copyright (c) 2014-2016 Yuki Nishijima
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+==========
+Notice for: diff-lcs-1.6.2
+----------
+
+source: https://github.com/halostatue/diff-lcs/blob/v1.5.0/License.md
+
+== License
+
+This software is available under three licenses: the GNU GPL version 2 (or at
+your option, a later version), the Perl Artistic license, or the MIT license.
+Note that my preference for licensing is the MIT license, but Algorithm::Diff
+was dually originally licensed with the Perl Artistic and the GNU GPL ("the
+same terms as Perl itself") and given that the Ruby implementation originally
+hewed pretty closely to the Perl version, I must maintain the additional
+licensing terms.
+
+* Copyright 2004–2013 Austin Ziegler.
+* Adapted from Algorithm::Diff (Perl) by Ned Konz and a Smalltalk version by
+  Mario I. Wolczko.
+
+=== MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+=== Perl Artistic License (version 2)
+See the file docs/artistic.txt in the main distribution.
+
+=== GNU GPL version 2
+See the file docs/COPYING.txt in the main distribution.
+==========
+Notice for: digest-3.1.0
+----------
+
+Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the
+   distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+==========
 Notice for: domain_name-0.6.20240107
 ----------
 
@@ -5419,10 +5653,14 @@ https://mozilla.org/MPL/2.0/
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: dotenv-2.8.1
 =======
 Notice for: dotenv-3.1.8
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: dotenv-2.8.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (c) 2012 Brandon Keepers
@@ -5556,6 +5794,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: elastic-enterprise-search-8.19.0
 =======
@@ -5777,6 +6016,9 @@ Notice for: elastic-transport-8.3.2
 Notice for: elastic-transport-8.4.0
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: elastic-transport-8.4.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/elastic/elastic-transport-ruby/blob/v8.3.0/LICENSE
@@ -5985,6 +6227,7 @@ source: https://github.com/elastic/elastic-transport-ruby/blob/v8.3.0/LICENSE
    limitations under the License.
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: elasticsearch-8.19.3
 =======
 <<<<<<< HEAD
@@ -5993,6 +6236,9 @@ Notice for: elasticsearch-7.17.11
 Notice for: elasticsearch-8.18.0
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: elasticsearch-8.18.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/elastic/elasticsearch-ruby/blob/v5.0.4/elasticsearch-api/LICENSE.txt
@@ -6013,10 +6259,14 @@ limitations under the License.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: elasticsearch-api-8.19.3
 =======
 Notice for: elasticsearch-api-8.18.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: elasticsearch-api-8.18.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/elastic/elasticsearch-ruby/blob/v5.0.4/elasticsearch-transport/LICENSE.txt
@@ -6094,8 +6344,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-<<<<<<< HEAD
-=======
 Notice for: erb-2.2.3
 ----------
 
@@ -6129,6 +6377,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 Notice for: et-orbi-1.2.11
 ----------
@@ -6167,6 +6416,9 @@ Notice for: faraday-1.10.3
 Notice for: faraday-2.13.1
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: faraday-2.14.2
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/lostisland/faraday/blob/v0.9.2/LICENSE.md
@@ -6180,6 +6432,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: faraday-net_http-3.4.3
 =======
@@ -6278,6 +6531,9 @@ Notice for: faraday-net_http-1.0.1
 Notice for: faraday-net_http-3.4.0
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: faraday-net_http-3.4.4
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/lostisland/faraday-net_http/blob/v1.0.0/LICENSE.md
@@ -6294,6 +6550,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: ffi-1.17.4
 =======
@@ -6370,6 +6627,9 @@ Notice for: ffi-1.17.0
 Notice for: ffi-1.17.2
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: ffi-1.17.4
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/ffi/ffi/blob/1.9.23/LICENSE
@@ -6797,7 +7057,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 Notice for: fileutils-1.7.3
+=======
+Notice for: fileutils-1.8.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -6824,11 +7088,14 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: fugit-1.11.2
 =======
 <<<<<<< HEAD
 Notice for: fugit-1.11.0
 =======
+=======
+>>>>>>> 760768574 (Fixed NOTICES)
 Notice for: find-0.1.1
 ----------
 
@@ -6883,6 +7150,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: fugit-1.11.1
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
@@ -6913,6 +7181,8 @@ THE SOFTWARE.
 
 Made in Japan
 ==========
+=======
+>>>>>>> 760768574 (Fixed NOTICES)
 Notice for: gelfd2-0.4.1
 ----------
 
@@ -7047,7 +7317,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
+<<<<<<< HEAD
 Notice for: http-cookie-1.0.8
+=======
+Notice for: http-cookie-1.1.6
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/sparklemotion/http-cookie/blob/v1.0.3/LICENSE.txt
@@ -7182,7 +7456,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: io-console-0.7.2
+Notice for: io-console-0.8.2
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -7324,7 +7598,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: jar-dependencies-0.5.5
+Notice for: jar-dependencies-0.5.4
 ----------
 
 source: https://github.com/mkristian/jar-dependencies/blob/0.3.12/MIT-LICENSE
@@ -10255,6 +10529,7 @@ limitations under the License.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: jruby-openssl-0.16.0
 =======
 <<<<<<< HEAD
@@ -10263,6 +10538,9 @@ Notice for: jruby-openssl-0.14.6
 Notice for: jruby-openssl-0.15.4
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: jruby-openssl-0.16.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/jruby/jruby-openssl/blob/v0.9.21/LICENSE.txt
@@ -10350,6 +10628,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: json-2.12.2
 =======
 <<<<<<< HEAD
@@ -10358,6 +10637,9 @@ Notice for: json-2.7.2
 Notice for: json-2.12.2
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: json-2.19.8
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/tmattia/json-generator/blob/v0.1.0/LICENSE.txt
@@ -10386,6 +10668,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: jwt-3.2.0
 =======
 <<<<<<< HEAD
@@ -10394,17 +10677,33 @@ Notice for: jwt-2.8.2
 Notice for: logger-1.7.0
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: logger-1.7.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
-source: https://github.com/jwt/ruby-jwt/blob/v2.2.2/LICENSE
+Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
 
-Copyright (c) 2011 Jeff Lindsay
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
 ==========
 Notice for: logger-1.7.0
 ----------
@@ -10515,10 +10814,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: march_hare-4.8.0
 =======
 Notice for: march_hare-4.7.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: march_hare-4.8.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/ruby-amqp/march_hare/blob/v3.1.1/LICENSE
@@ -10651,7 +10954,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ==========
+<<<<<<< HEAD
 Notice for: minitar-1.0.2
+=======
+Notice for: minitar-1.1.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/halostatue/minitar/blob/v0.6.1/Licence.md
@@ -10663,7 +10970,11 @@ terms of Ruby’s licence or the Simplified BSD licence.
 * Portions copyright 2004 Mauricio Julio Fernández Pradier.
 
 ==========
+<<<<<<< HEAD
 Notice for: msgpack-1.8.0
+=======
+Notice for: msgpack-1.8.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/msgpack/msgpack-ruby/blob/v1.2.4/ext/msgpack/
@@ -10682,7 +10993,7 @@ source: https://github.com/msgpack/msgpack-ruby/blob/v1.2.4/ext/msgpack/
   See the License for the specific language governing permissions and
   limitations under the License.
 ==========
-Notice for: multi_json-1.15.0
+Notice for: multi_json-1.19.1
 ----------
 
 source: https://github.com/intridea/multi_json/blob/v1.13.1/LICENSE.md
@@ -10791,7 +11102,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 Notice for: mustermann-3.0.4
+=======
+Notice for: mustermann-3.1.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (c) 2013-2017 Konstantin Haase
@@ -10876,12 +11191,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
 Notice for: net-imap-0.4.13
 =======
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
 Notice for: net-http-0.6.0
+=======
+Notice for: net-http-0.9.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -10908,11 +11227,15 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: net-imap-0.5.14
 =======
 Notice for: net-imap-0.5.8
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: net-imap-0.5.14
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 # source: https://github.com/ruby/net-imap/blob/v0.3.7/LICENSE.txt
@@ -11100,11 +11423,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: nokogiri-1.18.10
 =======
 <<<<<<< HEAD
 Notice for: nokogiri-1.16.6
 =======
+=======
+>>>>>>> 760768574 (Fixed NOTICES)
 Notice for: nkf-0.2.0
 ----------
 
@@ -11132,9 +11458,13 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: nokogiri-1.18.8
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: nokogiri-1.18.10
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/sparklemotion/nokogiri/blob/v1.8.2/LICENSE.md
@@ -11489,6 +11819,7 @@ This software is distributed under the Mozilla Public License Version 1.1, the G
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: org.jruby:jruby-core-9.4.9.0
 =======
 <<<<<<< HEAD
@@ -11497,6 +11828,9 @@ Notice for: org.jruby:jruby-core-9.4.7.0
 Notice for: org.jruby:jruby-core-9.4.13.0
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: org.jruby:jruby-core-9.4.13.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 JRuby is Copyright (c) 2007-2018 The JRuby project
@@ -12131,11 +12465,14 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: pry-0.15.2
 =======
 <<<<<<< HEAD
 Notice for: pry-0.14.2
 =======
+=======
+>>>>>>> 760768574 (Fixed NOTICES)
 Notice for: pp-0.3.0
 ----------
 
@@ -12190,9 +12527,13 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: pry-0.15.2
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: pry-0.16.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (c) 2016 John Mair (banisterfiend)
@@ -12218,11 +12559,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: psych-5.2.2
 =======
 <<<<<<< HEAD
 Notice for: psych-5.1.2
 =======
+=======
+>>>>>>> 760768574 (Fixed NOTICES)
 Notice for: pstore-0.1.1
 ----------
 
@@ -12250,9 +12594,13 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: psych-5.2.6
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: psych-5.4.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 MIT License
@@ -12336,6 +12684,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: raabro-1.4.0
 ----------
 
@@ -12373,6 +12722,9 @@ Notice for: racc-1.8.0
 Notice for: racc-1.8.1
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: racc-1.8.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/ruby/racc/blob/master/COPYING
@@ -12402,6 +12754,7 @@ SUCH DAMAGE.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: rack-3.1.21
 =======
 <<<<<<< HEAD
@@ -12410,6 +12763,9 @@ Notice for: rack-3.1.3
 Notice for: rack-3.1.16
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: rack-3.2.6
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 The MIT License (MIT)
@@ -12461,6 +12817,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: rack-session-2.1.2
 =======
 <<<<<<< HEAD
@@ -12469,6 +12826,9 @@ Notice for: rack-session-2.0.0
 Notice for: rack-session-2.1.1
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: rack-session-2.1.2
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 # MIT License
@@ -12545,10 +12905,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: rake-13.3.1
 =======
 Notice for: rake-13.3.0
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: rake-13.4.2
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (c) Jim Weirich
@@ -12910,12 +13274,16 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: rexml-3.4.4
 =======
 <<<<<<< HEAD
 Notice for: rexml-3.3.0
 =======
 Notice for: reline-0.5.12
+=======
+Notice for: reline-0.6.3
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -12968,9 +13336,13 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: rexml-3.4.1
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: rexml-3.4.4
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 source: https://github.com/ruby/rexml/blob/v3.2.5/LICENSE.txt
@@ -12998,6 +13370,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+<<<<<<< HEAD
 <<<<<<< HEAD
 Notice for: ruby-maven-libs-3.9.9
 =======
@@ -13078,6 +13451,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 =======
+=======
+>>>>>>> 760768574 (Fixed NOTICES)
 Notice for: rinda-0.1.1
 ----------
 
@@ -13103,8 +13478,224 @@ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
->>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 
+==========
+Notice for: rspec-3.13.2
+----------
+
+source: https://github.com/rspec/rspec-metagem/blob/v3.12.0/LICENSE.md
+
+The MIT License (MIT)
+=====================
+
+Copyright © 2009 Chad Humphries, David Chelimsky
+Copyright © 2006 David Chelimsky, The RSpec Development Team
+Copyright © 2005 Steven Baker
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the “Software”), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+==========
+Notice for: rspec-collection_matchers-1.2.1
+----------
+
+source: https://github.com/rspec/rspec-collection_matchers/blob/v1.2.1/LICENSE.txt
+
+(The MIT License)
+
+Copyright (c) 2013 Hugo Barauna
+Copyright (c) 2012 David Chelimsky, Myron Marston
+Copyright (c) 2006 David Chelimsky, The RSpec Development Team
+Copyright (c) 2005 Steven Baker
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+==========
+Notice for: rspec-core-3.13.6
+----------
+
+source: https://github.com/rspec/rspec-core/blob/v3.12.2/LICENSE.md
+
+The MIT License (MIT)
+=====================
+
+* Copyright © 2012 Chad Humphries, David Chelimsky, Myron Marston
+* Copyright © 2009 Chad Humphries, David Chelimsky
+* Copyright © 2006 David Chelimsky, The RSpec Development Team
+* Copyright © 2005 Steven Baker
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+==========
+Notice for: rspec-expectations-3.13.5
+----------
+
+source: https://github.com/rspec/rspec-expectations/blob/v3.12.3/LICENSE.md
+
+The MIT License (MIT)
+=====================
+
+* Copyright © 2012 David Chelimsky, Myron Marston
+* Copyright © 2006 David Chelimsky, The RSpec Development Team
+* Copyright © 2005 Steven Baker
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+==========
+Notice for: rspec-mocks-3.13.8
+----------
+
+source: https://github.com/rspec/rspec-mocks/blob/v3.12.6/LICENSE.md
+
+The MIT License (MIT)
+=====================
+
+* Copyright © 2012 David Chelimsky, Myron Marston
+* Copyright © 2006 David Chelimsky, The RSpec Development Team
+* Copyright © 2005 Steven Baker
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+==========
+Notice for: rspec-support-3.13.7
+----------
+
+source: https://github.com/rspec/rspec-support/blob/v3.12.1/LICENSE.md
+
+The MIT License (MIT)
+====================
+
+* Copyright © 2013 David Chelimsky, Myron Marston, Jon Rowe, Sam Phippen, Xavier Shay, Bradley Schaefer
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+==========
+Notice for: rspec-wait-1.0.2
+----------
+
+source: https://github.com/laserlemon/rspec-wait/blob/v0.0.9/LICENSE.txt
+
+Copyright (c) 2014 Steve Richert
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
 Notice for: ruby-progressbar-1.13.0
 ----------
@@ -13288,6 +13879,7 @@ You can redistribute it and/or modify it under either the terms of the
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: rufus-scheduler-3.9.2
 =======
 <<<<<<< HEAD
@@ -13296,6 +13888,9 @@ Notice for: rufus-scheduler-3.9.1
 Notice for: rufus-scheduler-3.9.2
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: rufus-scheduler-3.0.9
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 
@@ -13367,6 +13962,7 @@ limitations under the License.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: sequel-5.94.0
 =======
 <<<<<<< HEAD
@@ -13375,6 +13971,9 @@ Notice for: sequel-5.81.0
 Notice for: sequel-5.93.0
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: sequel-5.105.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (c) 2007-2008 Sharon Rosner
@@ -13478,8 +14077,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-<<<<<<< HEAD
-=======
 Notice for: singleton-0.1.1
 ----------
 
@@ -13507,7 +14104,53 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
->>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
+Notice for: snappy-0.5.1
+----------
+
+Copyright (c) 2011-2013 miyucy
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+==========
+Notice for: snappy-jars-1.1.0.1.2
+----------
+
+Copyright Doug Mayer (https://github.com/doxavore)
+
+README.md: "Per the real implementation, Apache License v2.0."
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+==========
 Notice for: spoon-0.0.6
 ----------
 
@@ -13658,9 +14301,12 @@ END OF TERMS AND CONDITIONS
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> 760768574 (Fixed NOTICES)
 Notice for: stringio-3.1.5
 ----------
 
@@ -13688,7 +14334,6 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
->>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 Notice for: strscan-3.1.0
 ----------
 
@@ -14476,7 +15121,11 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+<<<<<<< HEAD
 Notice for: tilt-2.6.1
+=======
+Notice for: tilt-2.7.0
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (c) 2010-2016 Ryan Tomayko <http://tomayko.com/about>
@@ -14500,11 +15149,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: timeout-0.4.4
 =======
 <<<<<<< HEAD
 Notice for: timeout-0.4.1
 =======
+=======
+>>>>>>> 760768574 (Fixed NOTICES)
 Notice for: time-0.2.2
 ----------
 
@@ -14531,9 +15183,13 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+<<<<<<< HEAD
 Notice for: timeout-0.4.3
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: timeout-0.6.1
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -14660,6 +15316,7 @@ THE SOFTWARE.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 Notice for: tzinfo-data-1.2025.3
 =======
 <<<<<<< HEAD
@@ -14668,6 +15325,9 @@ Notice for: tzinfo-data-1.2024.1
 Notice for: tzinfo-data-1.2025.2
 >>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: tzinfo-data-1.2026.2
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (c) 2005-2018 Philip Ross
@@ -14722,9 +15382,13 @@ SUCH DAMAGE.
 
 ==========
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 Notice for: uri-1.0.3
 >>>>>>> 9254feb9e (Bump jruby 9.4.13.0 (#17696))
+=======
+Notice for: uri-0.12.5
+>>>>>>> 760768574 (Fixed NOTICES)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -14798,7 +15462,34 @@ Copyright (C) 2012 Fluentd Project
    limitations under the License.
 
 ==========
->>>>>>> 0e99f526c (Bump jruby 9.4.13.0 (#17696))
+Notice for: webrick-1.9.2
+----------
+
+source: https://github.com/ruby/webrick/blob/v1.8.1/LICENSE.txt
+
+Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+==========
 Notice for: xml-simple-1.1.9
 ----------
 
