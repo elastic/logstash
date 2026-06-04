@@ -114,9 +114,9 @@ GEM
       addressable (~> 2.8)
     e2mmap (0.1.0)
     edn (1.1.1)
-    elastic-enterprise-search (8.18.0)
+    elastic-enterprise-search (8.19.0)
       elastic-transport (~> 8.1)
-      jwt (>= 1.5, < 3.0)
+      jwt (>= 3.2.0, < 4.0)
     elastic-transport (8.4.2)
       faraday (< 3)
       multi_json
@@ -558,8 +558,8 @@ GEM
       rexml
       rufus-scheduler (>= 3.0.9)
       stud (~> 0.0.22)
-    logstash-integration-elastic_enterprise_search (3.0.2)
-      elastic-enterprise-search (~> 8.0)
+    logstash-integration-elastic_enterprise_search (3.0.3)
+      elastic-enterprise-search (~> 8.19)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
