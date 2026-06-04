@@ -15,8 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require_relative './patches/jar_dependencies'
-
 module LogStash
   module Bundler
     extend self
