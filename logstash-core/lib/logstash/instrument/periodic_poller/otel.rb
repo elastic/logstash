@@ -245,6 +245,18 @@ module LogStash module Instrument module PeriodicPoller
       register_gauge("logstash.jvm.process.cpu.percent", "JVM process CPU usage", "%") do
         get_metric_value(:jvm, :process, :cpu, :percent)
       end
+      register_gauge("logstash.os.cpu.load_average.1m", "OS CPU 1-minute load average", "1") do
+        v = get_metric_value(:jvm, :process, :cpu, :load_average)
+        v.is_a?(Hash) ? v[:"1m"] : nil
+      end
+      register_gauge("logstash.os.cpu.load_average.5m", "OS CPU 5-minute load average", "1") do
+        v = get_metric_value(:jvm, :process, :cpu, :load_average)
+        v.is_a?(Hash) ? v[:"5m"] : nil
+      end
+      register_gauge("logstash.os.cpu.load_average.15m", "OS CPU 15-minute load average", "1") do
+        v = get_metric_value(:jvm, :process, :cpu, :load_average)
+        v.is_a?(Hash) ? v[:"15m"] : nil
+      end
       register_observable_counter("logstash.jvm.process.cpu.total", "JVM process CPU total time", "ms") do
         get_metric_value(:jvm, :process, :cpu, :total_in_millis)
       end

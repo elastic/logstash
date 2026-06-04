@@ -294,6 +294,9 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       expect(otel_service).to receive(:registerGauge).with("logstash.jvm.process.open_file_descriptors", anything, anything, anything, anything)
       expect(otel_service).to receive(:registerGauge).with("logstash.jvm.process.max_file_descriptors", anything, anything, anything, anything)
       expect(otel_service).to receive(:registerGauge).with("logstash.jvm.process.cpu.percent", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.os.cpu.load_average.1m", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.os.cpu.load_average.5m", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.os.cpu.load_average.15m", anything, anything, anything, anything)
       expect(otel_service).to receive(:registerObservableCounter).with("logstash.jvm.process.cpu.total", anything, anything, anything, anything)
       expect(otel_service).to receive(:registerGauge).with("logstash.jvm.uptime", anything, anything, anything, anything)
 
