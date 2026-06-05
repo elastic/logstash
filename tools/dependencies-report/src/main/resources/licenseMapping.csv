@@ -53,6 +53,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "drb:",https://github.com/ruby/drb,BSD-2-Clause
 "e2mmap:",https://github.com/ruby/thwait,BSD-2-Clause
 "edn:",https://github.com/relevance/edn-ruby,MIT
+"elastic-enterprise-search:",https://github.com/elastic/enterprise-search-ruby,Apache-2.0
 "elastic-transport:",https://github.com/elastic/elastic-transport-ruby,Apache-2.0
 "elasticsearch-api:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch-transport:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
@@ -109,6 +110,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "jruby-stdin-channel:","https://github.com/colinsurprenant/jruby-stdin-channel",Apache-2.0
 "jruby:",https://jruby.org,EPL-2.0
 "json:",http://json-jruby.rubyforge.org/,Ruby
+"jwt:",https://github.com/jwt/ruby-jwt,MIT
 "logger:",https://github.com/ruby/logger,BSD-2-Clause
 "lru_redux:","https://github.com/SamSaffron/lru_redux/",MIT
 "mail:","https://github.com/mikel/mail/",MIT
