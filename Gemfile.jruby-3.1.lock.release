@@ -177,7 +177,7 @@ GEM
       semantic_logger
     jruby-openssl (0.16.0-java)
     jruby-stdin-channel (0.2.0-java)
-    json (2.18.1-java)
+    json (2.19.2-java)
     json-schema (2.8.1)
       addressable (>= 2.4)
     kramdown (2.5.2)
@@ -873,6 +873,7 @@ DEPENDENCIES
   fpm (~> 1, >= 1.14.1)
   gems (~> 1)
   jar-dependencies (= 0.5.4)
+  json (~> 2.19.2)
   json-schema (~> 2)
   logstash-codec-avro
   logstash-codec-cef
