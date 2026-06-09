@@ -121,6 +121,8 @@ GEM
     elasticsearch-api (8.19.3)
       multi_json
     equalizer (0.0.11)
+    erb (4.0.4.1-java)
+      cgi (>= 0.3.3)
     et-orbi (1.4.0)
       tzinfo
     faraday (2.14.2)
@@ -868,6 +870,7 @@ DEPENDENCIES
   childprocess (~> 4)
   ci_reporter_rspec (~> 1)
   date (= 3.3.3)
+  erb (~> 4.0.3)
   fileutils (~> 1.7)
   flores (~> 0.0.8)
   fpm (~> 1, >= 1.14.1)

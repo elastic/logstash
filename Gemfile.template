@@ -45,3 +45,4 @@ gem "bigdecimal", "~> 3.1"
 gem "cgi", "~> 0.3.7" # Pins until a new jruby version with updated cgi is released (https://github.com/jruby/jruby/issues/8919)
 gem "json", "~> 2.19.2" # Pin json to the maintained 2.19.x line
 gem "jar-dependencies", "= 0.5.4" # Pin to avoid conflict with default
+gem "erb", "~> 4.0.3" # Pins until a new jruby version with updated cgi is released
