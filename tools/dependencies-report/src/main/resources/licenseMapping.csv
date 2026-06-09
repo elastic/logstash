@@ -59,6 +59,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "elasticsearch-transport:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "equalizer:",https://github.com/dkubb/equalizer,MIT
+"erb:",https://github.com/ruby/erb,BSD-2-Clause
 "et-orbi:",https://github.com/floraison/et-orbi,MIT
 "faraday:",https://github.com/lostisland/faraday,MIT
 "faraday-em_http",https://github.com/lostisland/faraday,MIT
