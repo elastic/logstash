@@ -125,9 +125,6 @@ GEM
       elasticsearch-api (= 8.19.3)
       ostruct
     elasticsearch-api (8.19.3)
-      elastic-transport (~> 8.3)
-      elasticsearch-api (= 8.18.1)
-    elasticsearch-api (8.18.1)
       multi_json
     equalizer (0.0.11)
     erb (4.0.4.1-java)
@@ -191,7 +188,7 @@ GEM
     json (2.12.2-java)
     json-schema (2.8.1)
       addressable (>= 2.4)
-    jwt (2.10.3)
+    jwt (3.2.0)
       base64
     kramdown (2.5.2)
       rexml (>= 3.4.4)
