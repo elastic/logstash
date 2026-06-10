@@ -2,11 +2,13 @@ notify:
   - slack:
       channels:
         - "#logstash-build"
+      message: "<!subteam^S0JK0RWFR|logstash-team> Version bump to ${NEW_VERSION} — ${BUILDKITE_BUILD_URL}"
     if: (build.branch == 'main' || build.branch =~ /^[0-9]+\.[0-9x]+\$/) && (build.state == 'passed' || build.state == 'failed')
   - slack:
       channels:
         - "#logstash-build"
       message: |
+        <!subteam^S0JK0RWFR|logstash-team>
         🚦 Pipeline waiting for approval 🚦
         Repo: `${REPO}`
 
