@@ -36,7 +36,7 @@ shared_examples "logstash install" do |logstash|
           let(:gem_path) { File.expand_path("../../../../fixtures/logstash-filter-acceptance_test-0.1.1.gem", __dir__) }
 
           it "successfully install the plugin" do
-            command = logstash.run_sudo_command_in_path("bin/logstash-plugin install #{gem_path}")
+            command = logstash.run_command_in_path("bin/logstash-plugin install #{gem_path}")
             expect(command).to install_successfully
             expect(logstash).to have_installed?("logstash-filter-acceptance_test")
             expect(logstash).not_to be_running
