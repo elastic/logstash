@@ -79,7 +79,9 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "jrjackson", "= #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
 
   gem.add_runtime_dependency "multi_json", "~> 1.19.1" # pinned until concurrent-ruby pin is lifted, multi_json 1.20.0-java requires concurrent-ruby ~> 1.2
-  gem.add_runtime_dependency "elasticsearch", '>= 8', '< 10'
+  # 9.4.1 version might have duplicate headers and compatible-with=9 header which breaks the serverless
+  # for long term we need to avoid consuming 9.4.1, think about compatible-with: communicate with ES ruby client team or tweak headers in plugins
+  gem.add_runtime_dependency "elasticsearch", '>= 8', '< 9.4.1'
   gem.add_runtime_dependency "manticore", '~> 0.6'
 
   # xpack geoip database service
