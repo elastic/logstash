@@ -24,8 +24,18 @@ import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.impl.Log4jLogEvent;
 import org.apache.logging.log4j.message.SimpleMessage;
+import org.apache.logging.log4j.status.StatusData;
+import org.apache.logging.log4j.status.StatusListener;
+import org.apache.logging.log4j.status.StatusLogger;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 
 public class DeduplicationFilterTest {
@@ -91,5 +101,44 @@ public class DeduplicationFilterTest {
                 .setLevel(level)
                 .setMessage(new SimpleMessage(message))
                 .build();
+    }
+    
+    private static class SpyListener implements StatusListener {
+        
+        private final List<StatusData> spiedMessages = new ArrayList<>();
+        
+        @Override
+        public void log(StatusData data) {
+            spiedMessages.add(data);
+        }
+
+        @Override
+        public Level getStatusLevel() {
+            return Level.WARN;
+        }
+
+        @Override
+        public void close() throws IOException {
+
+        }
+    }
+    
+    @Test
+    public void givenFalsePositiveProbabilitySetToValueOutsideExpectedRangeThenOverrideToDefaultAndLog() throws IOException {
+        // setup
+        try (SpyListener loggerSpy = new SpyListener()) {
+            StatusLogger.getLogger().registerListener(loggerSpy);
+
+            // Exercise
+            DeduplicationFilter.resolveFalsePositiveProbability(1.0);
+
+            // Verify
+            final StatusData data = loggerSpy.spiedMessages.get(0);
+            assertEquals(Level.WARN, data.getLevel());
+            assertThat(data.getMessage().getFormattedMessage(), containsString("falsePositiveProbability is expected to be in the range (0, 5%] but was"));
+            
+            // teardown
+            StatusLogger.getLogger().removeListener(loggerSpy);
+        }
     }
 }

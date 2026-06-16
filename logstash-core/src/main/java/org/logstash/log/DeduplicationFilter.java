@@ -21,6 +21,7 @@ package org.logstash.log;
 
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Core;
 import org.apache.logging.log4j.core.LogEvent;
@@ -28,6 +29,7 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
+import org.apache.logging.log4j.status.StatusLogger;
 
 import java.nio.charset.StandardCharsets;
 
@@ -51,6 +53,7 @@ public final class DeduplicationFilter extends AbstractFilter {
 
     static final double DEFAULT_FALSE_POSITIVE_PROBABILITY = 0.01;
     private static final int DEFAULT_EXPECTED_INSERTIONS = 1_000_000;
+    private static final Logger STATUS_LOGGER = StatusLogger.getLogger();
 
     private final BloomFilter<String> seenKeys;
 
@@ -70,9 +73,11 @@ public final class DeduplicationFilter extends AbstractFilter {
     }
 
     static double resolveFalsePositiveProbability(final double falsePositiveProbability) {
-        if (falsePositiveProbability > 0.0 && falsePositiveProbability < 1.0) {
+        if (falsePositiveProbability > 0.0 && falsePositiveProbability <= 0.5) {
             return falsePositiveProbability;
         }
+        STATUS_LOGGER.warn("falsePositiveProbability is expected to be in the range (0, 5%] but was {}, defaulting to {}", 
+                falsePositiveProbability, DEFAULT_FALSE_POSITIVE_PROBABILITY);
         return DEFAULT_FALSE_POSITIVE_PROBABILITY;
     }
 
