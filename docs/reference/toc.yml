@@ -1,0 +1,128 @@
+project: 'Logstash reference'
+toc:
+  - file: index.md
+  - file: getting-started-with-logstash.md
+    children:
+      - file: installing-logstash.md
+      - file: first-event.md
+      - file: advanced-pipeline.md
+      - file: multiple-input-output-plugins.md
+  - file: how-logstash-works.md
+    children:
+      - file: execution-model.md
+      - file: ecs-ls.md
+      - file: processing.md
+  - file: setting-up-running-logstash.md
+    children:
+      - file: dir-layout.md
+      - file: config-setting-files.md
+      - file: logstash-settings-file.md
+      - file: keystore.md
+      - file: running-logstash-command-line.md
+      - file: running-logstash.md
+      - file: docker.md
+      - file: docker-config.md
+      - file: running-logstash-kubernetes.md
+      - file: running-logstash-windows.md
+      - file: logging.md
+      - file: shutdown.md
+  - file: upgrading-logstash.md
+    children:
+      - file: upgrading-using-package-managers.md
+      - file: upgrading-using-direct-download.md
+      - file: upgrading-minor-versions.md
+  - file: creating-logstash-pipeline.md
+    children:
+      - file: configuration-file-structure.md
+      - file: event-dependent-configuration.md
+      - file: environment-variables.md
+      - file: connecting-to-cloud.md
+      - file: connecting-to-serverless.md
+      - file: config-examples.md
+  - file: secure-connection.md
+  - file: advanced-logstash-configurations.md
+    children:
+      - file: multiple-pipelines.md
+      - file: pipeline-to-pipeline.md
+      - file: reloading-config.md
+      - file: multiline.md
+      - file: glob-support.md
+      # TO DO: Doesn't exist on master
+      # - file: ingest-converter.md
+  - file: logstash-to-logstash-communications.md
+    children:
+      - file: ls-to-ls-lumberjack.md
+      - file: ls-to-ls-http.md
+      - file: ls-to-ls-native.md
+  - file: managing-logstash.md
+    children:
+      - file: logstash-centralized-pipeline-management.md
+      - file: configuring-centralized-pipelines.md
+  - file: using-logstash-with-elastic-integrations.md
+    children:
+      - file: ea-integration-tutorial.md
+  # TO DO: Not migrated
+  # - file: working-with-logstash-modules.md
+  #   children:
+      # TO DO: Doesn't exist on master
+      # - file: arcsight-module.md
+      # TO DO: Doesn't exist on master
+      # - file: netflow-module.md
+      # TO DO: Doesn't exist on master
+      # - file: azure-module.md
+  - file: working-with-filebeat-modules.md
+    children:
+      - file: use-ingest-pipelines.md
+      - file: use-filebeat-modules-kafka.md
+  - file: working-with-winlogbeat-modules.md
+  - file: queues-data-resiliency.md
+    children:
+      - file: memory-queue.md
+      - file: persistent-queues.md
+      - file: dead-letter-queues.md
+  - file: transforming-data.md
+    children:
+      - file: core-operations.md
+      - file: data-deserialization.md
+      - file: field-extraction.md
+      - file: lookup-enrichment.md
+  - file: deploying-scaling-logstash.md
+  - file: managing-geoip-databases.md
+    children:
+      - file: logstash-geoip-database-management.md
+      - file: configuring-geoip-database-management.md
+  - file: performance-tuning.md
+    children:
+      - file: performance-troubleshooting.md
+      - file: tuning-logstash.md
+  - file: monitoring-logstash-with-elastic-agent.md
+    children:
+      - file: dashboard-monitoring-with-elastic-agent.md
+      - file: serverless-monitoring-with-elastic-agent.md
+      - file: monitoring-with-elastic-agent.md
+  - file: monitoring-logstash-legacy.md
+    children:
+      - file: monitoring-with-metricbeat.md
+      - file: monitoring-internal-collection-legacy.md
+      - file: logstash-monitoring-ui.md
+      - file: logstash-pipeline-viewer.md
+      - file: monitoring-troubleshooting.md
+  - file: monitoring-logstash.md
+  - file: monitoring-with-opentelemetry.md
+  - file: working-with-plugins.md
+    children:
+      - file: plugin-concepts.md
+      - file: plugin-generator.md
+      - file: offline-plugins.md
+      - file: private-rubygem.md
+      - file: event-api.md
+  - file: tips-best-practices.md
+    children:
+      - file: jvm-settings.md
+      - file: file-descriptors.md
+  # TO DO: Was not migrated
+  # - file: upgrading-with-persistent-queue-enabled.md
+  # TO DO: Was not migrated
+  # - file: multiline-filter-plugin.md
+  # TO DO: Was not migrated
+  # - file: field-references-deep-dive.md
