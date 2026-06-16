@@ -118,6 +118,7 @@ toc:
   - file: tips-best-practices.md
     children:
       - file: jvm-settings.md
+      - file: file-descriptors.md
   # TO DO: Was not migrated
   # - file: upgrading-with-persistent-queue-enabled.md
   # TO DO: Was not migrated
