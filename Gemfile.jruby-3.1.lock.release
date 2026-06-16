@@ -43,14 +43,14 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1253.0)
-    aws-sdk-cloudfront (1.149.0)
+    aws-partitions (1.1261.0)
+    aws-sdk-cloudfront (1.150.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-cloudwatch (1.138.0)
+    aws-sdk-cloudwatch (1.140.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-core (3.249.0)
+    aws-sdk-core (3.252.0)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
@@ -58,20 +58,20 @@ GEM
       bigdecimal
       jmespath (~> 1, >= 1.6.1)
       logger
-    aws-sdk-kms (1.128.0)
+    aws-sdk-kms (1.129.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-resourcegroups (1.98.0)
+    aws-sdk-resourcegroups (1.99.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.224.0)
+    aws-sdk-s3 (1.226.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
-    aws-sdk-sns (1.116.0)
+    aws-sdk-sns (1.117.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-sqs (1.115.0)
+    aws-sdk-sqs (1.116.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
     aws-sigv4 (1.12.1)
@@ -111,7 +111,7 @@ GEM
       addressable (~> 2.8)
     e2mmap (0.1.0)
     edn (1.1.1)
-    elastic-transport (8.4.1)
+    elastic-transport (8.4.2)
       faraday (< 3)
       multi_json
     elasticsearch (8.19.3)
@@ -125,11 +125,11 @@ GEM
       cgi (>= 0.3.3)
     et-orbi (1.4.0)
       tzinfo
-    faraday (2.14.2)
+    faraday (2.14.3)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
-    faraday-net_http (3.4.3)
+    faraday-net_http (3.4.4)
       net-http (~> 0.5)
     ffi (1.17.4-java)
     filesize (0.2.0)
@@ -144,7 +144,7 @@ GEM
       pleaserun (~> 0.0.29)
       rexml
       stud
-    fugit (1.12.1)
+    fugit (1.12.2)
       et-orbi (~> 1.4)
       raabro (~> 1.4)
     gelfd2 (0.4.1)
@@ -179,7 +179,7 @@ GEM
       semantic_logger
     jruby-openssl (0.16.0-java)
     jruby-stdin-channel (0.2.0-java)
-    json (2.19.2-java)
+    json (2.19.9-java)
     json-schema (2.8.1)
       addressable (>= 2.4)
     kramdown (2.5.2)
@@ -392,7 +392,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (7.0.10-java)
+    logstash-input-beats (7.0.11-java)
       concurrent-ruby (~> 1.0)
       logstash-codec-multiline (>= 2.0.5)
       logstash-codec-plain
@@ -465,7 +465,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (4.1.9-java)
+    logstash-input-http (4.1.10-java)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -509,7 +509,7 @@ GEM
       logstash-filter-grok (>= 4.4.1)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (7.0.10-java)
+    logstash-input-tcp (7.0.11-java)
       jruby-openssl (>= 0.12.2)
       logstash-codec-json
       logstash-codec-json_lines
@@ -695,7 +695,7 @@ GEM
       hitimes (~> 1.1)
     mini_mime (1.1.5)
     minitar (1.1.0)
-    msgpack (1.8.0-java)
+    msgpack (1.8.3-java)
     multi_json (1.18.0)
     multipart-post (2.4.1)
     murmurhash3 (0.1.6-java)
@@ -705,7 +705,7 @@ GEM
     naught (1.1.0)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-imap (0.5.14)
+    net-imap (0.5.15)
       date
       net-protocol
     net-pop (0.1.2)
