@@ -102,7 +102,7 @@ Check out [Installing {{agent}}](docs-content://reference/fleet/install-elastic-
 
 
 
-## Install and run an {{agent}} on your machine [add-agent-to-fleet-ead]
+### Install and run an {{agent}} on your machine [add-agent-to-fleet-ead]
 
 The **Add agent** flyout has two options: **Enroll in {{fleet}}** and **Run standalone**. Enrolling agents in {{fleet}} (default) provides a centralized management tool in {{kib}}, reducing management overhead.
 
@@ -130,7 +130,7 @@ It takes about a minute for {{agent}} to enroll in {{fleet}}, download the confi
 
 :::::::
 
-## View assets [view-assets-ead]
+### View assets [view-assets-ead]
 
 After you have confirmed enrollment and data is coming in,  click **View assets** to access dashboards related to the {{ls}} integration.
 
@@ -142,7 +142,7 @@ For traditional Stack Monitoring UI, the dashboards marked **[Logs {{ls}}]** are
 A number of dashboards are included to view {{ls}} as a whole, and dashboards that allow you to drill-down into how {{ls}} is performing on a node, pipeline and plugin basis.
 
 
-## Monitor {{ls}} logs and metrics [view-data-dashboard]
+### Monitor {{ls}} logs and metrics [view-data-dashboard]
 
 From the list of assets, open the **[Metrics {{ls}}] {{ls}} overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into {{ls}} performance.
 
