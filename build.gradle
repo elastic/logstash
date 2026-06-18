@@ -19,7 +19,7 @@
 
 buildscript {
     ext {
-        shadowGradlePluginVersion = '8.1.1'
+        shadowGradlePluginVersion = '8.3.5'
     }
 
     repositories {
@@ -87,7 +87,7 @@ allprojects {
       delete "${projectDir}/out/"
   }
 
-  tasks.withType(Test) {
+  tasks.withType(Test).configureEach {
     // Add Exports to enable tests to run in JDK17
     jvmArgs = [
       "-Djruby.compile.invokedynamic=true",
@@ -140,7 +140,6 @@ subprojects {
     }
 
     tasks.register("generateLicenseReport", ListProjectDependencies) {
-        outputs.dir "${buildDir}/reports/dependency-license"
     }
 }
 
@@ -198,13 +197,13 @@ tasks.register("configureArtifactInfo") {
 
 tasks.register("markAliasDefinitions", SignAliasDefinitions) {
     description = "Create an hashes aliases file from original aliases yml definition"
-    hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
+    hashedFile = layout.buildDirectory.file("plugin_aliases_hashed.yml").get().asFile
 }
 
 tasks.register("markTestAliasDefinitions", SignAliasDefinitions) {
     description = "Create an hashes aliases file for testing aliases yml definition"
     stage SignAliasDefinitions.Stage.test
-    hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
+    hashedFile = layout.buildDirectory.file("plugin_aliases_hashed_test.yml").get().asFile
 }
 
 tasks.register("copyPluginAlias", Copy) {
@@ -216,9 +215,10 @@ tasks.register("copyPluginAlias_ruby", Copy) {
     description = "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn "markAliasDefinitions"
 
-    inputs.file("${buildDir}/plugin_aliases_hashed.yml")
+    def aliasFile = layout.buildDirectory.file("plugin_aliases_hashed.yml")
+    inputs.file(aliasFile)
 
-    from(markAliasDefinitions.hashedFile) {
+    from(aliasFile) {
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
     into "lib/pluginmanager/"
@@ -228,9 +228,10 @@ tasks.register("copyPluginAlias_java", Copy) {
     description = "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn "markAliasDefinitions"
 
-    inputs.file("${buildDir}/plugin_aliases_hashed.yml")
+    def aliasFile = layout.buildDirectory.file("plugin_aliases_hashed.yml")
+    inputs.file(aliasFile)
 
-    from(markAliasDefinitions.hashedFile) {
+    from(aliasFile) {
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
     into "logstash-core/src/main/resources/org/logstash/plugins/"
@@ -245,9 +246,10 @@ tasks.register("copyPluginTestAlias_ruby", Copy) {
     description = "Copy the marked test plugin_aliases.yml file into Ruby's plugin_manager specs"
     dependsOn "markTestAliasDefinitions"
 
-    inputs.file(markTestAliasDefinitions.hashedFile)
+    def aliasTestFile = layout.buildDirectory.file("plugin_aliases_hashed_test.yml")
+    inputs.file(aliasTestFile)
 
-    from(markTestAliasDefinitions.hashedFile) {
+    from(aliasTestFile) {
         rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
     }
     into "spec/unit/plugin_manager/"
@@ -257,16 +259,17 @@ tasks.register("copyPluginTestAlias_java", Copy) {
     description = "Copy the marked test plugin_aliases.yml file into logstash-core's test resources"
     dependsOn "markTestAliasDefinitions"
 
-    inputs.file("${buildDir}/plugin_aliases_hashed_test.yml")
+    def aliasTestFile = layout.buildDirectory.file("plugin_aliases_hashed_test.yml")
+    inputs.file(aliasTestFile)
 
-    from(markTestAliasDefinitions.hashedFile) {
+    from(aliasTestFile) {
         rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
     }
     into "logstash-core/src/test/resources/org/logstash/plugins/"
 }
 
-tasks.findByPath(':logstash-core:processResources').dependsOn(copyPluginAlias)
-tasks.findByPath(':logstash-core:processTestResources').dependsOn(copyPluginTestAlias)
+project(':logstash-core').tasks.named('processResources').configure { dependsOn(copyPluginAlias) }
+project(':logstash-core').tasks.named('processTestResources').configure { dependsOn(copyPluginTestAlias) }
 
 
 // Tasks
@@ -310,7 +313,7 @@ tasks.register("bootstrap") {
   }
 }
 
-task dockerBootstrap {
+tasks.register("dockerBootstrap") {
     description = "Docker bootstrap ensures env2yaml java is compiled and staged for inclusion in tarballs"
     dependsOn bootstrap
     dependsOn ':docker:data:logstash:env2yaml:compileJava'
@@ -782,7 +785,7 @@ tasks.register("generateLicenseReport", JavaExec) {
     dependsOn generateLicenseReportInputs
     dependsOn ":dependencies-report:assemble"
 
-    def jarFile = project('dependencies-report').getBuildDir().toString() + "/libs/dependencies-report.jar"
+    def jarFile = project('dependencies-report').layout.buildDirectory.dir("libs").get().asFile.toString() + "/dependencies-report.jar"
 
     String licenseReportInputCSV = project.hasProperty("licenseReportInputCSV") ? project.property("licenseReportInputCSV") : "build/dependencies.csv.ruby"
     String licenseReportOutputCSV = project.hasProperty("licenseReportOutputCSV") ? project.property("licenseReportOutputCSV") : "build/dependencies.csv"
@@ -791,7 +794,7 @@ tasks.register("generateLicenseReport", JavaExec) {
     classpath = project.files([jarFile])
     mainClass = "org.logstash.dependencies.Main"
     args licenseReportInputCSV,
-      project.getBuildDir().toString() + "/licenseReportFolders.txt",
+      layout.buildDirectory.file("licenseReportFolders.txt").get().asFile.toString(),
       licenseReportOutputCSV, noticePath
 }
 
@@ -808,10 +811,11 @@ tasks.register("generateLicenseReportInputs") {
         }
 
         if (gradle.startParameter.taskNames.contains("generateLicenseReport")) {
-            if (!project.getBuildDir().exists()) {
-                project.getBuildDir().mkdirs()
+            def buildDirFile = layout.buildDirectory.get().asFile
+            if (!buildDirFile.exists()) {
+                buildDirFile.mkdirs()
             }
-            def licenseReportPath = project.getBuildDir().toString() + "/licenseReportFolders.txt"
+            def licenseReportPath = buildDirFile.toString() + "/licenseReportFolders.txt"
             def licenseReportFolder = new File(licenseReportPath)
             licenseReportFolder.delete()
             licenseReportFolder = new File(licenseReportPath)
