@@ -186,15 +186,14 @@ def generateVersionInfoResourcesOutDir = layout.buildDirectory.dir("generated-re
 
 tasks.register("generateVersionInfoResources") {
     def outDir = generateVersionInfoResourcesOutDir.get()
-    def coreVersion = logstashCoreVersion
 
-    inputs.property("version-info:logstash-core", coreVersion)
+    inputs.property("version-info:logstash-core", logstashCoreVersion)
     outputs.dir(outDir)
 
     doLast {
         mkdir outDir
         def resourceFile = outDir.file('version-info.properties').asFile
-        resourceFile.text = "logstash-core: ${coreVersion}"
+        resourceFile.text = "logstash-core: ${logstashCoreVersion}"
     }
 }
 sourceSets {
