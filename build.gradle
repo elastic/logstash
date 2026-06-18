@@ -119,7 +119,10 @@ allprojects {
       info.events = debug.events
       info.exceptionFormat = debug.exceptionFormat
 
-      afterSuite { desc, result ->
+    }
+    addTestListener(new TestListener() {
+      void beforeSuite(TestDescriptor suite) {}
+      void afterSuite(TestDescriptor desc, TestResult result) {
         if (!desc.parent) { // will match the outermost suite
           def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
           def startItem = '|  ', endItem = '  |'
@@ -127,7 +130,9 @@ allprojects {
           println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
         }
       }
-    }
+      void beforeTest(TestDescriptor testDescriptor) {}
+      void afterTest(TestDescriptor testDescriptor, TestResult result) {}
+    })
   }
 }
 
@@ -486,6 +491,7 @@ tasks.register("assembleTarDistribution") {
   }
 }
 
+evaluationDependsOn(":logstash-core")
 project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
@@ -686,6 +692,7 @@ tasks.register("copyEs") {
 def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/).join(",") : "specs/**/*_spec.rb"
 def integrationTestPwd = "${projectDir}/qa/integration"
 
+evaluationDependsOn(":logstash-integration-tests")
 project(":logstash-integration-tests") {
     tasks.getByPath(":logstash-integration-tests:integrationTests").configure {
         systemProperty 'org.logstash.integration.specs', rubyIntegrationSpecs
@@ -697,7 +704,7 @@ project(":logstash-integration-tests") {
 }
 
 tasks.register("runIntegrationTests") {
-    dependsOn tasks.getByPath(":logstash-integration-tests:integrationTests")
+    dependsOn ":logstash-integration-tests:integrationTests"
     dependsOn copyEs
     dependsOn copyFilebeat
     shouldRunAfter ":logstash-core:test"
@@ -1154,6 +1161,7 @@ tasks.register("cleanExtraction") {
 }
 
 if (System.getenv('OSS') != 'true') {
+  evaluationDependsOn(":logstash-xpack")
   project(":logstash-xpack") {
     ["rubyTests", "rubyIntegrationTests", "test"].each { tsk ->
       tasks.getByPath(":logstash-xpack:" + tsk).configure {
