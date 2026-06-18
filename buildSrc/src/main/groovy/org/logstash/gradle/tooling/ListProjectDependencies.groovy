@@ -1,24 +1,33 @@
 package org.logstash.gradle.tooling
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.Input
 import org.gradle.api.artifacts.Dependency
 
+import javax.inject.Inject
 import java.nio.file.Files
 
-class ListProjectDependencies extends DefaultTask {
+abstract class ListProjectDependencies extends DefaultTask {
+
+    @Inject
+    abstract ProjectLayout getLayout()
 
     @Input
     String report = 'licenses.csv'
 
     @OutputFile
-    File reportFile = project.file("${project.buildDir}/reports/dependency-license/" + report)
+    File getReportFile() {
+        layout.buildDirectory.file("reports/dependency-license/" + report).get().asFile
+    }
 
     @OutputDirectory
-    File reportDir = reportFile.toPath().parent.toFile()
+    File getReportDir() {
+        reportFile.toPath().parent.toFile()
+    }
 
     ListProjectDependencies() {
         description = "Lists the projects dependencies in a CSV file"

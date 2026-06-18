@@ -34,7 +34,7 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
+    classpath "com.gradleup.shadow:shadow-gradle-plugin:${shadowGradlePluginVersion}"
   }
 }
 
@@ -72,7 +72,7 @@ test {
   exclude '**/org/logstash/benchmark/cli/MainEsStorageTest*'
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'com.gradleup.shadow'
 apply plugin: 'java'
 
 shadowJar {
