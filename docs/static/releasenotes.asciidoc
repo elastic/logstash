@@ -116,7 +116,6 @@ This section summarizes the changes in the following releases:
 
 * Upgrade Elasticsearch transport and API clients https://github.com/elastic/logstash/pull/19190[#19190]
 * Upgrade jwt to 3.2.0 https://github.com/elastic/logstash/pull/19201[#19201]
-* Pinned i18n gem < 1.15.0 for JRuby 9.4.x compatibility https://github.com/elastic/logstash/pull/19214[#19214]
 * Pinned ERB to ~> 4.0.3.1 https://github.com/elastic/logstash/pull/19194[#19194]
 
 ==== Updates to documentations
