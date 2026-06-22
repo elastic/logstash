@@ -15,7 +15,7 @@ If it is not, the issue is likely to be closed.
 Logstash Plugins are located in a different organization: [logstash-plugins](https://github.com/logstash-plugins). For bugs on specific Logstash plugins, for example, if Redis Output has a defect, please open it in the respective Redis Output repository.
 
 For security vulnerabilities please only send reports to security@elastic.co.
-See https://www.elastic.co/community/security for more information.
+See https://github.com/elastic/.github/blob/main/SECURITY.md for more information.
 
 Please fill in the following details to help us reproduce the bug:
 -->
