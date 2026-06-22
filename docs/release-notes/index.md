@@ -25,33 +25,17 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.3.6-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.3.6
+* Batch's size estimation improvements [#19179](https://github.com/elastic/logstash/pull/19179)
 
-=== Logstash Commits between 9.3 and 9.3.5
+### Updates to documentations [logstash-9.3.6-dependencies]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.3.5..9.3"
+* Logstash's file descriptors usage, limits and sizing guidance documented [#19207](https://github.com/elastic/logstash/pull/19207)
 
-10ffab2b7 - (HEAD -> 9.3, origin/9.3) Pin i18n gem < 1.15.0 for JRuby 9.4.x compatibility (#19215) (4 days ago) <Kaise>
-7fb9537a2 - Update patch plugin versions in gemfile lock (#19211) (6 days ago) <github-actions[bot]>
-a2f9c09cc - document Logstash's file descriptors usage, limits and sizing guidance (#18584) (#19207) (6 days ago) <mergify[bot]>
-196609347 - Pinned ERB to ~> 4.0.3 for Logstash 9.3 (#19197) (13 days ago) <Andrea Selva>
-7bc65fb5c - pin json gem to 2.19.2 (#19198) (2 weeks ago) <Kaise>
-517124107 - chore: deps(updatecli): Bump updatecli version to v0.117.1 (#19183) (#19186) (3 weeks ago) <mergify[bot]>
-750a8e30f - [9.3] (backport #19158) Add missed standard types during batch's size estimation (#19179) (3 weeks ago) <mergify[bot]>
-43edabf4c - bump lock file for 9.3 (#19170) (4 weeks ago) <github-actions[bot]>
-d30498d63 - Bump logstash version 9.3.6 (#19174) (4 weeks ago) <github-actions[bot]>
-20f0b4549 - Release notes for 9.3.5 (#19144) (4 weeks ago) <github-actions[bot]>
-9ee698476 - Improve version bump flexibility and automate AWS deps updates to minor automatically while patching dependencies (#19166) (4 weeks ago) <mergify[bot]>
+### Updates to dependencies [logstash-9.3.6-dependencies]
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.3.5..9.3 *.release"
-Changed plugin versions:
-logstash-input-azure_event_hubs: 1.5.5 -> 1.5.7
-logstash-input-beats: 7.0.10 -> 7.0.11
-logstash-input-http: 4.1.9 -> 4.1.10
-logstash-input-tcp: 7.0.10 -> 7.0.11
----------- GENERATED CONTENT ENDS HERE ------------
+* Pinned i18n gem < 1.15.0 for JRuby 9.4.x compatibility [#19215](https://github.com/elastic/logstash/pull/19215)
+* Pinned ERB to ~> 4.0.3 [#19197](https://github.com/elastic/logstash/pull/19197)
+* Pinned json gem to 2.19.2 [#19198](https://github.com/elastic/logstash/pull/19198)
 
 ### Plugins [logstash-plugin-9.3.6-changes]
 
