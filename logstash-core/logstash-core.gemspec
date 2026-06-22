@@ -61,7 +61,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "concurrent-ruby", "~> 1", "< 1.1.10" # pinned until https://github.com/elastic/logstash/issues/13956
   gem.add_runtime_dependency "rack", '~> 3'
   gem.add_runtime_dependency "sinatra", '~> 4'
-  gem.add_runtime_dependency 'puma', '~> 6.3', '>= 6.4.2'
+  gem.add_runtime_dependency 'puma', '~> 7.2', '>= 7.2.1'
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
