@@ -25,31 +25,11 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.4.3-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.4.3
+* Batch size estimation improvements [#19180](https://github.com/elastic/logstash/pull/19180)
 
-=== Logstash Commits between 9.4 and 9.4.2
+### Updates to documentations [logstash-9.4.3-documentations]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.2..9.4"
-
-5f90466f7 - (HEAD -> 9.4, origin/9.4) Update patch plugin versions in gemfile lock (#19212) (6 days ago) <github-actions[bot]>
-1083f5d3a - document Logstash's file descriptors usage, limits and sizing guidance (#18584) (#19206) (6 days ago) <mergify[bot]>
-8022ec6a3 - chore: deps(updatecli): Bump updatecli version to v0.117.1 (#19183) (#19185) (3 weeks ago) <mergify[bot]>
-69b1475d7 - Update patch plugin versions in gemfile lock (#19169) (3 weeks ago) <github-actions[bot]>
-821f33c5d - [9.4] (backport #19158) Add missed standard types during batch's size estimation (3 weeks ago) <mergify[bot]>
-b02210f19 - Forwardport 9.3.5 release notes to 9.4 branch. (#19178) (4 weeks ago) <Mashhur>
-111e875b8 - Bump logstash version 9.4.3 (#19177) (4 weeks ago) <github-actions[bot]>
-98a027230 - Release notes for 9.4.2 (#19155) (4 weeks ago) <github-actions[bot]>
-78d7c47cf - Improve version bump flexibility and automate AWS deps updates to minor automatically while patching dependencies (#19165) (4 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.4.2..9.4 *.release"
-Changed plugin versions:
-logstash-input-azure_event_hubs: 1.5.5 -> 1.5.7
-logstash-input-beats: 7.0.10 -> 7.0.11
-logstash-input-http: 4.1.9 -> 4.1.10
-logstash-input-tcp: 7.0.10 -> 7.0.11
----------- GENERATED CONTENT ENDS HERE ------------
+* Logstash's file descriptors usage, limits and sizing guidance documented [#19206](https://github.com/elastic/logstash/pull/19206)
 
 ### Plugins [logstash-plugin-9.4.3-changes]
 
