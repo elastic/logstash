@@ -112,34 +112,16 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-17]]
 === Logstash 8.19.17 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.17
+==== Updates to dependencies
 
-=== Logstash Commits between 8.19 and 8.19.16
+* Upgrade Elasticsearch transport and API clients https://github.com/elastic/logstash/pull/19190[#19190]
+* Upgrade jwt to 3.2.0 https://github.com/elastic/logstash/pull/19201[#19201]
+* Pinned i18n gem < 1.15.0 for JRuby 9.4.x compatibility https://github.com/elastic/logstash/pull/19214[#19214]
+* Pinned ERB to ~> 4.0.3.1 https://github.com/elastic/logstash/pull/19194[#19194]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.16..8.19"
+==== Updates to documentations
 
-c697bce51 - (HEAD -> 8.19, origin/8.19) Pin i18n gem < 1.15.0 for JRuby 9.4.x compatibility (#19214) (4 days ago) <Kaise>
-506f96952 - bump lock file for 8.19 (#19210) (6 days ago) <github-actions[bot]>
-0e71580c4 - document Logstash's file descriptors usage, limits and sizing guidance (#18584) (#19208) (6 days ago) <mergify[bot]>
-168cf0d02 - Fix Gemfile lock: drop duplicate elasticsearch-api 8.18.1, bump jwt to 3.2.0 (#19201) (13 days ago) <Kaise>
-242d29488 - Pinned ERB to ~> 4.0.3.1 for Logstash 8.19 (#19194) (2 weeks ago) <Andrea Selva>
-4599ab6df - Aligned Elastic clients and LS plugins that uses those to 8.19 (#19190) (3 weeks ago) <Andrea Selva>
-2f24ad6ee - chore: deps(updatecli): Bump updatecli version to v0.117.1 (#19183) (#19187) (3 weeks ago) <mergify[bot]>
-6a1a1a0ea - (origin/logstash_8.19_jruby10) bump lock file for 8.19 (#19171) (4 weeks ago) <github-actions[bot]>
-d297b3bf4 - Bump logstash version 8.19.17 (#19175) (4 weeks ago) <github-actions[bot]>
-2bcb09e8e - Release notes for 8.19.16 (#19146) (4 weeks ago) <github-actions[bot]>
-59f099892 - [8.19] (backport #19118) Improve version bump flexibility and automate AWS and sequel deps to minor automatically (#19167) (4 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.16..8.19 *.release"
-Changed plugin versions:
-logstash-input-azure_event_hubs: 1.5.5 -> 1.5.7
-logstash-input-beats: 6.9.9 -> 6.9.10
-logstash-input-http: 3.10.8 -> 3.10.9
-logstash-input-tcp: 6.4.12 -> 6.4.13
-logstash-integration-elastic_enterprise_search: 3.0.2 -> 3.0.3
----------- GENERATED CONTENT ENDS HERE ------------
+* Logstash's file descriptors usage, limits and sizing guidance documented https://github.com/elastic/logstash/pull/19208[#19208]
 
 ==== Plugins
 
