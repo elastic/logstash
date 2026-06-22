@@ -21,6 +21,59 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.3.6 [logstash-9.3.6-release-notes]
+
+### Features and enhancements [logstash-9.3.6-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.3.6
+
+=== Logstash Commits between 9.3 and 9.3.5
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.3.5..9.3"
+
+10ffab2b7 - (HEAD -> 9.3, origin/9.3) Pin i18n gem < 1.15.0 for JRuby 9.4.x compatibility (#19215) (4 days ago) <Kaise>
+7fb9537a2 - Update patch plugin versions in gemfile lock (#19211) (6 days ago) <github-actions[bot]>
+a2f9c09cc - document Logstash's file descriptors usage, limits and sizing guidance (#18584) (#19207) (6 days ago) <mergify[bot]>
+196609347 - Pinned ERB to ~> 4.0.3 for Logstash 9.3 (#19197) (13 days ago) <Andrea Selva>
+7bc65fb5c - pin json gem to 2.19.2 (#19198) (2 weeks ago) <Kaise>
+517124107 - chore: deps(updatecli): Bump updatecli version to v0.117.1 (#19183) (#19186) (3 weeks ago) <mergify[bot]>
+750a8e30f - [9.3] (backport #19158) Add missed standard types during batch's size estimation (#19179) (3 weeks ago) <mergify[bot]>
+43edabf4c - bump lock file for 9.3 (#19170) (4 weeks ago) <github-actions[bot]>
+d30498d63 - Bump logstash version 9.3.6 (#19174) (4 weeks ago) <github-actions[bot]>
+20f0b4549 - Release notes for 9.3.5 (#19144) (4 weeks ago) <github-actions[bot]>
+9ee698476 - Improve version bump flexibility and automate AWS deps updates to minor automatically while patching dependencies (#19166) (4 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.3.5..9.3 *.release"
+Changed plugin versions:
+logstash-input-azure_event_hubs: 1.5.5 -> 1.5.7
+logstash-input-beats: 7.0.10 -> 7.0.11
+logstash-input-http: 4.1.9 -> 4.1.10
+logstash-input-tcp: 7.0.10 -> 7.0.11
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.3.6-changes]
+
+**Azure_event_hubs Input - 1.5.7**
+
+* Upgrades `jackson.core` to 2.21.2 and `nimbus-jose-jwt` to 10.9 versions. [#117](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/117)
+
+* [DOCS] Added recommendation to migrate to the Kafka integration plugin [#116](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/116)
+
+**Beats Input - 7.0.11**
+
+* Update Netty dependency to 4.1.135.Final [#567](https://github.com/logstash-plugins/logstash-input-beats/pull/567)
+
+**Http Input - 4.1.10**
+
+* Update Netty dependency to 4.1.135.Final [#219](https://github.com/logstash-plugins/logstash-input-http/pull/219)
+
+**Tcp Input - 7.0.11**
+
+* Update Netty dependency to 4.1.135.Final [#274](https://github.com/logstash-plugins/logstash-input-tcp/pull/274)
+
+
 ## 9.3.5 [logstash-9.3.5-release-notes]
 
 ### Updates to dependencies [logstash-9.3.5-dependencies]
