@@ -1,8 +1,13 @@
 # This Dockerfile was generated from templates/IronbankDockerfile.erb
 
 ARG BASE_REGISTRY=registry1.dso.mil
+<<<<<<< HEAD
 ARG BASE_IMAGE=ironbank/redhat/ubi/ubi9
 ARG BASE_TAG=9.7
+=======
+ARG BASE_IMAGE=ironbank/redhat/ubi/ubi10
+ARG BASE_TAG=10.2
+>>>>>>> 2a031ac8 (deps: Bump ironbank version to 10.2 (#19218))
 ARG LOGSTASH_VERSION=<%= elastic_version %>
 
 FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}
