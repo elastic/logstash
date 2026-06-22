@@ -33,7 +33,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Updates to dependencies [logstash-9.3.6-dependencies]
 
-* Pinned i18n gem < 1.15.0 for JRuby 9.4.x compatibility [#19215](https://github.com/elastic/logstash/pull/19215)
 * Pinned ERB to ~> 4.0.3 [#19197](https://github.com/elastic/logstash/pull/19197)
 * Pinned json gem to 2.19.2 [#19198](https://github.com/elastic/logstash/pull/19198)
 
