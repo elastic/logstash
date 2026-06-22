@@ -27,7 +27,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Batch's size estimation improvements [#19179](https://github.com/elastic/logstash/pull/19179)
 
-### Updates to documentations [logstash-9.3.6-dependencies]
+### Updates to documentations [logstash-9.3.6-documentations]
 
 * Logstash's file descriptors usage, limits and sizing guidance documented [#19207](https://github.com/elastic/logstash/pull/19207)
 
