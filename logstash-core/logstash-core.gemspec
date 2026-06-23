@@ -61,10 +61,14 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "concurrent-ruby", "~> 1", "< 1.1.10" # pinned until https://github.com/elastic/logstash/issues/13956
   gem.add_runtime_dependency "rack", '~> 3'
   gem.add_runtime_dependency "sinatra", '~> 4'
+<<<<<<< HEAD
   gem.add_runtime_dependency 'puma', '~> 6.3', '>= 6.4.2'
   gem.add_runtime_dependency 'ruby-maven-libs', '~> 3', '>= 3.8.9'
   gem.add_runtime_dependency "jar-dependencies",'= 0.4.1' # Pin to `0.4.1` until https://github.com/jruby/jruby/issues/7262 is resolved
   gem.add_runtime_dependency "jruby-openssl", "~> 0.16.0"
+=======
+  gem.add_runtime_dependency 'puma', '~> 8.0'
+>>>>>>> c06b494eb (upgrade puma to 8.x (#19200))
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
