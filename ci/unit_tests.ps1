@@ -74,6 +74,12 @@ if (Test-Path Env:BUILD_JAVA_HOME) {
     }
 }
 
+if (Test-Path Env:GRADLE_OPTS) {
+    $env:GRADLE_OPTS=$env:GRADLE_OPTS + " -Dorg.gradle.native=false"
+} else {
+    $env:GRADLE_OPTS="-Dorg.gradle.native=false"
+}
+
 $testOpts = "GRADLE_OPTS: $env:GRADLE_OPTS, BUILD_JAVA_HOME: $env:BUILD_JAVA_HOME"
 
 try {
