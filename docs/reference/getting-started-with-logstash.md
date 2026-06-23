@@ -110,7 +110,7 @@ In the `config/log4j2.properties`:
     appender.routing.pipeline.fileName = ${sys:ls.logs}/pipeline_${ctx:pipeline.id}.log
     appender.routing.pipeline.filePattern = ${sys:ls.logs}/pipeline_${ctx:pipeline.id}.%i.log.gz
     appender.routing.pipeline.layout.type = PatternLayout
-    appender.routing.pipeline.layout.pattern = [%d{ISO8601}][%-5p][%-25c] %m%n
+    appender.routing.pipeline.layout.pattern = [%d{ISO8601_OFFSET_DATE_TIME_HHCMM}][%-5p][%-25c] %m%n
     appender.routing.pipeline.policy.type = SizeBasedTriggeringPolicy
     appender.routing.pipeline.policy.size = 100MB
     appender.routing.pipeline.strategy.type = DefaultRolloverStrategy

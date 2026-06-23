@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
  *            fileName="${sys:ls.logs}/pipeline_${ctx:pipeline.id}.log"
  *            filePattern="${sys:ls.logs}/pipeline_${ctx:pipeline.id}.%i.log.gz">
  *          <PatternLayout>
- *            <pattern>[%d{ISO8601}][%-5p][%-25c] %m%n</pattern>
+ *            <pattern>[%d{ISO8601_OFFSET_DATE_TIME_HHCMM}][%-5p][%-25c] %m%n</pattern>
  *          </PatternLayout>
  *          <SizeBasedTriggeringPolicy size="100MB" />
  *          <DefaultRolloverStrategy max="30" />
