@@ -115,8 +115,6 @@ This section summarizes the changes in the following releases:
 ==== Updates to dependencies
 
 * Upgrade Elasticsearch transport and API clients https://github.com/elastic/logstash/pull/19190[#19190]
-* Upgrade jwt to 3.2.0 https://github.com/elastic/logstash/pull/19201[#19201]
-* Pinned ERB to ~> 4.0.3.1 https://github.com/elastic/logstash/pull/19194[#19194]
 
 ==== Updates to documentations
 
