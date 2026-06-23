@@ -74,6 +74,8 @@ if (Test-Path Env:BUILD_JAVA_HOME) {
     }
 }
 
+# Introduced with https://github.com/elastic/logstash/pull/19216 because Gradle 9 doesn't support Windows 2016.
+# It disable native services on Gradle, to be removed when Windows 2016 support will be removed.
 if (Test-Path Env:GRADLE_OPTS) {
     $env:GRADLE_OPTS=$env:GRADLE_OPTS + " -Dorg.gradle.native=false"
 } else {
