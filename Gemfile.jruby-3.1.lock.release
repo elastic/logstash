@@ -171,7 +171,7 @@ GEM
       domain_name (~> 0.5)
     http-form_data (2.3.0)
     http_parser.rb (0.6.0-java)
-    i18n (1.14.8)
+    i18n (1.15.2)
       concurrent-ruby (~> 1.0)
     insist (1.0.0)
     io-console (0.8.2-java)

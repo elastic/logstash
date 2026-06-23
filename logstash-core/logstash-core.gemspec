@@ -65,8 +65,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
-  # Avoid consuming i18n-1.15.x until JRuby 10 because it uses Ruby 3.2 features
-  gem.add_runtime_dependency "i18n", "~> 1.14.8" #(MIT license)
+  gem.add_runtime_dependency "i18n", "~> 1" #(MIT license)
 
   gem.add_runtime_dependency "thwait"
 
