@@ -31,11 +31,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Logstash's file descriptors usage, limits and sizing guidance documented [#19207](https://github.com/elastic/logstash/pull/19207)
 
-### Updates to dependencies [logstash-9.3.6-dependencies]
-
-* Pinned ERB to ~> 4.0.3 [#19197](https://github.com/elastic/logstash/pull/19197)
-* Pinned json gem to 2.19.2 [#19198](https://github.com/elastic/logstash/pull/19198)
-
 ### Plugins [logstash-plugin-9.3.6-changes]
 
 **Azure_event_hubs Input - 1.5.7**
