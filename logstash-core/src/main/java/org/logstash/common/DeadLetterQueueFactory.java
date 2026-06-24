@@ -76,15 +76,16 @@ public class DeadLetterQueueFactory {
      * @param maxQueueSize Maximum size of the dead letter queue (in bytes). No entries will be written
      *                     that would make the size of this dlq greater than this value
      * @param flushInterval Maximum duration between flushes of dead letter queue files if no data is sent.
+     * @param flushCheckInterval The interval between scheduler checks for stale segments.
      * @param storageType overwriting type in case of queue full: drop_older or drop_newer.
      * @return write manager for the specific id's dead-letter-queue context
      */
-    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval, QueueStorageType storageType) {
-        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval, storageType));
+    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval, Duration flushCheckInterval, QueueStorageType storageType) {
+        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval, flushCheckInterval, storageType));
     }
 
     /**
-     * Like {@link #getWriter(String, String, long, Duration, QueueStorageType)} but also setting the age duration
+     * Like {@link #getWriter(String, String, long, Duration, Duration, QueueStorageType)} but also setting the age duration
      * of the segments.
      *
      * @param id The identifier context for this dlq manager
@@ -93,12 +94,13 @@ public class DeadLetterQueueFactory {
      * @param maxQueueSize Maximum size of the dead letter queue (in bytes). No entries will be written
      *                     that would make the size of this dlq greater than this value
      * @param flushInterval Maximum duration between flushes of dead letter queue files if no data is sent.
+     * @param flushCheckInterval The interval between scheduler checks for stale segments.
      * @param storageType overwriting type in case of queue full: drop_older or drop_newer.
      * @param age the period that DLQ events should be considered as valid, before automatic removal.
      * @return write manager for the specific id's dead-letter-queue context
      * */
-    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval, QueueStorageType storageType, Duration age) {
-        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval, storageType, age));
+    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval, Duration flushCheckInterval, QueueStorageType storageType, Duration age) {
+        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval, flushCheckInterval, storageType, age));
     }
 
     public static DeadLetterQueueWriter release(String id) {
@@ -106,10 +108,11 @@ public class DeadLetterQueueFactory {
     }
 
     private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize,
-                                                   final Duration flushInterval, final QueueStorageType storageType) {
+                                                   final Duration flushInterval, final Duration flushCheckInterval, final QueueStorageType storageType) {
         try {
             return DeadLetterQueueWriter
-                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval)
+                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval, flushCheckInterval)
+                    .pipelineId(id)
                     .storageType(storageType)
                     .build();
         } catch (IOException e) {
@@ -119,11 +122,12 @@ public class DeadLetterQueueFactory {
     }
 
     private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize,
-                                                   final Duration flushInterval, final QueueStorageType storageType,
+                                                   final Duration flushInterval, final Duration flushCheckInterval, final QueueStorageType storageType,
                                                    final Duration age) {
         try {
             return DeadLetterQueueWriter
-                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval)
+                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval, flushCheckInterval)
+                    .pipelineId(id)
                     .storageType(storageType)
                     .retentionTime(age)
                     .build();
