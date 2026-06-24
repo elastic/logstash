@@ -67,7 +67,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "jruby-openssl", "~> 0.16.0"
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
-  gem.add_runtime_dependency "i18n", "~> 1", "< 1.15.0" #(MIT license) pinned until JRuby 10+; i18n 1.15+ requires Ruby 3.2+
+  gem.add_runtime_dependency "i18n", "~> 1" #(MIT license)
 
   gem.add_runtime_dependency "thwait"
 
