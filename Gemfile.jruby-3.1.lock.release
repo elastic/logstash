@@ -2,12 +2,12 @@ PATH
   remote: logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 8.19.17)
+      logstash-core (= 8.19.18)
 
 PATH
   remote: logstash-core
   specs:
-    logstash-core (8.19.17-java)
+    logstash-core (8.19.18-java)
       clamp (~> 1, >= 1.3.3)
       concurrent-ruby (~> 1, < 1.1.10)
       down (~> 5.2.0)
@@ -21,7 +21,7 @@ PATH
       manticore (~> 0.6)
       minitar (~> 1)
       pry (~> 0.12)
-      puma (~> 6.3, >= 6.4.2)
+      puma (~> 8.0)
       rack (~> 3)
       ruby-maven-libs (~> 3, >= 3.8.9)
       rubyzip (~> 1)
@@ -46,7 +46,7 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1261.0)
+    aws-partitions (1.1262.0)
     aws-sdk-cloudfront (1.150.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
@@ -183,7 +183,7 @@ GEM
     jruby-jms (1.3.0-java)
       gene_pool
       semantic_logger
-    jruby-openssl (0.16.0-java)
+    jruby-openssl (0.16.1-java)
     jruby-stdin-channel (0.2.0-java)
     json (2.12.2-java)
     json-schema (2.8.1)
@@ -758,7 +758,7 @@ GEM
       date
       jar-dependencies (>= 0.1.7)
     public_suffix (5.1.1)
-    puma (6.6.1-java)
+    puma (8.0.2-java)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1-java)
