@@ -751,7 +751,7 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
       spoon (~> 0.0)
-    psych (5.2.2-java)
+    psych (5.2.3-java)
       date
       jar-dependencies (>= 0.1.7)
     public_suffix (5.1.1)
