@@ -23,29 +23,13 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.3.7 [logstash-9.3.7-release-notes]
 
-### Features and enhancements [logstash-9.3.7-features-enhancements]
+### Updates to dependencies [logstash-9.3.7-dependencies]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.3.7
-
-=== Logstash Commits between 9.3 and 9.3.6
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.3.6..9.3"
-
-1026cc84e - (HEAD -> 9.3, origin/9.3) Update patch plugin versions in gemfile lock (#19242) (5 days ago) <github-actions[bot]>
-d0265cc9a - Fix typos in pipeline.workers documentation (#19238) (#19240) (5 days ago) <mergify[bot]>
-209779924 - upgrade puma to 8.x (#19200) (#19228) (6 days ago) <mergify[bot]>
-71e5546fc - Bump logstash version 9.3.7 (#19232) (6 days ago) <github-actions[bot]>
-925e12ae2 - Revert "Pin i18n gem < 1.15.0 for JRuby 9.4.x compatibility (#19215)" (#19222) (6 days ago) <Cas Donoghue>
-82e830f6a - Release notes for 9.3.6 (#19225) (6 days ago) <github-actions[bot]>
-10ffab2b7 - Pin i18n gem < 1.15.0 for JRuby 9.4.x compatibility (#19215) (10 days ago) <Kaise>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.3.6..9.3 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
+Upgrade puma to 8.x [#19228](https://github.com/elastic/logstash/pull/19228)
 
 ### Plugins [logstash-plugin-9.3.7-changes]
+
+No user-facing changes in Logstash plugins.
 
 ## 9.3.6 [logstash-9.3.6-release-notes]
 
