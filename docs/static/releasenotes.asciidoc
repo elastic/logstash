@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-18,Logstash 8.19.18>>
 * <<logstash-8-19-17,Logstash 8.19.17>>
 * <<logstash-8-19-16,Logstash 8.19.16>>
 * <<logstash-8-19-15,Logstash 8.19.15>>
@@ -108,6 +109,30 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-18]]
+=== Logstash 8.19.18 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.18
+
+=== Logstash Commits between 8.19 and 8.19.17
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.17..8.19"
+
+83560f505 - (HEAD -> 8.19, origin/8.19) Manually resolve lockfile for puma major version bump (#19244) (5 days ago) <Cas Donoghue>
+407dc2575 - Revert "Pin i18n gem < 1.15.0 for JRuby 9.4.x compatibility (#19214)" (#19229) (5 days ago) <Cas Donoghue>
+011fe2bc2 - [8.19] (backport #19200) upgrade puma to 8.x (#19227) (6 days ago) <mergify[bot]>
+996878020 - Bump logstash version 8.19.18 (#19233) (6 days ago) <github-actions[bot]>
+12124714f - Release notes for 8.19.17 (#19224) (6 days ago) <github-actions[bot]>
+c697bce51 - Pin i18n gem < 1.15.0 for JRuby 9.4.x compatibility (#19214) (10 days ago) <Kaise>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.19.17..8.19 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-19-17]]
 === Logstash 8.19.17 Release Notes
