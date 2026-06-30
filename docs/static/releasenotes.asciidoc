@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-18,Logstash 8.19.18>>
 * <<logstash-8-19-17,Logstash 8.19.17>>
 * <<logstash-8-19-16,Logstash 8.19.16>>
 * <<logstash-8-19-15,Logstash 8.19.15>>
@@ -108,6 +109,17 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-18]]
+=== Logstash 8.19.18 Release Notes
+
+==== Updates to dependencies
+
+Upgrade puma to 8.x https://github.com/elastic/logstash/pull/19244[#19244]
+
+==== Plugins
+
+No user-facing changes in Logstash plugins.
 
 [[logstash-8-19-17]]
 === Logstash 8.19.17 Release Notes
