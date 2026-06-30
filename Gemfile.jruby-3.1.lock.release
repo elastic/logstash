@@ -47,7 +47,7 @@ GEM
     aws-sdk-cloudfront (1.150.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-cloudwatch (1.140.0)
+    aws-sdk-cloudwatch (1.141.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-core (3.252.0)
@@ -304,7 +304,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elastic_integration (9.3.5-java)
+    logstash-filter-elastic_integration (9.3.6-java)
       logstash-core (>= 8.7.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-elasticsearch (4.3.1)
@@ -387,7 +387,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri (>= 1.18.9)
       xml-simple
-    logstash-input-azure_event_hubs (1.5.7)
+    logstash-input-azure_event_hubs (1.5.8)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -564,7 +564,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.8.9-java)
+    logstash-integration-kafka (11.8.10-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
