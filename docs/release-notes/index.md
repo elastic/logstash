@@ -21,6 +21,16 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.3.7 [logstash-9.3.7-release-notes]
+
+### Updates to dependencies [logstash-9.3.7-dependencies]
+
+Upgrade puma to 8.x [#19228](https://github.com/elastic/logstash/pull/19228)
+
+### Plugins [logstash-plugin-9.3.7-changes]
+
+No user-facing changes in Logstash plugins.
+
 ## 9.3.6 [logstash-9.3.6-release-notes]
 
 ### Features and enhancements [logstash-9.3.6-features-enhancements]
