@@ -1,4 +1,5 @@
-source: https://github.com/jwt/ruby-jwt/blob/v2.2.2/LICENSE
+source: https://github.com/jwt/ruby-jwt/blob/v3.2.0/LICENSE
+
 
 Copyright (c) 2011 Jeff Lindsay
 

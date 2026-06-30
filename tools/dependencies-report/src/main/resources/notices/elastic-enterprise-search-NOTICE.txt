@@ -1,4 +1,4 @@
-source: https://github.com/elastic/enterprise-search-ruby/blob/v7.16.0/LICENSE
+source: https://github.com/elastic/enterprise-search-ruby/blob/v8.19.0/LICENSE
 
 
                                  Apache License

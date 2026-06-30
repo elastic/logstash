@@ -23,6 +23,7 @@ require "logstash/util/cloud_setting_auth"
 require "logstash/util/modules_setting_array"
 require "socket"
 require "stud/temporary"
+require "uri"
 
 module LogStash
   # In the event that we're requiring this file without bootstrap/environment.rb
