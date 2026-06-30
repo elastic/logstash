@@ -47,7 +47,7 @@ GEM
     aws-sdk-cloudfront (1.150.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-cloudwatch (1.140.0)
+    aws-sdk-cloudwatch (1.141.0)
       aws-sdk-core (~> 3, >= 3.248.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-core (3.252.0)
@@ -114,7 +114,7 @@ GEM
     elastic-enterprise-search (8.19.0)
       elastic-transport (~> 8.1)
       jwt (>= 3.2.0, < 4.0)
-    elastic-transport (8.5.2)
+    elastic-transport (8.5.3)
       faraday (< 3)
       multi_json
     elasticsearch (8.19.3)
@@ -307,7 +307,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elastic_integration (8.19.6-java)
+    logstash-filter-elastic_integration (8.19.7-java)
       logstash-core (>= 8.7.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-elasticsearch (3.19.0)
@@ -391,7 +391,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri (>= 1.18.9)
       xml-simple
-    logstash-input-azure_event_hubs (1.5.7)
+    logstash-input-azure_event_hubs (1.5.8)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -576,7 +576,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.8.9-java)
+    logstash-integration-kafka (11.8.10-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -751,7 +751,7 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
       spoon (~> 0.0)
-    psych (5.2.3-java)
+    psych (5.2.6-java)
       date
       jar-dependencies (>= 0.1.7)
     public_suffix (5.1.1)
