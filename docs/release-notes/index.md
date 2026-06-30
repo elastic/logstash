@@ -21,6 +21,37 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.3 [logstash-9.4.3-release-notes]
+
+### Features and enhancements [logstash-9.4.3-features-enhancements]
+
+* Batch size estimation improvements [#19180](https://github.com/elastic/logstash/pull/19180)
+
+### Updates to documentations [logstash-9.4.3-documentations]
+
+* Logstash's file descriptors usage, limits and sizing guidance documented [#19206](https://github.com/elastic/logstash/pull/19206)
+
+### Plugins [logstash-plugin-9.4.3-changes]
+
+**Azure_event_hubs Input - 1.5.7**
+
+* Upgrades `jackson.core` to 2.21.2 and `nimbus-jose-jwt` to 10.9 versions. [#117](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/117)
+
+* [DOCS] Added recommendation to migrate to the Kafka integration plugin [#116](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/116)
+
+**Beats Input - 7.0.11**
+
+* Update Netty dependency to 4.1.135.Final [#567](https://github.com/logstash-plugins/logstash-input-beats/pull/567)
+
+**Http Input - 4.1.10**
+
+* Update Netty dependency to 4.1.135.Final [#219](https://github.com/logstash-plugins/logstash-input-http/pull/219)
+
+**Tcp Input - 7.0.11**
+
+* Update Netty dependency to 4.1.135.Final [#274](https://github.com/logstash-plugins/logstash-input-tcp/pull/274)
+
+
 ## 9.4.2 [logstash-9.4.2-release-notes]
 
 ### Fixes [logstash-9.4.2-fixes]
