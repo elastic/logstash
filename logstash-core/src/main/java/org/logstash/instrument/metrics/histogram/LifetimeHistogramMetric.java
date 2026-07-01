@@ -20,6 +20,7 @@
 package org.logstash.instrument.metrics.histogram;
 
 import co.elastic.logstash.api.UserMetric;
+import org.HdrHistogram.PackedHistogram;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.HdrHistogram.Histogram;
 import org.HdrHistogram.Recorder;
@@ -37,7 +38,7 @@ public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMet
         super(name);
         //TODO recorder should be provided as a parameter constructor or lazy-initialized by a supplier, but this is sufficient for now
         this.recorder = new Recorder(3);
-        this.lifetimeSnapshot = recorder.getIntervalHistogram();
+        this.lifetimeSnapshot = compactCopy(recorder.getIntervalHistogram());
     }
 
     @Override
@@ -62,18 +63,34 @@ public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMet
     @Override
     public synchronized ValueHistogram getValue() {
         Histogram uncommitted = recorder.getIntervalHistogram();
-        this.lifetimeSnapshot = copyAdding(lifetimeSnapshot, uncommitted);
+        this.lifetimeSnapshot = combineHistograms(lifetimeSnapshot, uncommitted);
         return ValueHistogram.of(this.lifetimeSnapshot);
     }
 
-    private Histogram copyAdding(Histogram lifetime, Histogram other) {
+    private static Histogram combineHistograms(Histogram lifetime, Histogram other) {
         if (Objects.isNull(other) || other.getTotalCount()  == 0) {
-            return lifetime.copy();
+            return lifetime;
         }
 
-        final Histogram result = lifetime.copy();
-        result.add(other);
+        final Histogram result = compactCopy(lifetime);
 
+        result.setAutoResize(true);
+        result.add(other);
+        result.setAutoResize(false);
+
+        return result;
+    }
+
+    /**
+     * A "compact copy" has no concurrency primitives and therefore is NOT intended for updates outside
+     * the scope in which it was created.
+     *
+     * @param source the source histogram
+     * @return a copy that is just a `Histogram` without concurrency overhead.
+     */
+    static Histogram compactCopy(Histogram source) {
+        final Histogram result = new PackedHistogram(source); // infers structure, not data
+        result.add(source);
         return result;
     }
 
@@ -105,7 +122,7 @@ public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMet
                 return this;
             }
 
-            final Histogram result = this.delegate.copy();
+            final Histogram result = compactCopy(this.delegate);
             result.subtract(other.delegate);
 
             return of(result);
