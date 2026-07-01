@@ -20,6 +20,7 @@
 package org.logstash.instrument.metrics.histogram;
 
 import co.elastic.logstash.api.UserMetric;
+import org.HdrHistogram.PackedHistogram;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.HdrHistogram.Histogram;
 import org.HdrHistogram.Recorder;
@@ -88,7 +89,7 @@ public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMet
      * @return a copy that is just a `Histogram` without concurrency overhead.
      */
     static Histogram compactCopy(Histogram source) {
-        final Histogram result = new Histogram(source); // infers structure, not data
+        final Histogram result = new PackedHistogram(source); // infers structure, not data
         result.add(source);
         return result;
     }
