@@ -307,6 +307,15 @@ class LogStash::Runner < Clamp::StrictCommand
     jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
     logger.info "JVM bootstrap flags: #{jvmArgs}"
 
+    begin
+      hotspot_diagnostic_bean = ManagementFactory.getPlatformMXBean(com.sun.management.HotSpotDiagnosticMXBean.java_class)
+      compressed_oops = hotspot_diagnostic_bean.getVMOption("UseCompressedOops").getValue()
+      max_heap_size = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax()
+      logger.info("Compressed ordinary object pointers (oops)", "heap.max" => max_heap_size, "compressed_oops" => compressed_oops)
+    rescue => e
+      logger.debug("Could not determine JVM UseCompressedOops setting", "exception" => e.message)
+    end
+
 
     # Verify the Jackson defaults
     LogStash::Util::Jackson.verify_jackson_overrides
