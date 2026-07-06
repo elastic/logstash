@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/tuning-logstash.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Tuning and profiling logstash pipeline performance [tuning-logstash]
@@ -42,6 +45,7 @@ Make sure you’ve read the [Performance troubleshooting](/reference/performance
 
 * The `pipeline.workers` setting determines how many threads to run for filter and output processing. If you find that events are backing up, or that the CPU is not saturated, consider increasing the value of this parameter to make better use of available processing power. Good results can even be found increasing this number past the number of available processors as these threads may spend significant time in an I/O wait state when writing to external systems.
 * The `pipeline.batch.size` setting defines the maximum number of events an individual worker thread collects from the queue before attempting to execute filters and outputs. Larger batch sizes are generally more efficient, but increase memory overhead. Output plugins can process each batch as a logical unit. The Elasticsearch output, for example, attempts to send a single [bulk request](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-bulk) for each batch received. Tuning the `pipeline.batch.size` setting adjusts the size of bulk requests sent to Elasticsearch.
+* The `pipeline.batch.output_chunking.growth_threshold_factor` setting controls when output batches are split into smaller chunks. When the event count of a batch increases by this multiplication factor by the end of the pipeline's filter section, it is chunked based on the value of `pipeline.batch.size`. For example: a batch size of 50 that grows to over 50,000 events (1000x50=50,000) will be sent to outputs 50 events at a time instead of a single enormous batch. Useful when batch size grows unpredictably due to filter plugins such as split or clone. The default value of 1000 effectively disables chunking; set to a lower value to enable it.
 * The `pipeline.batch.delay` setting rarely needs to be tuned. This setting adjusts the latency of the Logstash pipeline. Pipeline batch delay is the maximum amount of time in milliseconds that a pipeline worker waits for each new event while its current batch is not yet full. After this time elapses without any more events becoming available, the worker begins to execute filters and outputs. The maximum time that the worker waits between receiving an event and processing that event in a filter is the product of the `pipeline.batch.delay` and `pipeline.batch.size` settings.
 
 
@@ -56,6 +60,81 @@ If you plan to modify the default pipeline settings, take into account the follo
 * The number of workers may be set higher than the number of CPU cores since outputs often spend idle time in I/O wait conditions.
 * Threads in Java have names and you can use the `jstack`, `top`, and the VisualVM graphical tools to figure out which resources a given thread uses.
 * On Linux platforms, Logstash labels its threads with descriptive names. For example, inputs show up as `[base]<inputname`, and pipeline workers show up as `[base]>workerN`, where N is an integer. Where possible, other threads are also labeled to help you identify their purpose.
+
+::::{note}
+Enabling `pipeline.batch.metrics.sampling_mode` leads to increased heap consumption for each pipeline. You can identify this increased consumption by enabling debug logging for the `org.logstash.execution.AbstractPipelineExt` logger and searching the logs for a specific string like:
+
+```shell
+[2026-03-30T17:28:45,791][INFO ][org.logstash.execution.AbstractPipelineExt] Pipeline `main` batch metrics estimated memory occupation
+```
+
+The system estimates and logs the memory consumed by tracking structural metrics for each pipeline batch.
+
+You can globally disable batch metrics sampling by setting `pipeline.batch.metrics.sampling_mode` to disabled in [logstash.yml](/reference/logstash-settings-file.md). To enable it for specific pipelines, configure this setting per pipeline in [pipelines.yml](/reference/multiple-pipelines.md).
+::::
+
+
+
+
+
+## Optimizing batch sizes [batch-size-optimization]
+{applies_to}`stack: preview 9.4.0`
+
+In a perfectly balanced pipeline, the input and output flow rates are equal. This equilibrium means that every batch read from the queue is completely full, and there is no accumulation within the queue.
+
+To gain better visibility into the composition of batches spooled from the queue, Logstash gathers and exposes statistical data about the batch structure within the `node_stats` metricset.
+A snippet of the information returned is:
+```yaml
+pipelines:
+  a-pipeline:
+    batch:
+      event_count:
+        current: 78
+        average:
+          lifetime: 115
+          last_1_minute: 120
+          last_5_minutes: 110
+          last_15_minutes: 112
+        p50:
+          last_1_minute: 125
+          last_5_minutes: 105
+          last_15_minutes: 108
+        p90:
+          last_1_minute: 125
+          last_5_minutes: 112
+          last_15_minutes: 116  
+```
+
+Using this data, you can evaluate whether the configured `pipeline.batch.size` is being effectively utilized across time periods.
+
+Ideally, the 50th and 90th percentiles should be close to `pipeline.batch.size`, indicating that batches are consistently filled without queueing delays.
+
+Interpretation guidelines:
+
+- **Consistently full batches (P50/P90 ≈ `pipeline.batch.size`)**  
+  Indicates steady throughput. If CPU and memory have headroom, increasing `pipeline.batch.size` may improve efficiency by reducing per-batch overhead.
+
+- **Underfilled batches (P50/P90 < `pipeline.batch.size`)**  
+  Suggests insufficient input volume. Increasing batch size is unlikely to help and may increase latency.
+
+- **Mixed percentiles (for example P90 ≈ `pipeline.batch.size`, P50 lower)**  
+  Indicates bursty traffic. Larger batches can improve throughput but might increase latency.
+
+- **Queue backpressure context**:
+  - Low backpressure + full batches → healthy pipeline; safe to consider increasing batch size or workers.
+  - High backpressure + full batches → downstream bottleneck; consider increasing number of workers or resources instead of batch size.
+  - Low backpressure + underfilled batches → underutilized pipeline; no tuning needed.
+
+Always validate changes against CPU, memory, and I/O to avoid resource contention.
+
+In general, tune `pipeline.batch.size` to balance throughput (larger batches) against latency (smaller batches), while keeping backpressure minimal.
+
+If this condition is not met, `pipeline.batch.delay` can be increased to attempt optimization. However, this adjustment must be made carefully to prevent:
+
+* An increase in `queue.events_count`, if a persistent queue is used.
+* An increment in `queue_push_duration_in_millis`, if in memory queue is used.
+
+An increase in either of the latter two metrics signifies that the pipeline is applying backpressure to the upstream system, resulting in decreased overall pipeline performance.
 
 
 ## Profiling the heap [profiling-the-heap]

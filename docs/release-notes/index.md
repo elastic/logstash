@@ -21,6 +21,732 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.3 [logstash-9.4.3-release-notes]
+
+### Features and enhancements [logstash-9.4.3-features-enhancements]
+
+* Batch size estimation improvements [#19180](https://github.com/elastic/logstash/pull/19180)
+
+### Updates to documentations [logstash-9.4.3-documentations]
+
+* Logstash's file descriptors usage, limits and sizing guidance documented [#19206](https://github.com/elastic/logstash/pull/19206)
+
+### Plugins [logstash-plugin-9.4.3-changes]
+
+**Azure_event_hubs Input - 1.5.7**
+
+* Upgrades `jackson.core` to 2.21.2 and `nimbus-jose-jwt` to 10.9 versions. [#117](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/117)
+
+* [DOCS] Added recommendation to migrate to the Kafka integration plugin [#116](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/116)
+
+**Beats Input - 7.0.11**
+
+* Update Netty dependency to 4.1.135.Final [#567](https://github.com/logstash-plugins/logstash-input-beats/pull/567)
+
+**Http Input - 4.1.10**
+
+* Update Netty dependency to 4.1.135.Final [#219](https://github.com/logstash-plugins/logstash-input-http/pull/219)
+
+**Tcp Input - 7.0.11**
+
+* Update Netty dependency to 4.1.135.Final [#274](https://github.com/logstash-plugins/logstash-input-tcp/pull/274)
+
+## 9.4.2 [logstash-9.4.2-release-notes]
+
+### Fixes [logstash-9.4.2-fixes]
+
+* Fixes a metric leak in `_node/stats` when a pipeline repeatedly fails to start with `config.reload.automatic: true`. Previously, each retry left a fresh set of plugin metric entries in the collector, causing the stats payload to grow indefinitely [#19120](https://github.com/elastic/logstash/pull/19120)
+
+### Updates to dependencies [logstash-9.4.2-dependencies]
+
+* Updated jruby-openssl to 0.16.0 [#19116](https://github.com/elastic/logstash/pull/19116)
+* Upgraded jrjackson and fasterxml.jackson [#19126](https://github.com/elastic/logstash/pull/19126)
+
+### Plugins [logstash-plugin-9.4.2-changes]
+
+**Elastic_integration Filter - 9.4.3**
+
+* Fixes an issue where a field set by an integration pipeline to `java.util.Date` value-object representing a timestamp could not be converted to a timestamp [#462](https://github.com/elastic/logstash-filter-elastic_integration/issues/462)
+
+* Include httpclient5/httpcore5 from the `elasticsearch-java` artifact [#458](https://github.com/elastic/logstash-filter-elastic_integration/pull/458)
+
+**Kafka Integration - 11.8.9**
+
+* Upgrades jackson.core to 2.21.2 version [#255](https://github.com/logstash-plugins/logstash-integration-kafka/pull/255)
+
+**Beats Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#541](https://github.com/logstash-plugins/logstash-input-beats/pull/541)
+
+**Http Input - 4.1.9**
+
+* Update Netty dependency to 4.1.134.Final [#217](https://github.com/logstash-plugins/logstash-input-http/pull/217)
+
+**Tcp Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#257](https://github.com/logstash-plugins/logstash-input-tcp/pull/257)
+
+**Pipe Output - 3.0.7**
+
+* [DOC] Document `command` string form limitation [#6](https://github.com/logstash-plugins/logstash-output-pipe/pull/6)
+
+
+## 9.4.1 [logstash-9.4.1-release-notes]
+
+### Features and enhancements [logstash-9.4.1-features-enhancements]
+
+#### Dead letter queue flush check interval [logstash-9.4.1-dlq-flush-check-interval]
+
+Introduces new `dead_letter_queue.flush_check_interval` config for flushing the staled segment files scheduler 
+which can reduce frequent check overhead.
+If you are using intensive DLQ operations (write/read), the frequent flush check scheduler might create more overhead for the pipeline, increasing CPU usage. 
+Introducing configurable scheduler cadence improves the pipeline efficiency by removing frequent operations 
+[#19036](https://github.com/elastic/logstash/pull/19036).
+
+### Updates to dependencies [logstash-9.4.1-dependencies]
+
+* Update bundled JDK to 21.0.11 build 10.
+
+### Plugins [logstash-plugin-9.4.1-changes]
+
+**Beats Input - 7.0.9**
+
+* Update Netty dependency to 4.1.133.Final [#539](https://github.com/logstash-plugins/logstash-input-beats/pull/539)
+
+**Http Input - 4.1.8**
+
+* Update Netty dependency to 4.1.133.Final [#216](https://github.com/logstash-plugins/logstash-input-http/pull/216)
+
+**Tcp Input - 7.0.9**
+
+* Update Netty dependency to 4.1.133.Final [#256](https://github.com/logstash-plugins/logstash-input-tcp/pull/256)
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline.
+  This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy [#250](https://github.com/logstash-plugins/logstash-input-tcp/pull/250)
+
+**Elasticsearch Output - 12.1.3**
+
+* Improves the logging experience when DLQ used [#1253](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1253).
+
+
+## 9.4.0 [logstash-9.4.0-release-notes]
+
+### Features and enhancements [logstash-9.4.0-features-enhancements]
+
+#### Reactive pipeline recovery [logstash-9.4.0-reactive-pipeline-recovery]
+
+This release adds a feature to recover from pipeline crashes, under the setting `pipeline.recovery` [#18930](https://github.com/elastic/logstash/pull/18930).
+Crash recovery is applied when `config.reload.automatic` is enabled and accepts:
+
+* `auto`: enables pipeline crash recovery for pipelines backed by the persistent queue
+* `false` (default): do not automate recovery of crashed pipelines
+* `true`: enables pipeline crash recovery for any pipeline, even if backed by the ephemeral memory queue (risk: data loss)
+
+#### Batch chunking  [logstash-9.4.0-batch-chunking]
+
+We have added a safety mechanism to limit memory expansion when using filters that produce more events than they consume (like the `split` filter), controlled by the new `pipeline.batch.output_chunking.growth_threshold_factor` setting [#18680](https://github.com/elastic/logstash/pull/18680). 
+When a batch growth exceeds the configured factor, it is re-chunked into smaller batches of `pipeline.batch.size` events before being handled by the outputs.
+
+#### New batch histogram metrics [logstash-9.4.0-new-batch-histogram-metrics]
+
+We've improved visibility of batch sizing at a pipeline level by exposing new histogram-type metrics in the `GET /_node/stats` endpoint [#17838](https://github.com/elastic/logstash/issues/17838). 
+These metrics show the distribution of batch sizes in bytes and event-count for the lifetime of the pipeline, as well as for the most recent 1, 5, and 15-minute time windows.
+
+#### Additional features and enhancements [logstash-9.4.0-more-features]
+
+* Performance improvements which saves ~40% CPU resource on DLQ segment file lookup operations [19013](https://github.com/elastic/logstash/pull/19013)
+
+### Updates to dependencies [logstash-9.4.0-dependencies]
+
+* Update JRuby to 10.0.5.0
+* Update bundled JDK to 21.0.10 build 7
+
+::::{important}
+
+Logstash 9.4.0 upgrades JRuby to 10 because 9.x is now EOL. JRuby 10 requires Java 21, dropping support for any version below, including 17.
+For this reason, Logstash now also requires Java 21 or later, and Java 17 is no longer supported.
+
+As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
+
+::::
+
+### Plugins [logstash-plugin-9.4.0-changes]
+
+::::{important}
+
+The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash release will bundle Kafka integration plugin `12.x` in its place, which introduces breaking changes, read more about them in the [CHANGELOG.md](https://github.com/logstash-plugins/logstash-integration-kafka/blob/v12.0.0/CHANGELOG.md#1200)
+
+::::
+
+**Aggregate Filter - 2.11.0**
+
+* Feature: Add a warning log message when the number of tasks stored in memory exceeds the configured threshold [#125](https://github.com/logstash-plugins/logstash-filter-aggregate/issues/125)
+
+**Aws Integration - 7.3.4**
+
+* Use milliseconds timestamp precision in S3 input to fix the skip backup and delete object issue in S3-compatible storage services [#60](https://github.com/logstash-plugins/logstash-integration-aws/pull/60)
+* Replace deprecated `Aws::S3::Object#upload_file` in favor of `Aws::S3::TransferManager#upload_file` [#67](https://github.com/logstash-plugins/logstash-integration-aws/pull/67)
+* Replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#65](https://github.com/logstash-plugins/logstash-integration-aws/pull/65)
+* Re-packaging the plugin [#63](https://github.com/logstash-plugins/logstash-integration-aws/pull/63)
+* Add `cutoff_second configuration` option to S3 input plugin [#59](https://github.com/logstash-plugins/logstash-integration-aws/pull/59)
+
+**Date Filter - 3.2.0**
+
+* Add `precision` setting to support nanosecond precision timestamps [#165](https://github.com/logstash-plugins/logstash-filter-date/pull/165)
+  * `ms` (default): timestamps are stored with millisecond precision
+    * it keeps the same behavior as before for backward compatibility
+    * fractional seconds are truncated to 3 digits
+    * custom parsing formats use `joda-time` library
+  * `ns`: timestamps are stored with nanosecond precision
+    * fractional seconds support up to 9 digits
+    * custom parsing formats use `java.time`
+* `ISO8601` now accepts up to 9 fractional-second digits
+
+**De_dot Filter - 1.2.0**
+
+* Apply an 'error' tag to any event that fails the de-dotting process [#26](https://github.com/logstash-plugins/logstash-filter-de_dot/pull/26)
+
+**Dissect Filter - 1.3.0**
+
+* Add JRuby 10 support: replace removed `NativeException` with `RaiseException`, source JRuby from Logstash vendor directory instead of pinning Maven version [#96](https://github.com/logstash-plugins/logstash-filter-dissect/pull/96)
+
+**Elastic Integration Filter - 9.4.0**
+
+* Include Elasticsearch web-utils JAR into the plugin to keep `registered_domain` processor dependencies [#397](https://github.com/elastic/logstash-filter-elastic_integration/pull/397)
+* Fixed `set_security_user` processor to behave consistently with other unsupported processors (`inference`, `enrich`) by tagging events with `_ingest_pipeline_failure` [#269](https://github.com/elastic/logstash-filter-elastic_integration/pull/269)
+
+**Fingerprint Filter - 3.5.0**
+
+* Fix fingerprint instability for Hash and Array field values caused by JRuby 10 changing `Hash#inspect` formatting [#79](https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/79)
+
+**Kafka Integration - 11.8.8**
+
+* Fix a regression introduced in `11.8.7` where `sasl_jaas_config` was incorrectly typed in the output plugin, crashing Logstash on startup when a SASL Kafka output configuration was present [#247](https://github.com/logstash-plugins/logstash-integration-kafka/pull/247)
+  
+**Mutate Filter - 3.6.0**
+
+* Add JRuby 10 support: fix integer conversion precision loss beyond 2^53 caused by `parse_signed_hex_str` routing all strings through `Float()` [#178](https://github.com/logstash-plugins/logstash-filter-mutate/pull/178)
+
+**Gelf Input - 3.4.0**
+
+* Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
+
+## 9.3.7 [logstash-9.3.7-release-notes]
+
+### Updates to dependencies [logstash-9.3.7-dependencies]
+
+Upgrade puma to 8.x [#19228](https://github.com/elastic/logstash/pull/19228)
+
+### Plugins [logstash-plugin-9.3.7-changes]
+
+No user-facing changes in Logstash plugins.
+
+## 9.3.6 [logstash-9.3.6-release-notes]
+
+### Features and enhancements [logstash-9.3.6-features-enhancements]
+
+* Batch's size estimation improvements [#19179](https://github.com/elastic/logstash/pull/19179)
+
+### Updates to documentations [logstash-9.3.6-documentations]
+
+* Logstash's file descriptors usage, limits and sizing guidance documented [#19207](https://github.com/elastic/logstash/pull/19207)
+
+### Plugins [logstash-plugin-9.3.6-changes]
+
+**Azure_event_hubs Input - 1.5.7**
+
+* Upgrades `jackson.core` to 2.21.2 and `nimbus-jose-jwt` to 10.9 versions. [#117](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/117)
+
+* [DOCS] Added recommendation to migrate to the Kafka integration plugin [#116](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/116)
+
+**Beats Input - 7.0.11**
+
+* Update Netty dependency to 4.1.135.Final [#567](https://github.com/logstash-plugins/logstash-input-beats/pull/567)
+
+**Http Input - 4.1.10**
+
+* Update Netty dependency to 4.1.135.Final [#219](https://github.com/logstash-plugins/logstash-input-http/pull/219)
+
+**Tcp Input - 7.0.11**
+
+* Update Netty dependency to 4.1.135.Final [#274](https://github.com/logstash-plugins/logstash-input-tcp/pull/274)
+
+## 9.3.5 [logstash-9.3.5-release-notes]
+
+### Updates to dependencies [logstash-9.3.5-dependencies]
+
+* Updated bundled JDK to 21.0.11 build 10 [#19069](https://github.com/elastic/logstash/pull/19069)
+* Updated jruby-openssl to 0.16.0 [#19115](https://github.com/elastic/logstash/pull/19115)
+* Upgraded jrjackson and fasterxml.jackson [#19103](https://github.com/elastic/logstash/pull/19103)
+
+### Features and enhancements [logstash-9.3.5-features-enhancements]
+
+* Introduces new `dead_letter_queue.flush_check_interval` config for flushing the staled segment files scheduler which can reduce frequent check overhead [#19036](https://github.com/elastic/logstash/pull/19036)
+
+### Fixes [logstash-9.3.5-fixes]
+
+* Fixes a metric leak in `_node/stats` when a pipeline repeatedly fails to start with `config.reload.automatic: true`. Previously, each retry left a fresh set of plugin metric entries in the collector, causing the stats payload to grow indefinitely [#19091](https://github.com/elastic/logstash/pull/19091)
+
+### Plugins [logstash-plugin-9.3.5-changes]
+
+**Elastic_integration Filter - 9.3.5**
+
+* Fixes an issue where a field set by an integration pipeline to `java.util.Date` value-object representing a timestamp could not be converted to a timestamp [#464](https://github.com/elastic/logstash-filter-elastic_integration/issues/464)
+
+* Include httpclient5/httpcore5 from the `elasticsearch-java` artifact [#457](https://github.com/elastic/logstash-filter-elastic_integration/pull/457)
+
+* Upgrades `tools.jackson.core` dependency to 3.1.1 [#453](https://github.com/elastic/logstash-filter-elastic_integration/pull/453)
+
+**Beats Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#541](https://github.com/logstash-plugins/logstash-input-beats/pull/541)
+
+**Elasticsearch Input - 5.2.2**
+
+* [DOC] Note that `search_after` requires permissions on underlying indices/data streams, not aliases [#251](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/TBD)
+
+**Http Input - 4.1.9**
+
+* Update Netty dependency to 4.1.134.Final [#217](https://github.com/logstash-plugins/logstash-input-http/pull/217)
+
+**Tcp Input - 7.0.10**
+
+* Update Netty dependency to 4.1.134.Final [#257](https://github.com/logstash-plugins/logstash-input-tcp/pull/257)
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#250](https://github.com/logstash-plugins/logstash-input-tcp/pull/250)
+  This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Pipe Output - 3.0.7**
+
+* [DOC] Document `command` string form limitation [#6](https://github.com/logstash-plugins/logstash-output-pipe/pull/6)
+
+**Kafka Integration - 11.8.9**
+
+* Upgrades jackson.core to 2.21.2 version [#255](https://github.com/logstash-plugins/logstash-integration-kafka/pull/255)
+
+
+## 9.3.4 [logstash-9.3.4-release-notes]
+
+### Updates to dependencies [logstash-9.3.4-dependencies]
+
+* Updated Log4j to 2.25.4 [#18991](https://github.com/elastic/logstash/pull/18991)
+
+### Features and enhancements [logstash-9.3.4-features-enhancements]
+
+* Improved dead letter queue performance during flush operations [#18874](https://github.com/elastic/logstash/pull/18874)
+* Optimized DLQ segment directory scans with single-pass logic, saving ~40% CPU on segment file lookup operations [#18970](https://github.com/elastic/logstash/pull/18970)
+
+### Plugins [logstash-plugin-9.3.4-changes]
+
+**Kafka Integration - 11.8.8**
+
+* Fix a regression introduced in 11.8.5 that prevented the Kafka Output plugin from being configured with `sasl_jaas_config` https://github.com/logstash-plugins/logstash-integration-kafka/pull/247[#247]
+
+**Elasticsearch Output - 12.1.3**
+
+* Improves the logging experience when DLQ used [#1253](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1253)
+
+
+## 9.3.3 [logstash-9.3.3-release-notes]
+
+### Plugins [logstash-plugin-9.3.3-changes]
+
+**Azure_event_hubs Input - 1.5.5**
+
+* Upgrades kotlin-stdlib dependency [#114](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/114)
+
+**Beats Input - 7.0.8**
+
+* Update Netty dependency to 4.1.132.Final [#535](https://github.com/logstash-plugins/logstash-input-beats/pull/535)
+
+**Http Input - 4.1.7**
+
+* Update Netty dependency to 4.1.132.Final [#214](https://github.com/logstash-plugins/logstash-input-http/pull/214)
+
+**Tcp Input - 7.0.7**
+
+* Update Netty dependency to 4.1.132.Final [#249](https://github.com/logstash-plugins/logstash-input-tcp/pull/249)
+
+**Kafka Integration - 11.8.7**
+
+* Upgrade Avro dependency to 1.11.5 [#242](https://github.com/logstash-plugins/logstash-integration-kafka/pull/242)
+
+* [DOC] Add info about Kafka timestamp behavior  [#241](https://github.com/logstash-plugins/logstash-integration-kafka/pull/241)
+
+* Redact `sasl_jaas_config` to prevent credentials from appearing in debug logs. [#237](https://github.com/logstash-plugins/logstash-integration-kafka/pull/237)
+
+**Http Output - 6.0.1**
+
+* [DOC] Clarify that `ssl_certificate_authorities` takes at-most-one value [#150](https://github.com/logstash-plugins/logstash-output-http/pull/150)
+
+
+## 9.3.2 [logstash-9.3.2-release-notes]
+
+### Updates to dependencies [logstash-9.3.2-dependencies]
+
+* Updated the bundled JDK to 21.0.10 build 7
+
+::::{important}
+
+As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
+
+::::
+
+### Plugins [logstash-plugin-9.3.2-changes]
+
+**Geoip Filter - 8.0.0**
+
+* Upgraded the bundled MaxMind `geoip2` library to version 4.4.0 [#238](https://github.com/logstash-plugins/logstash-filter-geoip/pull/238)
+* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0
+* Dropped support for Java 8. Minimum required version is now Java 11
+
+**Kafka Integration - 11.8.4**
+
+* Upgraded the `kafka-avro-serializer` dependency [#225](https://github.com/logstash-plugins/logstash-integration-kafka/pull/225)
+
+
+## 9.3.1 [logstash-9.3.1-release-notes]
+
+### Fixes [logstash-9.3.1-fixes]
+
+* Fixed an issue where some logstash artifacts were shipped with a JDK targeting the wrong platform/architecture. [#18750](https://github.com/elastic/logstash/pull/18750)
+
+### Plugins [logstash-plugin-9.3.1-changes]
+
+**Collectd Codec - 3.1.1**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#36](https://github.com/logstash-plugins/logstash-codec-collectd/pull/36)
+
+**Netflow Codec - 4.3.4**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#215](https://github.com/logstash-plugins/logstash-codec-netflow/pull/215)
+
+**Date Filter - 3.1.16**
+
+* Ensure gem artifact ships with all runtime dependencies [#163](https://github.com/logstash-plugins/logstash-filter-date/pull/163)
+
+**Dissect Filter - 1.2.6**
+
+* Ensure gem artifact ships with all runtime dependencies [#93](https://github.com/logstash-plugins/logstash-filter-dissect/pull/93)
+* Removed unused runtime dependency [#91](https://github.com/logstash-plugins/logstash-filter-dissect/pull/91)
+
+**Geoip Filter - 7.3.4**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#239](https://github.com/logstash-plugins/logstash-filter-geoip/pull/239)
+* Ensure gem artifact ships with all runtime dependencies [#236](https://github.com/logstash-plugins/logstash-filter-geoip/pull/236)
+
+**Grok Filter - 4.4.4**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#197](https://github.com/logstash-plugins/logstash-filter-grok/pull/197)
+
+**Beats Input - 7.0.7**
+
+* Upgrade Netty version to 4.1.131 [#531](https://github.com/logstash-plugins/logstash-input-beats/pull/531)
+* Ensure gem artifact ships with all runtime dependencies [#527](https://github.com/logstash-plugins/logstash-input-beats/pull/527)
+
+**Dead_letter_queue Input - 2.0.2**
+
+* Ensure gem artifact ships with all runtime dependencies [#57](https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/57)
+
+**File Input - 4.4.7**
+
+* Ensure gem artifact ships with all runtime dependencies [#331](https://github.com/logstash-plugins/logstash-input-file/pull/331)
+
+**Http Input - 4.1.6**
+
+* Upgrade Netty version to 4.1.131 [#207](https://github.com/logstash-plugins/logstash-input-http/pull/207)
+* Ensure gem artifact ships with all runtime dependencies [#206](https://github.com/logstash-plugins/logstash-input-http/pull/206)
+
+**Tcp Input - 7.0.6**
+
+* Upgrade Netty version to 4.1.131 [#246](https://github.com/logstash-plugins/logstash-input-tcp/pull/246)
+* Ensure gem artifact ships with all runtime dependencies [#242](https://github.com/logstash-plugins/logstash-input-tcp/pull/242)
+
+**Unix Input - 3.1.3**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#31](https://github.com/logstash-plugins/logstash-input-unix/pull/31)
+
+**Jdbc Integration - 5.6.3**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#192](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/192)
+* Ensure gem artifact ships with all runtime dependencies [#190](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/190)
+
+**Kafka Integration - 11.8.3**
+
+* Ensure gem artifact ships with all runtime dependencies [#223](https://github.com/logstash-plugins/logstash-integration-kafka/pull/223)
+
+**Nagios Output - 3.0.7**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#11](https://github.com/logstash-plugins/logstash-output-nagios/pull/11)
+
+**Webhdfs Output - 3.1.1**
+
+* Ensure gem artifact ships with all runtime dependencies [#49](https://github.com/logstash-plugins/logstash-output-webhdfs/pull/49)
+
+## 9.3.0 [logstash-9.3.0-release-notes]
+
+::::{important}
+
+Do not upgrade to Logstash 9.3.0 if you are running on `aarch64` or Windows with the bundled JDK and are not using Docker.
+
+For more details please see the associated [known issue](/release-notes/known-issues.md#logstash-ki-9.3.0).
+
+::::
+
+### Features and enhancements [logstash-9.3.0-features-enhancements]
+
+#### Wait for status feature added to Logstash API [logstash-9.3.0-wait-status]
+We've added additional `wait_for_status` and `timeout` query parameters to the Logstash root endpoint `/`. When calling the endpoint with these parameters set, the call will return when either the Logstash status matches (or improves on) the given status, or the given timeout has expired.
+
+Related:
+* Add `wait_for_status` and `timeout` query params for `_health_report` API [#18377](https://github.com/elastic/logstash/pull/18377)
+#### Additional features and enhancements [logstash-9.3.0-more-features]
+
+* Expose average batch metrics at 1, 5 and 15 minutes time window [#18460](https://github.com/elastic/logstash/pull/18460)
+
+### Fixes [logstash-9.3.0-fixes]
+
+* Fix an issue with Central Management where a spurious 404 when looking up pipeline definitions could cause the running pipelines to shut down [#18265](https://github.com/elastic/logstash/pull/18265)
+
+### Plugins [logstash-plugin-9.3.0-changes]
+
+**Avro Codec - 3.5.0**
+
+* Standardize SSL configurations, add proxy and basic auth supports [#47](https://github.com/logstash-plugins/logstash-codec-avro/pull/47)
+  * Add SSL/TLS support for HTTPS schema registry connections
+  * Add `ssl_enabled` option to enable/disable SSL
+  * Add `ssl_certificate` and `ssl_key` options for PEM-based client authentication (unencrypted keys only)
+  * Add `ssl_certificate_authorities` option for PEM-based server certificate validation
+  * Add `ssl_verification_mode` option to control SSL verification (full, none)
+  * Add `ssl_cipher_suites` option to configure cipher suites
+  * Add `ssl_supported_protocols` option to configure TLS protocol versions (TLSv1.1, TLSv1.2, TLSv1.3)
+  * Add `ssl_truststore_path` and `ssl_truststore_password` options for server certificate validation (JKS/PKCS12)
+  * Add `ssl_keystore_path` and `ssl_keystore_password` options for mutual TLS authentication (JKS/PKCS12)
+  * Add `ssl_truststore_type` and `ssl_keystore_type` options (JKS or PKCS12)
+  * Add HTTP proxy support with `proxy` option
+  * Add HTTP basic authentication support with `username` and `password` options
+
+**Netflow Codec - 4.3.3**
+
+* Fix `NoMethodError` when decode fails [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+
+**Cidr Filter - 3.2.0**
+
+* Feature: Add `address_field` config option to handle nested fields [#29](https://github.com/logstash-plugins/logstash-filter-cidr/pull/29)
+
+**Elastic_integration Filter - 9.3.0**
+
+* Embeds Ingest Node components from Elasticsearch 9.3 [#378](https://github.com/elastic/logstash-filter-elastic_integration/pull/378)
+
+**Azure_event_hubs Input - 1.5.4**
+
+* Ensure full jar-dependency tree is shipped with gem artifact [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused `adal4j` dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+
+**Kafka Integration - 11.8.2**
+
+* Upgrade transitive `org.apache.commons:commons-lang3` dependency [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
+
+**Snmp Integration - 4.2.1**
+
+* Upgrade log4j dependency [#85](https://github.com/logstash-plugins/logstash-integration-snmp/pull/85)
+
+* Add AES256 with 3DES extension support for `priv_protocol` [#78](https://github.com/logstash-plugins/logstash-integration-snmp/pull/78)
+
+**Elasticsearch Output - 12.1.1**
+
+* Remove duplicated deprecation log entry [#1232](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1232)
+
+* Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
+
+## 9.2.8 [logstash-9.2.8-release-notes]
+
+### Plugins [logstash-plugin-9.2.8-changes]
+
+**Azure_event_hubs Input - 1.5.5**
+
+* Upgrades kotlin-stdlib dependency [#114](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/114)
+
+**Beats Input - 7.0.8**
+
+* Update Netty dependency to 4.1.132.Final [#535](https://github.com/logstash-plugins/logstash-input-beats/pull/535)
+
+**Http Input - 4.1.7**
+
+* Update Netty dependency to 4.1.132.Final [#214](https://github.com/logstash-plugins/logstash-input-http/pull/214)
+
+**Tcp Input - 7.0.7**
+
+* Update Netty dependency to 4.1.132.Final [#249](https://github.com/logstash-plugins/logstash-input-tcp/pull/249)
+
+**Kafka Integration - 11.8.7**
+
+* Upgrade Avro dependency to 1.11.5 [#242](https://github.com/logstash-plugins/logstash-integration-kafka/pull/242)
+
+* [DOC] Add info about Kafka timestamp behavior  [#241](https://github.com/logstash-plugins/logstash-integration-kafka/pull/241)
+
+* Redact `sasl_jaas_config` to prevent credentials from appearing in debug logs. [#237](https://github.com/logstash-plugins/logstash-integration-kafka/pull/237)
+
+**Http Output - 6.0.1**
+
+* [DOC] Clarify that `ssl_certificate_authorities` takes at-most-one value [#150](https://github.com/logstash-plugins/logstash-output-http/pull/150)
+
+## 9.2.7 [logstash-9.2.7-release-notes]
+
+### Updates to dependencies [logstash-9.2.7-dependencies]
+
+* Updated the bundled JDK to 21.0.10 build 7
+* Upgraded Log4j to 2.25.3 [#18805](https://github.com/elastic/logstash/pull/18805)
+
+### Plugins [logstash-plugin-9.2.7-changes]
+
+**Geoip Filter - 8.0.0**
+
+* Updated MaxMind GeoIP2 database library to version 4.4.0 [#238](https://github.com/logstash-plugins/logstash-filter-geoip/pull/238)
+* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0
+* Dropped support for Java 8. Minimum required Java version is now Java 11
+
+**Kafka Integration - 11.8.4**
+
+* Upgraded the `kafka-avro-serializer` dependency [#225](https://github.com/logstash-plugins/logstash-integration-kafka/pull/225)
+
+## 9.2.6 [logstash-9.2.6-release-notes]
+
+### Fixes [logstash-9.2.6-fixes]
+
+* Fixed an issue where some logstash artifacts were shipped with a JDK targeting the wrong platform/architecture. [#18749](https://github.com/elastic/logstash/pull/18749)
+
+### Plugins [logstash-plugin-9.2.6-changes]
+
+**Collectd Codec - 3.1.1**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#36](https://github.com/logstash-plugins/logstash-codec-collectd/pull/36)
+
+**Netflow Codec - 4.3.4**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#215](https://github.com/logstash-plugins/logstash-codec-netflow/pull/215)
+
+**Date Filter - 3.1.16**
+
+* Ensure gem artifact ships with all runtime dependencies [#163](https://github.com/logstash-plugins/logstash-filter-date/pull/163)
+
+**Dissect Filter - 1.2.6**
+
+* Ensure gem artifact ships with all runtime dependencies [#93](https://github.com/logstash-plugins/logstash-filter-dissect/pull/93)
+* Removed unused runtime dependency [#91](https://github.com/logstash-plugins/logstash-filter-dissect/pull/91)
+
+**Geoip Filter - 7.3.4**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#239](https://github.com/logstash-plugins/logstash-filter-geoip/pull/239)
+* Ensure gem artifact ships with all runtime dependencies [#236](https://github.com/logstash-plugins/logstash-filter-geoip/pull/236)
+
+**Grok Filter - 4.4.4**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#197](https://github.com/logstash-plugins/logstash-filter-grok/pull/197)
+
+**Beats Input - 7.0.7**
+
+* Upgrade Netty version to 4.1.131 [#531](https://github.com/logstash-plugins/logstash-input-beats/pull/531)
+* Ensure gem artifact ships with all runtime dependencies [#527](https://github.com/logstash-plugins/logstash-input-beats/pull/527)
+
+**Dead_letter_queue Input - 2.0.2**
+
+* Ensure gem artifact ships with all runtime dependencies [#57](https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/57)
+
+**File Input - 4.4.7**
+
+* Ensure gem artifact ships with all runtime dependencies [#331](https://github.com/logstash-plugins/logstash-input-file/pull/331)
+
+**Http Input - 4.1.6**
+
+* Upgrade Netty version to 4.1.131 [#207](https://github.com/logstash-plugins/logstash-input-http/pull/207)
+* Ensure gem artifact ships with all runtime dependencies [#206](https://github.com/logstash-plugins/logstash-input-http/pull/206)
+
+**Tcp Input - 7.0.6**
+
+* Upgrade Netty version to 4.1.131 [#246](https://github.com/logstash-plugins/logstash-input-tcp/pull/246)
+* Ensure gem artifact ships with all runtime dependencies [#242](https://github.com/logstash-plugins/logstash-input-tcp/pull/242)
+
+**Unix Input - 3.1.3**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#31](https://github.com/logstash-plugins/logstash-input-unix/pull/31)
+
+**Jdbc Integration - 5.6.3**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#192](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/192)
+* Ensure gem artifact ships with all runtime dependencies [#190](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/190)
+
+**Kafka Integration - 11.8.3**
+
+* Ensure gem artifact ships with all runtime dependencies [#223](https://github.com/logstash-plugins/logstash-integration-kafka/pull/223)
+
+**Nagios Output - 3.0.7**
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#11](https://github.com/logstash-plugins/logstash-output-nagios/pull/11)
+
+**Webhdfs Output - 3.1.1**
+
+* Ensure gem artifact ships with all runtime dependencies [#49](https://github.com/logstash-plugins/logstash-output-webhdfs/pull/49)
+
+## 9.2.5 [logstash-9.2.5-release-notes]
+
+::::{important}
+
+Do not upgrade to Logstash 9.2.5 if you are running on `aarch64` or Windows with the bundled JDK and are not using Docker.
+
+For more details please see the associated [known issue](/release-notes/known-issues.md#logstash-ki-9.2.5).
+
+::::
+
+### Features and enhancements [logstash-9.2.5-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.2.5-changes]
+
+**Netflow Codec - 4.3.3**
+
+* Made decoding more robust to malformed events [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+
+**Azure_event_hubs Input - 1.5.4**
+
+* Ensure gem artifact ship with all runtime dependencies [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused Azure Active Directory dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+
+**Kafka Integration - 11.8.2**
+
+* Upgrade transitive dependency used by Avro serializer [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
+
+## 9.2.4 [logstash-9.2.4-release-notes]
+
+### Features and enhancements [logstash-9.2.4-features-enhancements]
+
+* Fix to clean batch statistic metrics on pipeline shutdown [#18515](https://github.com/elastic/logstash/pull/18515)
+
+### Plugins [logstash-plugin-9.2.4-changes]
+
+::::{Deprecations to Kafka partitioner settings}
+The Kafka integration plugin version bundled with this release introduces deprecations for `partitioner` settings in the Kafka output. Check out [Deprecations](/release-notes/deprecations.md) for more information.
+::::
+
+**Beats Input - 7.0.5**
+
+* Upgrade netty 4.1.129 [#525](https://github.com/logstash-plugins/logstash-input-beats/pull/525)
+
+**Http Input - 4.1.4**
+
+* Upgrade netty to 4.1.129 [#203](https://github.com/logstash-plugins/logstash-input-http/pull/203)
+
+**Tcp Input - 7.0.4**
+
+* Upgrade netty to 4.1.129 [#239](https://github.com/logstash-plugins/logstash-input-tcp/pull/239)
+
+**Kafka Integration - 11.8.1**
+
+* Upgrade lz4 dependency [#213](https://github.com/logstash-plugins/logstash-integration-kafka/pull/213)
+* Deprecate partitioner `default` and `uniform_sticky` options [#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
+      Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
+* Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
 
 ## 9.2.3 [logstash-9.2.3-release-notes]
 

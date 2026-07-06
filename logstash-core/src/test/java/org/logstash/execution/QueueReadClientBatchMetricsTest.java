@@ -2,6 +2,7 @@ package org.logstash.execution;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.jruby.RubyArray;
+import org.jruby.api.Create;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
@@ -39,7 +40,7 @@ public class QueueReadClientBatchMetricsTest {
         @SuppressWarnings("unchecked")
         public RubyArray<JrubyEventExtLibrary.RubyEvent> to_a() {
             List<IRubyObject> list = new ArrayList<>(events);
-            return (RubyArray<JrubyEventExtLibrary.RubyEvent>) RubyUtil.RUBY.newArray(list);
+            return (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newArray(RubyUtil.RUBY.getCurrentContext(), list);
         }
 
         @Override
@@ -110,10 +111,10 @@ public class QueueReadClientBatchMetricsTest {
         QueueBatch batch = new MockQueueBatch(10, rubyEvent);
         final long expectedBatchByteSize = rubyEvent.getEvent().estimateMemory();
 
-        for (int i = 0; i < 200; i++) {
+        // MINIMAL mode has 2% chance per update, so use 500 iterations for ~99.996% probability
+        for (int i = 0; i < 500; i++) {
             sut.updateBatchMetrics(batch);
         }
-        sut.updateBatchMetrics(batch);
 
         assertThat(batchCounter.getValue(), org.hamcrest.Matchers.greaterThan(1L));
         assertThat(batchByteSizeCounter.getValue(), org.hamcrest.Matchers.greaterThan(expectedBatchByteSize));

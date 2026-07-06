@@ -10,6 +10,7 @@ require "config_management/extension"
 require "license_checker/license_manager"
 require "monitoring/monitoring"
 require "stud/temporary"
+require "logstash/ssl_file_tracker"
 
 describe LogStash::ConfigManagement::ElasticsearchSource do
   let(:system_indices_api) { LogStash::ConfigManagement::SystemIndicesFetcher::SYSTEM_INDICES_API_PATH }
@@ -842,6 +843,63 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     it "responses with an error" do
       allow(mock_client).to receive(:get).with("/").and_return(elasticsearch_8_err_response)
       expect { subject.get_es_version }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+    end
+  end
+
+  describe "ssl_file_tracker injection" do
+    let(:tracker) { instance_double(LogStash::SslFileTracker) }
+    let(:license_manager) { instance_double(LogStash::LicenseChecker::LicenseManager).as_null_object }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:setup_license_checker).and_return(license_manager)
+      allow_any_instance_of(described_class).to receive(:license_check)
+      allow(tracker).to receive(:register_paths)
+      allow(tracker).to receive(:consume_stale).and_return(false)
+    end
+
+    it "registers both CPM and CPM-license paths with the tracker" do
+      described_class.new(system_settings, tracker)
+      expect(tracker).to have_received(:register_paths).with(described_class::SSL_TRACK_ID_CPM, anything)
+      expect(tracker).to have_received(:register_paths).with(described_class::SSL_TRACK_ID_LICENSE, anything)
+    end
+
+    it "invalidates the CPM client when the tracker reports stale during pipeline_configs" do
+      allow(tracker).to receive(:consume_stale).with(described_class::SSL_TRACK_ID_CPM).and_yield
+      fetcher = double("fetcher", fetch_config: nil, get_pipeline_ids: [])
+      instance = described_class.new(system_settings, tracker)
+      allow(instance).to receive(:license_check)
+      allow(instance).to receive(:get_es_version).and_return(major: 8, minor: 0)
+      allow(instance).to receive(:get_pipeline_fetcher).and_return(fetcher)
+
+      old_client = double("old_client")
+      expect(old_client).to receive(:close)
+      instance.instance_variable_get(:@es_client_holder).instance_variable_set(:@client, old_client)
+      allow(instance).to receive(:build_client).and_return(double("new_client"))
+
+      instance.pipeline_configs
+    end
+
+    it "does not invalidate the client when the tracker reports not stale" do
+      fetcher = double("fetcher", fetch_config: nil, get_pipeline_ids: [])
+      instance = described_class.new(system_settings, tracker)
+      allow(instance).to receive(:license_check)
+      allow(instance).to receive(:get_es_version).and_return(major: 8, minor: 0)
+      allow(instance).to receive(:get_pipeline_fetcher).and_return(fetcher)
+
+      old_client = double("old_client")
+      expect(old_client).not_to receive(:close)
+      instance.instance_variable_get(:@es_client_holder).instance_variable_set(:@client, old_client)
+
+      instance.pipeline_configs
+    end
+
+    it "threads the tracker and CPM license id into setup_license_checker" do
+      expect_any_instance_of(described_class).to receive(:setup_license_checker).with(
+        described_class::FEATURE_INTERNAL,
+        ssl_file_tracker: tracker,
+        tracking_id: described_class::SSL_TRACK_ID_LICENSE
+      ).and_return(license_manager)
+      described_class.new(system_settings, tracker)
     end
   end
 end

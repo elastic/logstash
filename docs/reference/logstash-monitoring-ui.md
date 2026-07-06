@@ -1,6 +1,8 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/logstash-monitoring-ui.html
+applies_to:
+  stack: ga
 ---
 
 # Monitoring UI [logstash-monitoring-ui]

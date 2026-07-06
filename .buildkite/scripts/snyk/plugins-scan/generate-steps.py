@@ -136,6 +136,7 @@ export LOGSTASH_PATH="{work_dir}/logstash"
 
 # Export Gradle property for plugins that need logstashCoreGemPath
 export ORG_GRADLE_PROJECT_logstashCoreGemPath="{work_dir}/logstash/logstash-core"
+export ORG_GRADLE_PROJECT_logstashJRubyVendorPath="{work_dir}/{plugin_name}/vendor/jruby/lib/jruby.jar"
 """
 
     command = f"""#!/bin/bash

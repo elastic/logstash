@@ -37,6 +37,15 @@ require "logstash/environment"
   $LOAD_PATH.unshift(spec_path) unless $LOAD_PATH.include?(spec_path)
 end
 
+# When running x-pack specs, add x-pack/lib and x-pack/spec at the front so
+# that `require "spec_helper"` resolves to x-pack's rather than the root one.
+if ENV['LOGSTASH_XPACK'].to_s != ""
+  xpack_path = File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack")
+  [File.join(xpack_path, "lib"), File.join(xpack_path, "spec")].each do |path|
+    $LOAD_PATH.unshift(path) unless $LOAD_PATH.include?(path)
+  end
+end
+
 require "rspec/core"
 require "rspec"
 require 'ci/reporter/rake/rspec_loader'

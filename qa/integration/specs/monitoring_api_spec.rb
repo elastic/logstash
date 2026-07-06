@@ -518,9 +518,9 @@ describe "Test Monitoring API" do
 
     #root logger - does not apply to logger.slowlog
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
-    logging_get_assert logstash_service, "WARN", "TRACE"
+    logging_get_assert logstash_service, "WARN", "TRACE", skip: 'logstash.licensechecker.licensereader'
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
-    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE"
+    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE", skip: 'logstash.licensechecker.licensereader'
 
     #package logger
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
@@ -533,11 +533,12 @@ describe "Test Monitoring API" do
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"})
 
     #deprecation package loggers
-    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation" => "ERROR"})
 
     result = logstash_service.monitoring_api.logging_get
     result["loggers"].each do |k, v|
       next if k.eql?("logstash.agent")
+      next if k.eql?("logstash.licensechecker.licensereader")
       #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
       if k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation")
         expect(v).to eq("ERROR")
@@ -546,7 +547,7 @@ describe "Test Monitoring API" do
 
     # all log levels should be reset to original values
     logging_put_assert logstash_service.monitoring_api.logging_reset
-    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE"
+    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE", skip: 'logstash.licensechecker.licensereader'
   end
 
 

@@ -30,6 +30,8 @@ module LogStash module PipelineAction
         pipeline.shutdown
       end
 
+      agent.untrack_ssl_resources(pipeline_id)
+
       success = pipelines_registry.delete_pipeline(@pipeline_id)
       detach_health_indicator(agent) if success
 

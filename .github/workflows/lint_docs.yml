@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -38,7 +38,7 @@ jobs:
           echo "::set-output name=LINT_RESULT::$LINT"
 
       - name: Add PR comment
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -58,7 +58,7 @@ jobs:
             }
 
       - name: Throw error if linter fails
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const report = `${{ steps.run_docs_lint.outputs.LINT_RESULT }}`

@@ -26,7 +26,8 @@ shared_examples "a pipeline reporter" do |pipeline_setup|
   let(:config) do
     "input { generator { count => #{generator_count} } } output { dummyoutput {} } "
   end
-  let(:pipeline) { Kernel.send(pipeline_setup, config)}
+  # Disable batch metrics mode to avoid having to initialize the entire flow metrics part as well
+  let(:pipeline) { Kernel.send(pipeline_setup, config, mock_settings("pipeline.batch.metrics.sampling_mode" => "disabled"))}
   let(:reporter) { pipeline.reporter }
 
   let(:do_setup_plugin_registry) do

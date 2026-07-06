@@ -2,6 +2,9 @@
 navigation_title: "Secure your connection"
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/ls-security.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Secure your connection to {{es}} [ls-security]

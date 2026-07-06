@@ -41,11 +41,12 @@ module LogStash
            Setting::BooleanSetting.new("allow_superuser", false),
             Setting::StringSetting.new("node.name", Socket.gethostname),
     Setting::NullableStringSetting.new("path.config", nil, false),
- Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
+ Setting::WritableDirectorySetting.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
     Setting::NullableStringSetting.new("config.string", nil, false),
            Setting::BooleanSetting.new("config.test_and_exit", false),
            Setting::BooleanSetting.new("config.reload.automatic", false),
-         Setting::TimeValue.new("config.reload.interval", "3s"), # in seconds
+         Setting::TimeValueSetting.new("config.reload.interval", "3s"), # in seconds
+           Setting::BooleanSetting.new("ssl.reload.automatic", false),
            Setting::BooleanSetting.new("config.support_escapes", false),
             Setting::StringSetting.new("config.field_reference.escape_style", "none", true, %w(none percent ampersand)),
            Setting::BooleanSetting.new("metric.collect", true),
@@ -54,12 +55,14 @@ module LogStash
    Setting::PositiveIntegerSetting.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
    Setting::PositiveIntegerSetting.new("pipeline.batch.size", 125),
            Setting::NumericSetting.new("pipeline.batch.delay", 50), # in milliseconds
+   Setting::PositiveIntegerSetting.new("pipeline.batch.output_chunking.growth_threshold_factor", 1000),
            Setting::BooleanSetting.new("pipeline.unsafe_shutdown", false),
            Setting::BooleanSetting.new("pipeline.reloadable", true),
+   Setting::CoercibleStringSetting.new("pipeline.recoverable", "false", true, %w(auto true false)),
            Setting::BooleanSetting.new("pipeline.plugin_classloaders", false),
            Setting::BooleanSetting.new("pipeline.separate_logs", false),
-   Setting::CoercibleString.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
-   Setting::CoercibleString.new("pipeline.ecs_compatibility", "v8", true, %w(disabled v1 v8)),
+   Setting::CoercibleStringSetting.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
+   Setting::CoercibleStringSetting.new("pipeline.ecs_compatibility", "v8", true, %w(disabled v1 v8)),
                     Setting.new("path.plugins", Array, []),
     Setting::NullableStringSetting.new("interactive", nil, false),
            Setting::BooleanSetting.new("config.debug", false),
@@ -83,14 +86,14 @@ module LogStash
             Setting::StringSetting.new("api.auth.basic.password_policy.include.digit", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
             Setting::StringSetting.new("api.auth.basic.password_policy.include.symbol", "OPTIONAL", true, %w[REQUIRED OPTIONAL]),
            Setting::BooleanSetting.new("api.ssl.enabled", false),
-  Setting::ExistingFilePath.new("api.ssl.keystore.path", nil, false).nullable,
+  Setting::ExistingFilePathSetting.new("api.ssl.keystore.path", nil, false).nullable,
           Setting::PasswordSetting.new("api.ssl.keystore.password", nil, false).nullable,
        Setting::StringArray.new("api.ssl.supported_protocols", nil, true, %w[TLSv1 TLSv1.1 TLSv1.2 TLSv1.3]),
            Setting::StringSetting.new("pipeline.batch.metrics.sampling_mode", "minimal", true, ["disabled", "minimal", "full"]),
             Setting::StringSetting.new("queue.type", "memory", true, ["persisted", "memory"]),
            Setting::BooleanSetting.new("queue.drain", false),
-             Setting::Bytes.new("queue.page_capacity", "64mb"),
-             Setting::Bytes.new("queue.max_bytes", "1024mb"),
+             Setting::BytesSetting.new("queue.page_capacity", "64mb"),
+             Setting::BytesSetting.new("queue.max_bytes", "1024mb"),
            Setting::NumericSetting.new("queue.max_events", 0), # 0 is unlimited
            Setting::NumericSetting.new("queue.checkpoint.acks", 1024), # 0 is unlimited
            Setting::NumericSetting.new("queue.checkpoint.writes", 1024), # 0 is unlimited
@@ -98,27 +101,38 @@ module LogStash
            Setting::BooleanSetting.new("queue.checkpoint.retry", true),
             Setting::StringSetting.new("queue.compression", "none", true, %w(none speed balanced size disabled)),
            Setting::BooleanSetting.new("dead_letter_queue.enable", false),
-             Setting::Bytes.new("dead_letter_queue.max_bytes", "1024mb"),
+             Setting::BytesSetting.new("dead_letter_queue.max_bytes", "1024mb"),
            Setting::NumericSetting.new("dead_letter_queue.flush_interval", 5000),
+           Setting::NumericSetting.new("dead_letter_queue.flush_check_interval", 1000),
             Setting::StringSetting.new("dead_letter_queue.storage_policy", "drop_newer", true, ["drop_newer", "drop_older"]),
     Setting::NullableStringSetting.new("dead_letter_queue.retain.age"), # example 5d
-         Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
-         Setting::TimeValue.new("slowlog.threshold.info", "-1"),
-         Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
-         Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.warn", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.info", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.debug", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.trace", "-1"),
             Setting::StringSetting.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::StringSetting.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::NullableStringSetting.new("monitoring.cluster_uuid"),
-            Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
+            Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"]),
+           Setting::BooleanSetting.new("otel.metrics.enabled", false),
+           Setting::StringSetting.new("otel.exporter.otlp.endpoint", "http://localhost:4317"),
+          Setting::TimeValueSetting.new("otel.metric.export.interval", "10s"),
+           Setting::StringSetting.new("otel.exporter.otlp.protocol", "grpc", true, ["grpc", "http"]),
+   Setting::PasswordSetting.new("otel.exporter.otlp.headers", nil, false).nullable, # e.g., "ApiKey xxx" or "Bearer xxx"
+    Setting::NullableStringSetting.new("otel.service.name"), # defaults to "logstash" if not set
+   Setting::NullableStringSetting.new("otel.resource.attributes", nil, false), # key=value,key2=value2 format
+   Setting::NullableStringSetting.new("otel.exporter.otlp.certificate", nil, false), # path to PEM-encoded trusted CA certificate
+   Setting::NullableStringSetting.new("otel.exporter.otlp.client.key", nil, false), # path to PEM-encoded client private key (mTLS)
+   Setting::NullableStringSetting.new("otel.exporter.otlp.client.certificate", nil, false) # path to PEM-encoded client certificate (mTLS)
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 
   # Compute the default queue path based on `path.data`
   default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
-  SETTINGS.register Setting::WritableDirectory.new("path.queue", default_queue_file_path)
+  SETTINGS.register Setting::WritableDirectorySetting.new("path.queue", default_queue_file_path)
   # Compute the default dead_letter_queue path based on `path.data`
   default_dlq_file_path = ::File.join(SETTINGS.get("path.data"), "dead_letter_queue")
-  SETTINGS.register Setting::WritableDirectory.new("path.dead_letter_queue", default_dlq_file_path)
+  SETTINGS.register Setting::WritableDirectorySetting.new("path.dead_letter_queue", default_dlq_file_path)
 
   SETTINGS.on_post_process do |settings|
     # Configure Logstash logging facility. This needs to be done as early as possible to

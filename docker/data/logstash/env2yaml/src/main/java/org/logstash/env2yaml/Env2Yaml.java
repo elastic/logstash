@@ -41,11 +41,12 @@ public class Env2Yaml {
             String[] allowedConfigs = {
                 "api.enabled", "api.http.host", "api.http.port", "api.environment",
                 "node.name", "path.data", "pipeline.id", "pipeline.workers",
-                "pipeline.output.workers", "pipeline.batch.size", "pipeline.batch.delay",
+                "pipeline.output.workers", "pipeline.batch.size", "pipeline.batch.delay", "pipeline.batch.output_chunking.growth_threshold_factor",
                 "pipeline.unsafe_shutdown", "pipeline.ecs_compatibility", "pipeline.ordered",
+                "pipeline.recoverable", "pipeline.reloadable",
                 "pipeline.plugin_classloaders", "pipeline.separate_logs", "path.config",
                 "config.string", "config.test_and_exit", "config.reload.automatic",
-                "config.reload.interval", "config.debug", "config.support_escapes",
+                "config.reload.interval", "ssl.reload.automatic", "config.debug", "config.support_escapes",
                 "config.field_reference.escape_style", "queue.type", "path.queue",
                 "queue.page_capacity", "queue.max_events", "queue.max_bytes",
                 "queue.checkpoint.acks", "queue.checkpoint.writes", "queue.checkpoint.interval",
@@ -81,7 +82,13 @@ public class Env2Yaml {
                 "xpack.management.elasticsearch.ssl.keystore.path", "xpack.management.elasticsearch.ssl.keystore.password",
                 "xpack.management.elasticsearch.ssl.certificate", "xpack.management.elasticsearch.ssl.key",
                 "xpack.management.elasticsearch.ssl.cipher_suites", "xpack.geoip.download.endpoint",
-                "xpack.geoip.downloader.enabled"
+                "xpack.geoip.downloader.enabled",
+                "otel.metrics.enabled", "otel.exporter.otlp.endpoint",
+                "otel.metric.export.interval", "otel.exporter.otlp.protocol",
+                "otel.exporter.otlp.headers", "otel.resource.attributes",
+                "otel.service.name",
+                "otel.exporter.otlp.certificate", "otel.exporter.otlp.client.key",
+                "otel.exporter.otlp.client.certificate"
             };
 
             for (String configName : allowedConfigs) {

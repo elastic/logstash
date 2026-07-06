@@ -19,11 +19,13 @@ require "logstash/pipeline_action/base"
 require "logstash/pipeline_action/create"
 require "logstash/pipeline_action/stop"
 require "logstash/pipeline_action/reload"
+require "logstash/pipeline_action/recover"
 require "logstash/pipeline_action/delete"
 require "logstash/pipeline_action/stop_and_delete"
 
 module LogStash module PipelineAction
   ORDERING = {
+    LogStash::PipelineAction::Recover => 99,
     LogStash::PipelineAction::Create => 100,
     LogStash::PipelineAction::Reload => 200,
     LogStash::PipelineAction::Stop => 300,

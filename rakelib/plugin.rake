@@ -18,8 +18,20 @@
 require_relative "default_plugins"
 require 'rubygems'
 require 'shellwords'
+require 'yaml'
 
 require 'bootstrap/environment'
+
+VERSION_FILE = "versions.yml"
+
+def get_versions
+  yaml_versions = YAML.safe_load(IO.read(VERSION_FILE))
+  {
+    "logstash" => yaml_versions["logstash"],
+    "logstash-core" =>  yaml_versions["logstash-core"],
+    "logstash-core-plugin-api" => yaml_versions["logstash-core-plugin-api"],
+  }
+end
 
 namespace "plugin" do
   def install_plugins(*args)

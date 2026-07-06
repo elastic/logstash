@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/plugin-generator.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Generating plugins [plugin-generator]

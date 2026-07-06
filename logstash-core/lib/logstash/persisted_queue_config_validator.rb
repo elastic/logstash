@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require "logstash/util/byte_value"
+
 java_import 'org.logstash.common.FsUtil'
 java_import 'java.nio.file.Paths'
 java_import "java.nio.file.FileStore"

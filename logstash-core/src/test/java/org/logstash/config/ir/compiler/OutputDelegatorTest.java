@@ -20,19 +20,19 @@
 
 package org.logstash.config.ir.compiler;
 
-import javax.annotation.concurrent.NotThreadSafe;
 import org.assertj.core.data.Percentage;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubySymbol;
+import org.jruby.api.Create;
+import org.jruby.api.Define;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.instrument.metrics.MetricKeys;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -41,7 +41,6 @@ import static org.logstash.RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS;
 import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
 
 @SuppressWarnings("rawtypes")
-@NotThreadSafe
 public class OutputDelegatorTest extends PluginDelegatorTestCase {
 
     private RubyHash pluginArgs;
@@ -50,14 +49,15 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
     public static final RubyClass FAKE_OUT_CLASS;
 
     static {
-        FAKE_OUT_CLASS = RUBY.defineClass("FakeOutClass", RUBY.getObject(), FakeOutClass::new);
-        FAKE_OUT_CLASS.defineAnnotatedMethods(FakeOutClass.class);
+        final ThreadContext context = RUBY.getCurrentContext();
+        FAKE_OUT_CLASS = Define.defineClass(context, "FakeOutClass", RUBY.getObject(), FakeOutClass::new);
+        FAKE_OUT_CLASS.defineMethods(context, FakeOutClass.class);
     }
 
     @Before
     public void setup() {
         super.setup();
-        events = RUBY.newArray(EVENT_COUNT);
+        events = Create.allocArray(RUBY.getCurrentContext(), EVENT_COUNT);
         for (int k = 0; k < EVENT_COUNT; k++) {
             events.add(k, new Event());
         }
@@ -137,6 +137,13 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
     }
 
     @Test
+    public void javaOutputDelegatorReturnsNilForRubyPlugin() {
+        JavaOutputDelegatorExt delegator = JavaOutputDelegatorExt.create(
+                "test_plugin", "test_id", metric, events -> {}, () -> {}, () -> {});
+        assertThat(delegator.rubyPlugin(RUBY.getCurrentContext()).isNil()).isTrue();
+    }
+
+    @Test
     public void singleConcurrencyStrategyIsDefault() {
         OutputDelegatorExt outputDelegator = constructOutputDelegator();
         IRubyObject concurrency = outputDelegator.concurrency(RUBY.getCurrentContext());
@@ -147,8 +154,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
     public void outputStrategyTests() {
         StrategyPair[] outputStrategies = new StrategyPair[]{
                 new StrategyPair("shared", OutputStrategyExt.SharedOutputStrategyExt.class),
-                new StrategyPair("single", OutputStrategyExt.SingleOutputStrategyExt.class),
-                new StrategyPair("legacy", OutputStrategyExt.LegacyOutputStrategyExt.class)
+                new StrategyPair("single", OutputStrategyExt.SingleOutputStrategyExt.class)
         };
 
         for (StrategyPair pair : outputStrategies) {
@@ -165,6 +171,11 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
 
             // test that metrics are properly set on the instance
             assertEquals(outputDelegator.namespacedMetric(), FakeOutClass.latestInstance.getMetricArgs());
+
+            // test that rubyPlugin returns the inner plugin instance
+            IRubyObject rubyPlugin = outputDelegator.rubyPlugin(RUBY.getCurrentContext());
+            assertThat(rubyPlugin).isInstanceOf(FakeOutClass.class);
+            assertThat(rubyPlugin.isNil()).isFalse();
         }
     }
 
@@ -172,8 +183,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
     public void outputStrategyMethodDelegationTests() {
         RubySymbol[] outputStrategies = new RubySymbol[]{
                 RUBY.newSymbol("shared"),
-                RUBY.newSymbol("single"),
-                RUBY.newSymbol("legacy")
+                RUBY.newSymbol("single")
         };
         final ThreadContext context = RUBY.getCurrentContext();
         for (RubySymbol symbol : outputStrategies) {
@@ -187,7 +197,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
             outputDelegator.doClose(RUBY.getCurrentContext());
             assertEquals(1, instance.getCloseCallCount());
 
-            outputDelegator.multiReceive(RUBY.newArray(0));
+            outputDelegator.multiReceive(Create.allocArray(RUBY.getCurrentContext(), 0));
             assertEquals(1, instance.getMultiReceiveCallCount());
         }
 
@@ -216,7 +226,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         Class klazz;
 
         StrategyPair(String symbolName, Class c) {
-            this.symbol = RUBY.newString(symbolName).intern();
+            this.symbol = RUBY.newString(symbolName).intern(RUBY.getCurrentContext());
             this.klazz = c;
         }
     }

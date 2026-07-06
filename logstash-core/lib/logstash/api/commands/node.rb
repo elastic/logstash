@@ -51,6 +51,7 @@ module LogStash
             :workers,
             :batch_size,
             :batch_delay,
+            :batch_output_chunking_growth_threshold_factor,
             :dead_letter_queue_enabled,
             :dead_letter_queue_path,
           ).reject {|_, v| v.nil?}

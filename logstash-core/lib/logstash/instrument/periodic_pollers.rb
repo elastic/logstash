@@ -20,21 +20,36 @@ require "logstash/instrument/periodic_poller/os"
 require "logstash/instrument/periodic_poller/jvm"
 require "logstash/instrument/periodic_poller/pq"
 require "logstash/instrument/periodic_poller/flow_rate"
+require "logstash/instrument/periodic_poller/batch_structure"
 
 module LogStash module Instrument
   # Each PeriodPoller manager his own thread to do the poller
   # of the stats, this class encapsulate the starting and stopping of the poller
   # if the unique timer uses too much resource we can refactor this behavior here.
   class PeriodicPollers
+    include LogStash::Util::Loggable
     attr_reader :metric
 
-    def initialize(metric, queue_type, agent)
+    def initialize(metric, settings, agent)
       @metric = metric
+      @settings = settings || LogStash::SETTINGS
       @periodic_pollers = [PeriodicPoller::Os.new(metric),
                            PeriodicPoller::JVM.new(metric),
-                           PeriodicPoller::PersistentQueue.new(metric, queue_type, agent),
+                           PeriodicPoller::PersistentQueue.new(metric, @settings.get("queue.type"), agent),
                            PeriodicPoller::DeadLetterQueue.new(metric, agent),
-                           PeriodicPoller::FlowRate.new(metric, agent)]
+                           PeriodicPoller::FlowRate.new(metric, agent),
+                           PeriodicPoller::BatchStructure.new(metric, agent)]
+
+      # Add OpenTelemetry metrics exporter if enabled
+      if otel_metrics_enabled?
+        require "logstash/instrument/periodic_poller/otel"
+        @periodic_pollers << PeriodicPoller::Otel.new(metric, agent, @settings)
+        logger.info("OpenTelemetry metrics export enabled")
+      end
+    end
+
+    def otel_metrics_enabled?
+      @settings.get("otel.metrics.enabled")
     end
 
     def start

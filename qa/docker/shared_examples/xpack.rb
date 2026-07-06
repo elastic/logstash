@@ -49,7 +49,7 @@ shared_examples_for 'a container with xpack features' do |flavor|
         expect(settings['xpack.management.elasticsearch.hosts']).to eq("${XPACK_MANAGEMENT_ELASTICSEARCH_HOSTS}")
 
         # check if logs contain node3 & node4 values actually resolved and used
-        wait_for_log_message(container, 'pipeline_id=>["*"]', :stdout)
+        wait_for_log_message(container, 'pipeline_id: ["*"]', :stdout)
         # note that, we are not spinning up ES nodes, so values can be in errors or in pool update logs
         wait_for_log_message(container, 'http://node3:9200', :stdout)
         wait_for_log_message(container, 'http://node4:9200', :stdout)

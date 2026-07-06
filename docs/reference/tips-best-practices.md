@@ -1,9 +1,17 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/tips.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Tips and best practices [tips]
+
+This section covers system configuration and best practices for running Logstash:
+
+* [JVM settings](/reference/jvm-settings.md)
+* [File descriptors](/reference/file-descriptors.md)
 
 We are adding more tips and best practices, so please check back soon. If you have something to add, please:
 

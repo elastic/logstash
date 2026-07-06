@@ -38,7 +38,7 @@ public class ExtendedFlowMetricTest {
             // since we enforce compaction only on reads, ensure it doesn't grow unbounded with only writes
             // or hold onto captures from before our force compaction threshold
             assertThat(flowMetric.estimateCapturesRetained(), is(lessThan(320)));
-            assertThat(flowMetric.estimateExcessRetained(FlowMetricRetentionPolicy::forceCompactionNanos), is(equalTo(Duration.ZERO)));
+            assertThat(flowMetric.estimateExcessRetained(FlowMetricRetentionPolicy::forceCompactionBarrierNanos), is(equalTo(Duration.ZERO)));
         }
 
         // calculate the supplied rates
@@ -52,8 +52,9 @@ public class ExtendedFlowMetricTest {
         assertThat(flowMetricValue, hasEntry("lifetime",        50000.0));
 
         // ensure we are fully-compact.
-        assertThat(flowMetric.estimateCapturesRetained(), is(lessThan(250)));
-        assertThat(flowMetric.estimateExcessRetained(this::maxRetentionPlusMinResolutionBuffer), is(equalTo(Duration.ZERO)));
+        assertThat(flowMetric.estimateCapturesRetained(), is(lessThan(252)));
+        assertThat(flowMetric.estimateExcessRetained(this::maxRetainedPlusMinResolutionBarrier), is(equalTo(Duration.ZERO)));
+
     }
 
     @Test
@@ -182,9 +183,8 @@ public class ExtendedFlowMetricTest {
         validator.accept(metric.getValue());
     }
 
-
-    private long maxRetentionPlusMinResolutionBuffer(final FlowMetricRetentionPolicy policy) {
-        return Math.addExact(policy.retentionNanos(), policy.resolutionNanos());
+    private long maxRetainedPlusMinResolutionBarrier(final FlowMetricRetentionPolicy policy, final long referenceNanos) {
+        return policy.maxAgeBarrierNanos(referenceNanos);
     }
 
 }

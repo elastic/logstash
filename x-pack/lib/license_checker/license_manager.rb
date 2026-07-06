@@ -35,7 +35,6 @@ module LogStash
 
       def fetch_xpack_info
         xpack_info = @license_reader.fetch_xpack_info
-
         update_xpack_info(xpack_info)
       end
 

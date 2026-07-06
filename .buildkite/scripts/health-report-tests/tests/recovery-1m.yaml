@@ -1,0 +1,45 @@
+name: "Recovery in 1min pipeline"
+config:
+  - pipeline.id: crashy-recovery-pp
+    pipeline.recoverable: true
+    config.string: |
+      input { heartbeat { interval => 0.1 } }
+      filter {
+        ruby {
+          'init' => '@crash_time = ::Time.now + 20'
+          'code' => 'event.set("[@metadata][poison]", ::Time.now > @crash_time)'
+        }
+        if [@metadata][poison] {
+          failure_injector { crash_at => filter }
+        }
+      }
+      output { stdout {} }
+conditions:
+  full_start_required: true
+  wait_seconds: 35 # anticipate one crash 20 seconds after pipeline starts, not enough for two.
+expectation:
+  status: "yellow"
+  symptom: "1 indicator is concerning (`pipelines`)"
+  indicators:
+    pipelines:
+      status: "yellow"
+      symptom: "1 indicator is concerning (`crashy-recovery-pp`)"
+      indicators:
+        crashy-recovery-pp:
+          status: "yellow"
+          symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
+          diagnosis:
+            - id: "logstash:health:pipeline:recovery:diagnosis:5m-recovery-recent"
+              cause: "pipeline has recovered from crashes 1 time in the last 5 minutes"
+              action: "inspect logs to determine source of crash"
+              help_url: { $include: "health-report-pipeline-recovery" }
+          impacts:
+            - id: "logstash:health:pipeline:recovery:impact:intermittent_processing"
+              severity: 2
+              description: "pipeline recently recovered from a crash"
+              impact_areas: [ "pipeline_execution" ]
+          details:
+            status:
+              state: "RUNNING"
+            recovery_log:
+              - { $match: "{ISO8601}" }

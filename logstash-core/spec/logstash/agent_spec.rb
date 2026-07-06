@@ -19,6 +19,7 @@ require "spec_helper"
 require "stud/temporary"
 require "logstash/inputs/generator"
 require "logstash/config/source/local"
+require "logstash/ssl_file_tracker"
 require_relative "../support/mocks_classes"
 require "fileutils"
 require_relative "../support/helpers"
@@ -611,6 +612,163 @@ describe LogStash::Agent do
     it_behaves_like "all Agent tests" do
       let(:agent_settings) { mock_settings("queue.type" => "persisted", "queue.drain" => true,
                                            "queue.page_capacity" => "8mb", "queue.max_bytes" => "64mb") }
+    end
+  end
+
+  describe "#ssl_file_tracker" do
+    before :each do
+      allow(LogStash::WebServer).to receive(:from_settings).with(any_args).and_return(double("WebServer").as_null_object)
+    end
+
+    it "exposes the tracker passed to the constructor" do
+      tracker = double("ssl_file_tracker").as_null_object
+      agent = described_class.new(mock_settings({}), nil, tracker)
+      expect(agent.ssl_file_tracker).to be(tracker)
+      agent.shutdown
+    end
+
+    it "is nil when no tracker is passed" do
+      agent = described_class.new(mock_settings({}), nil)
+      expect(agent.ssl_file_tracker).to be_nil
+      agent.shutdown
+    end
+  end
+
+  describe "#converge_reload_ssl" do
+    let(:pipeline_config) { mock_pipeline_config(:main, "input { dummyblockinginput {} } output { null {} }") }
+
+    before :each do
+      allow(LogStash::WebServer).to receive(:from_settings).with(any_args).and_return(double("WebServer").as_null_object)
+    end
+
+    context "when ssl reload is disabled" do
+      let(:agent) { described_class.new(mock_settings({}), nil) }
+
+      after :each do
+        agent.shutdown
+      end
+
+      it "returns nil without checking for stale certs" do
+        expect(agent.send(:converge_reload_ssl, [pipeline_config])).to be_nil
+      end
+    end
+
+    context "when ssl reload is enabled" do
+      let(:tracker) { LogStash::SslFileTracker.new(org.logstash.common.FileWatchService.create) }
+      let(:agent) { described_class.new(mock_settings("config.reload.automatic" => true), nil, tracker) }
+
+      after :each do
+        agent.shutdown
+      end
+
+      it "returns nil when no pipelines are stale" do
+        allow(agent.ssl_file_tracker).to receive(:refresh_pipeline_symlink_stamps)
+        allow(agent.ssl_file_tracker).to receive(:stale_pipeline_ids).and_return([])
+        expect(agent.send(:converge_reload_ssl, [pipeline_config])).to be_nil
+      end
+
+      it "returns nil when stale pipeline has no matching config" do
+        allow(agent.ssl_file_tracker).to receive(:refresh_pipeline_symlink_stamps)
+        allow(agent.ssl_file_tracker).to receive(:stale_pipeline_ids).and_return([:other_pipeline])
+        expect(agent.send(:converge_reload_ssl, [pipeline_config])).to be_nil
+      end
+
+      it "dispatches a Reload action for each stale pipeline" do
+        allow(agent.ssl_file_tracker).to receive(:refresh_pipeline_symlink_stamps)
+        allow(agent.ssl_file_tracker).to receive(:stale_pipeline_ids).and_return([:main])
+        expect(agent).to receive(:converge_state_with_resolved_actions) do |actions|
+          expect(actions.size).to eq(1)
+          expect(actions.first).to be_a(LogStash::PipelineAction::Reload)
+          expect(actions.first.pipeline_id).to eq(:main)
+        end
+        agent.send(:converge_reload_ssl, [pipeline_config])
+      end
+
+      it "only reloads pipelines that are both stale and present in the config" do
+        other_config = mock_pipeline_config(:other, "input { dummyblockinginput {} } output { null {} }")
+        allow(agent.ssl_file_tracker).to receive(:refresh_pipeline_symlink_stamps)
+        allow(agent.ssl_file_tracker).to receive(:stale_pipeline_ids).and_return([:main, :missing])
+        expect(agent).to receive(:converge_state_with_resolved_actions) do |actions|
+          expect(actions.map(&:pipeline_id)).to eq([:main])
+        end
+        agent.send(:converge_reload_ssl, [pipeline_config, other_config])
+      end
+    end
+  end
+
+  describe "TLS cert check in converge_state_and_update" do
+    let(:pipeline_config) { mock_pipeline_config(:main, "input { dummyblockinginput {} } output { null {} }") }
+    let(:source_loader) { TestSourceLoader.new(pipeline_config) }
+    let(:agent) { described_class.new(mock_settings("config.reload.automatic" => true), source_loader) }
+
+    before :each do
+      allow(LogStash::WebServer).to receive(:from_settings).with(any_args).and_return(double("WebServer").as_null_object)
+    end
+
+    after :each do
+      agent.shutdown
+    end
+
+    it "calls converge_reload_ssl on every converge cycle" do
+      expect(agent).to receive(:converge_reload_ssl).and_call_original
+      agent.converge_state_and_update
+    end
+
+    it "calls converge_reload_ssl even when config convergence had pipeline actions" do
+      allow(agent).to receive(:resolve_actions_and_converge_state) do
+        result = LogStash::ConvergeResult.new(1)
+        result.add(double("action"), LogStash::ConvergeResult::SuccessfulAction.new)
+        result
+      end
+      expect(agent).to receive(:converge_reload_ssl).and_call_original
+      agent.converge_state_and_update
+    end
+  end
+
+  describe "#merge_converge_results" do
+    before :each do
+      allow(LogStash::WebServer).to receive(:from_settings).with(any_args).and_return(double("WebServer").as_null_object)
+    end
+
+    let(:agent) { described_class.new(mock_settings({}), nil) }
+
+    after :each do
+      agent.shutdown
+    end
+
+    def make_result(total, successful: [], failed: [])
+      result = LogStash::ConvergeResult.new(total)
+      successful.each { |action| result.add(action, LogStash::ConvergeResult::SuccessfulAction.new) }
+      failed.each     { |action| result.add(action, LogStash::ConvergeResult::FailedAction.new("error")) }
+      result
+    end
+
+    it "combines total counts from both results" do
+      a1 = double("action1")
+      a2 = double("action2")
+      a3 = double("action3")
+      r1 = make_result(2, successful: [a1], failed: [a2])
+      r2 = make_result(1, successful: [a3])
+      merged = agent.send(:merge_converge_results, r1, r2)
+      expect(merged.total).to eq(3)
+    end
+
+    it "includes successful actions from both results" do
+      a1 = double("action1")
+      a2 = double("action2")
+      r1 = make_result(1, successful: [a1])
+      r2 = make_result(1, successful: [a2])
+      merged = agent.send(:merge_converge_results, r1, r2)
+      expect(merged.successful_actions.keys).to contain_exactly(a1, a2)
+    end
+
+    it "includes failed actions from both results" do
+      a1 = double("action1")
+      a2 = double("action2")
+      r1 = make_result(1, failed: [a1])
+      r2 = make_result(1, failed: [a2])
+      merged = agent.send(:merge_converge_results, r1, r2)
+      expect(merged.failed_actions.keys).to contain_exactly(a1, a2)
     end
   end
 end

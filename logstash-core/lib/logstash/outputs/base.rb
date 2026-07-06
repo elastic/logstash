@@ -33,17 +33,27 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   # The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output, without needing a separate filter in your Logstash pipeline.
   config :codec, :validate => :codec, :default => "plain"
-  # TODO remove this in Logstash 6.0
-  # when we no longer support the :legacy type
-  # This is hacky, but it can only be herne
-  config :workers, :type => :number, :default => 1
+
+  config :workers, :type => :number, :deprecated => "This parameter will be ignored."
 
   # Set or return concurrency type
   def self.concurrency(type = nil)
     if type
+      if type == :legacy
+        self.logger.warn("Output plugin #{self.name} declares `concurrency :legacy` which is removed. Defaulting to :single. Please update the plugin to use `concurrency :single` or `concurrency :shared`.")
+        type = :single
+      end
+      if !LogStash::OutputDelegatorStrategyRegistry.instance.types.include?(type)
+        raise ArgumentError, <<~MESSAGE.gsub("\n", " ")
+            The concurrency type `#{type.inspect}` specified for output plugin `#{config_name}` is not supported
+            on this version of Logstash. If you installed this plugin specifically on this Logstash version,
+            it is not compatible. If you are a plugin author, please see update your plugin to use one of
+            the supported plugin types: #{LogStash::OutputDelegatorStrategyRegistry.instance.types}
+          MESSAGE
+      end
       @concurrency = type
     else
-      @concurrency || :legacy # default is :legacyo
+      @concurrency || :single
     end
   end
 
@@ -57,12 +67,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
     concurrency == :shared
   end
 
-  # Deprecated: Favor `concurrency :single`
-  # Remove in Logstash 6.0.0
-  def self.declare_workers_not_supported!(message = nil)
-    concurrency :single
-  end
-
   public
 
   def self.plugin_type
@@ -72,11 +76,8 @@ class LogStash::Outputs::Base < LogStash::Plugin
   public
   def initialize(params = {})
     super
-    config_init(@params)
 
-    if self.workers != 1
-      raise LogStash::ConfigurationError, "You are using a plugin that doesn't support workers but have set the workers value explicitly! This plugin uses the #{concurrency} and doesn't need this option"
-    end
+    config_init(@params)
 
     # If we're running with a single thread we must enforce single-threaded concurrency by default
     # Maybe in a future version we'll assume output plugins are threadsafe

@@ -15,27 +15,23 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "fileutils"
+require 'elasticsearch'
 
-DEFAULT_DOC_DIRECTORY = ::File.join(::File.dirname(__FILE__), "..", "build", "docs")
-
-namespace "docs" do
-  desc "Generate documentation for all plugins"
-  task "generate" do
-    Rake::Task['docs:generate-plugins'].invoke
+class ElasticsearchTlsService < Service
+  def initialize(settings)
+    super("elasticsearch_tls", settings)
+    # Reuse elasticsearch_setup/teardown.sh; TLS mode is activated when
+    # ES_TLS_CERT env var is set (done in spec before(:all)).
+    @setup_script    = File.expand_path("../elasticsearch_setup.sh",    __FILE__)
+    @teardown_script = File.expand_path("../elasticsearch_teardown.sh", __FILE__)
   end
 
-  desc "Generate the doc for all the currently installed plugins"
-  task "generate-plugins", [:output] do |t, args|
-    args.with_defaults(:output => DEFAULT_DOC_DIRECTORY)
-
-    require "bootstrap/environment"
-    require "logstash-core/logstash-core"
-    LogStash::Bundler.setup!({:without => [:build]})
-
-    require "logstash/docgen/logstash_generator"
-
-    FileUtils.mkdir_p(args[:output])
-    exit(LogStash::Docgen::LogStashGenerator.new(args[:output]).generate_plugins_docs)
+  def get_client
+    @client ||= Elasticsearch::Client.new(
+      hosts: ["https://localhost:9200"],
+      user: "esadmin",
+      password: "esadmin123",
+      transport_options: { ssl: { verify: false } }
+    )
   end
 end

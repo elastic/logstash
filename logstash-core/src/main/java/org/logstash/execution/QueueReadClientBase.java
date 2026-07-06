@@ -23,10 +23,10 @@ package org.logstash.execution;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
-import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Convert;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
@@ -109,11 +109,20 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         return this;
     }
 
+    /**
+     * Must be invoked after setPipelineMetric which configured the batch metric.
+     * */
+    @Override
+    public final int estimateBatchMetricsFootprintInBytes() {
+        return batchMetrics.estimateBatchMetricsFootprintInBytes();
+    }
+
     @JRubyMethod(name = "set_batch_dimensions")
     public IRubyObject rubySetBatchDimensions(final IRubyObject batchSize,
         final IRubyObject waitForMillis) {
-        setBatchDimensions(((RubyNumeric) batchSize).getIntValue(),
-                ((RubyNumeric) waitForMillis).getIntValue());
+        final org.jruby.runtime.ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        setBatchDimensions(Convert.toInt(context, batchSize),
+                Convert.toInt(context, waitForMillis));
         return this;
     }
 
@@ -189,7 +198,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
      */
     @JRubyMethod(name = "add_filtered_metrics")
     public void rubyAddFilteredMetrics(final IRubyObject size) {
-        addFilteredMetrics(((RubyNumeric)size).getIntValue());
+        addFilteredMetrics(Convert.toInt(RubyUtil.RUBY.getCurrentContext(), size));
     }
 
     /**
@@ -199,7 +208,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
      */
     @JRubyMethod(name = "add_output_metrics")
     public void rubyAddOutputMetrics(final IRubyObject size) {
-        addOutputMetrics(((RubyNumeric)size).getIntValue());
+        addOutputMetrics(Convert.toInt(RubyUtil.RUBY.getCurrentContext(), size));
     }
 
     @Override

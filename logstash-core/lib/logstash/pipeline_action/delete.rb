@@ -28,7 +28,7 @@ module LogStash module PipelineAction
     def execute(agent, pipelines_registry)
       success = pipelines_registry.delete_pipeline(@pipeline_id)
       detach_health_indicator(agent) if success
-
+      agent.untrack_ssl_resources(@pipeline_id) if success
       LogStash::ConvergeResult::ActionResult.create(self, success)
     end
 

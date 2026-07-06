@@ -53,16 +53,18 @@ class LogStash::Agent
   attr_accessor :logger
 
   attr_reader :health_observer
+  attr_reader :ssl_file_tracker
 
   # initialize method for LogStash::Agent
   # @param params [Hash] potential parameters are:
   #   :name [String] - identifier for the agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
-  def initialize(settings = LogStash::SETTINGS, source_loader = nil)
+  def initialize(settings = LogStash::SETTINGS, source_loader = nil, ssl_file_tracker = nil)
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
+    @ssl_file_tracker = ssl_file_tracker
     @ephemeral_id = SecureRandom.uuid
 
     java_import("org.logstash.health.HealthObserver")
@@ -190,7 +192,9 @@ class LogStash::Agent
                else                             PipelineIndicator::Status::UNKNOWN
                end
 
-      PipelineIndicator::Details.new(status, sync_state.pipeline&.to_java.collectWorkerUtilizationFlowObservation)
+      PipelineIndicator::Details.new(status,
+                                     sync_state.pipeline&.to_java.collectWorkerUtilizationFlowObservation,
+                                     sync_state.recovery_log)
     end
   end
 
@@ -233,7 +237,11 @@ class LogStash::Agent
     @pq_config_validator.check(@pipelines_registry.running_user_defined_pipelines, results.response)
 
     converge_result = resolve_actions_and_converge_state(results.response)
+    ssl_result = converge_reload_ssl(results.response)
+    converge_result = merge_converge_results(converge_result, ssl_result) if ssl_result
+
     update_metrics(converge_result)
+
     if converge_result.success? && converge_result.total > 0
       logger.info(
           "Pipelines running",
@@ -276,6 +284,7 @@ class LogStash::Agent
 
     transition_to_stopped
     converge_result = shutdown_pipelines
+    @ssl_file_tracker&.close
     stop_collecting_metrics
     stop_webserver
     converge_result
@@ -367,6 +376,14 @@ class LogStash::Agent
     @pipelines_registry.running_pipelines(include_loading: true).empty?
   end
 
+  def track_ssl_resources(pipeline)
+    @ssl_file_tracker&.register(pipeline)
+  end
+
+  def untrack_ssl_resources(pipeline_id)
+    @ssl_file_tracker&.deregister(pipeline_id)
+  end
+
   private
 
   def transition_to_stopped
@@ -389,6 +406,8 @@ class LogStash::Agent
   # Beware the usage with #resolve_actions_and_converge_state
   # Calling this method in `Plugin#register` causes deadlock.
   # For example, resolve_actions_and_converge_state -> pipeline reload_action -> plugin register -> converge_state_with_resolved_actions
+  # @param pipeline_actions [Array<PipelineAction::Base>]
+  # @return [ConvergeResult]
   def converge_state_with_resolved_actions(pipeline_actions)
     @convergence_lock.synchronize do
       converge_state(pipeline_actions)
@@ -466,6 +485,41 @@ class LogStash::Agent
     @state_resolver.resolve(@pipelines_registry, pipeline_configs)
   end
 
+  # @param pipeline_configs [Array<Config::PipelineConfig>]
+  # @return [ConvergeResult, nil] reload result for pipelines with rotated cert files, or nil if none
+  def converge_reload_ssl(pipeline_configs)
+    return nil unless @ssl_file_tracker
+
+    @ssl_file_tracker.refresh_pipeline_symlink_stamps
+    stale_ids = @ssl_file_tracker.stale_pipeline_ids
+    return nil if stale_ids.empty?
+
+    id_configs = pipeline_configs.each_with_object({}) { |c, h| h[c.pipeline_id.to_sym] = c }
+
+    reload_actions = stale_ids.filter_map do |pipeline_id|
+      config = id_configs[pipeline_id]
+      next unless config
+      logger.info("Pipeline will be reloaded due to certificate change", "pipeline.id" => pipeline_id)
+      LogStash::PipelineAction::Reload.new(config, metric)
+    end
+
+    return nil if reload_actions.empty?
+
+    converge_state_with_resolved_actions(reload_actions)
+  end
+
+  # @param r1 [ConvergeResult]
+  # @param r2 [ConvergeResult]
+  # @return [ConvergeResult] a new result containing all actions from both
+  def merge_converge_results(r1, r2)
+    merged = LogStash::ConvergeResult.new(r1.total + r2.total)
+    [r1, r2].each do |result|
+      result.successful_actions.each { |action, action_result| merged.add(action, action_result) }
+      result.failed_actions.each    { |action, action_result| merged.add(action, action_result) }
+    end
+    merged
+  end
+
   def dispatch_events(converge_results)
     converge_results.successful_actions.each do |action, _|
       case action
@@ -518,7 +572,7 @@ class LogStash::Agent
       LogStash::Instrument::NullMetric.new(@collector)
     end
 
-    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric, settings.get("queue.type"), self)
+    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric, settings, self)
     @periodic_pollers.start
   end
 
@@ -564,7 +618,7 @@ class LogStash::Agent
         # When a pipeline is successfully created we create the metric
         # place holder related to the lifecycle of the pipeline
         initialize_pipeline_metrics(action)
-      when LogStash::PipelineAction::Reload
+      when LogStash::PipelineAction::Reload, LogStash::PipelineAction::Recover
         update_successful_reload_metrics(action, action_result)
     end
   end

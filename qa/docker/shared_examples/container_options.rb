@@ -33,6 +33,14 @@ shared_examples_for 'it applies settings correctly' do |flavor|
     end
   end
 
+  context 'when setting pipeline batch output growth threshold factor' do
+    let(:options) { { 'ENV' => ['pipeline.batch.output_chunking.growth_threshold_factor=5'] } }
+
+    it "should correctly set the batch output chunking growth threshold factor" do
+      expect(get_pipeline_setting(@container, 'batch_output_chunking_growth_threshold_factor')).to eql 5
+    end
+  end
+
   context 'when setting pipeline batch delay' do
     let(:options) { { 'ENV' => ['pipeline.batch.delay=36'] } }
 

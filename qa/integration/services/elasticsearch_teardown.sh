@@ -22,6 +22,9 @@ stop_es() {
 }
 
 stop_es
+rm -rf /tmp/ls_integration/es-data /tmp/ls_integration/es-logs
 
-rm -rf /tmp/ls_integration/es-data
-rm -rf /tmp/ls_integration/es-logs
+if [ -n "$ES_TLS_CERT" ]; then
+  $ES_HOME/bin/elasticsearch-users userdel esadmin 2>/dev/null || true
+  rm -f "$ES_HOME/config/es-server.crt" "$ES_HOME/config/es-server.key" "$ES_HOME/config/es-ca.crt"
+fi

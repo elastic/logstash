@@ -155,6 +155,15 @@ class LogStash::Plugin
     self.class.config_name
   end
 
+  # to be overridden by type implementations
+  def self.plugin_type
+    "PLUGIN"
+  end
+
+  def readable_spec
+    "[#{self.class.plugin_type}:#{config_name}](#{id})"
+  end
+
   # This is keep for backward compatibility, the logic was moved into the registry class
   # but some plugins use this method to return a specific instance on lookup
   #

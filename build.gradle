@@ -43,7 +43,6 @@ apply from: "rubyUtils.gradle"
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
-import org.logstash.gradle.tooling.ExtractBundledJdkVersion
 import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
 import org.logstash.gradle.tooling.SnapshotArtifactURLs
@@ -272,6 +271,16 @@ tasks.findByPath(':logstash-core:processTestResources').dependsOn(copyPluginTest
 
 // Tasks
 
+tasks.register("printStackVersion") {
+    description = "Print the stack version from logstash-plugins CI"
+    doLast {
+        def releaseTrack = gradle.ext.versions['logstash-release-track']
+        def url = new URL("https://raw.githubusercontent.com/logstash-plugins/.ci/1.x/logstash-versions.yml")
+        def remoteVersions = new org.yaml.snakeyaml.Yaml().load(url.text)
+        println remoteVersions['snapshots'][releaseTrack]
+    }
+}
+
 clean {
   delete "${projectDir}/Gemfile"
   delete "${projectDir}/Gemfile.lock"
@@ -324,7 +333,7 @@ tasks.register("installDevelopmentGems") {
 tasks.register("artifactDocker") {
     description = "Build docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker')
@@ -334,7 +343,7 @@ tasks.register("artifactDocker") {
 tasks.register("artifactDockerOss") {
     description = "Build OSS docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_oss')
@@ -344,10 +353,20 @@ tasks.register("artifactDockerOss") {
 tasks.register("artifactDockerWolfi") {
     description = "Build Wolfi docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_wolfi')
+    }
+}
+
+tasks.register("artifactDockerIronbank") {
+    description = "Build Ironbank docker image"
+    dependsOn dockerBootstrap
+    dependsOn copyAllJdks
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_ironbank')
     }
 }
 
@@ -359,60 +378,36 @@ tasks.register("artifactDockerfiles") {
     }
 }
 
-tasks.register("artifactAll") {
+tasks.register("artifactAll", Exec) {
     description = "Build all artifacts except docker"
     dependsOn bootstrap
-    dependsOn copyJdk
-
-    doLast {
-        exec {
-            workingDir projectDir
-            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
-            args 'artifact:all'
-            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            standardOutput = System.out
-            errorOutput = System.err
-        }
-    }
+    dependsOn copyAllJdks
+    workingDir projectDir
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "rake", "artifact:all"
 }
 
-tasks.register("artifactDeb") {
+tasks.register("artifactDeb", Exec) {
     description = "Build DEB package"
     dependsOn bootstrap
-    dependsOn copyJdk
-
-    doLast {
-        exec {
-            workingDir projectDir
-            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
-            args 'artifact:deb'
-            environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
-            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            standardOutput = System.out
-            errorOutput = System.err
-        }
-    }
+    dependsOn copyAllJdks
+    workingDir projectDir
+    environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "rake", "artifact:deb"
 }
 
-tasks.register("artifactRpm") {
+tasks.register("artifactRpm", Exec) {
     description = "Build RPM package"
     dependsOn bootstrap
-    dependsOn copyJdk
-
-    doLast {
-        exec {
-            workingDir projectDir
-            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
-            args 'artifact:rpm'
-            environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
-            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            standardOutput = System.out
-            errorOutput = System.err
-        }
-    }
+    dependsOn copyAllJdks
+    workingDir projectDir
+    environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "rake", "artifact:rpm"
 }
 
 tasks.register("compileGrammar") {
@@ -425,7 +420,7 @@ tasks.register("compileGrammar") {
 tasks.register("artifactDockerOnly") {
     description = "Build docker image without OSS"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_only')
@@ -442,18 +437,9 @@ tasks.register("generatePluginsVersion") {
     }
 }
 
-tasks.register("installCore") {
-    description = "Install core development dependencies"
-    dependsOn bootstrap
-
-    doLast {
-        rake(projectDir, buildDir, 'test:install-core')
-    }
-}
-
 tasks.register("artifactDockerObservabilitySRE") {
     dependsOn bootstrap
-    dependsOn "copyJdk"
+    dependsOn "copyAllJdks"
     inputs.files fileTree("${projectDir}/rakelib")
     inputs.files fileTree("${projectDir}/bin")
     inputs.files fileTree("${projectDir}/config")
@@ -482,7 +468,7 @@ tasks.register("artifactDockerObservabilitySRE") {
 
 tasks.register("assembleTarDistribution") {
   dependsOn bootstrap
-  dependsOn "copyJdk"
+  dependsOn "copyAllJdks"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -494,54 +480,6 @@ tasks.register("assembleTarDistribution") {
   outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   doLast {
       rake(projectDir, buildDir, 'artifact:bundle_jdk_tar')
-  }
-}
-
-tasks.register("assembleOssTarDistribution") {
-  dependsOn bootstrap
-  dependsOn "copyJdk"
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives_oss')
-  }
-}
-
-tasks.register("assembleZipDistribution") {
-  dependsOn bootstrap
-  dependsOn "copyJdk"
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  inputs.files fileTree("${projectDir}/x-pack")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives')
-  }
-}
-
-tasks.register("assembleOssZipDistribution") {
-  dependsOn bootstrap
-  dependsOn "copyJdk"
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives_oss')
   }
 }
 
@@ -571,6 +509,7 @@ def qaVendorPath = "${qaBuildPath}/vendor"
 
 tasks.register("installIntegrationTestGems") {
   dependsOn assembleTarDistribution
+  dependsOn unpackTarDistribution
   def gemfilePath = file("${projectDir}/qa/integration/Gemfile")
   inputs.files gemfilePath
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
@@ -599,8 +538,38 @@ tasks.register("prepareFilebeatDownload") {
     }
 }
 
+def verifyPackageSHA(String artifactProject, String version, String packageName) {
+    def res = SnapshotArtifactURLs.packageUrls(artifactProject, version, packageName)
+    String remoteSHACode = res.packageShaUrl.toURL().text.split(' ')[0]
+
+    def localArchive = new File("${projectDir}/build/${packageName}.tar.gz")
+    if (localArchive.exists()) {
+        ant.checksum(file: localArchive, algorithm: "SHA-512", forceoverwrite: true)
+        String localSHA = new File("${projectDir}/build/${packageName}.tar.gz.SHA-512").text.trim()
+        if (localSHA != remoteSHACode) {
+            println "${artifactProject} package calculated fingerprint is different from remote, deleting local archive"
+            delete(localArchive)
+        } else {
+            println "Local ${artifactProject} package is already the latest"
+        }
+    }
+}
+
+tasks.register("checkFilebeatSHA") {
+    dependsOn configureArtifactInfo
+
+    description = "Download Filebeat version remote's fingerprint file"
+
+    def projectRef = project
+    doLast {
+        String beatsVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
+        verifyPackageSHA("beats", beatsVersion, downloadedFilebeatName)
+    }
+}
+
 tasks.register("downloadFilebeat", Download) {
-    dependsOn prepareFilebeatDownload
+    dependsOn prepareFilebeatDownload, checkFilebeatSHA
     description = "Download Filebeat Snapshot for current branch version: ${version}"
 
     project.ext.set("versionFound", true)
@@ -625,16 +594,18 @@ tasks.register("deleteLocalFilebeat", Delete) {
 }
 
 tasks.register("copyFilebeat") {
-    dependsOn = [downloadFilebeat, deleteLocalFilebeat]
+    dependsOn downloadFilebeat
+    inputs.files(tasks.named("downloadFilebeat"))
+    outputs.dir('./build/filebeat')
+    mustRunAfter tasks.named("unpackTarDistribution")
     doLast {
+        delete('./build/filebeat')
         copy {
             from tarTree(resources.gzip(project.ext.filebeatDownloadLocation))
             into "./build/"
         }
         file("./build/${project.ext.unpackedFilebeatName}").renameTo('./build/filebeat')
         System.out.println "Unzipped ${project.ext.filebeatDownloadLocation} to ./build/filebeat"
-        System.out.println "Deleting ${project.ext.filebeatDownloadLocation}"
-        delete(project.ext.filebeatDownloadLocation)
     }
 }
 
@@ -647,32 +618,7 @@ tasks.register("checkEsSHA") {
     doLast {
         String esVersion = projectRef.ext.get("artifactApiVersion")
         String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
-        String remoteSHA
-
-        def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-        remoteSHA = res.packageShaUrl
-
-        def localESArchive = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-        if (localESArchive.exists()) {
-            // this create a file named localESArchive with ".SHA-512" postfix
-            ant.checksum(file: localESArchive, algorithm: "SHA-512", forceoverwrite: true)
-
-            File localESCalculatedSHAFile = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
-            String localESCalculatedSHA = localESCalculatedSHAFile.text.trim()
-            def splitted = remoteSHA.split(' ')
-            String remoteSHACode = splitted[0]
-            if (localESCalculatedSHA != remoteSHACode) {
-                println "ES package calculated fingerprint is different from remote, deleting local archive"
-                delete(localESArchive)
-            }
-        }/* else {
-            mkdir project.buildDir
-            // touch the SHA file else downloadEs task doesn't start, this file his input for the other task
-            new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512").withWriter { w ->
-                w << "${downloadedElasticsearchName} not yet downloaded"
-                w.close()
-            }
-        }*/
+        verifyPackageSHA("elasticsearch", esVersion, downloadedElasticsearchName)
     }
 }
 
@@ -718,17 +664,19 @@ tasks.register("deleteLocalEs", Delete) {
 }
 
 tasks.register("copyEs") {
-    dependsOn = [downloadEs, deleteLocalEs]
+    dependsOn downloadEs
+    inputs.files(tasks.named("downloadEs"))
+    outputs.dir('./build/elasticsearch')
+    mustRunAfter tasks.named("unpackTarDistribution")
     doLast {
         println "copyEs executing.."
+        delete('./build/elasticsearch')
         copy {
             from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
             into "./build/"
         }
-
         file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
         println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
-        println "Deleting ${project.ext.elasticsearchDownloadLocation}"
     }
 }
 
@@ -752,7 +700,83 @@ tasks.register("runIntegrationTests") {
     shouldRunAfter ":logstash-core:test"
 }
 
+tasks.register("installAcceptanceTestGems", Exec) {
+    dependsOn bootstrap
+    inputs.file("${projectDir}/qa/Gemfile")
+    outputs.file("${projectDir}/qa/Gemfile.lock")
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install"
+}
 
+tasks.register("runAcceptanceTests", Exec) {
+    dependsOn installAcceptanceTestGems
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    // NOTE: We sub-process here to avoid issues in java 21+ with Jruby whereby access to some modules that
+    // are required for file descriptors to be properly inherited when ruby does sub-processing.
+    // https://github.com/elastic/logstash/pull/18536#discussion_r2655013858
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rake", "qa:acceptance:all"
+}
+
+// Docker acceptance tests - reuses installAcceptanceTestGems for gem installation
+tasks.register("runDockerOssTests", Exec) {
+    description = "Run OSS docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDockerOss
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/oss"
+}
+
+tasks.register("runDockerFullTests", Exec) {
+    description = "Run full docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDocker
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/full"
+}
+
+tasks.register("runDockerWolfiTests", Exec) {
+    description = "Run Wolfi docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDockerWolfi
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/wolfi"
+}
+
+tasks.register("runAllDockerTests", Exec) {
+    description = "Run all docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDockerOnly
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec"
+}
+
+tasks.register("runDockerIronbankTests", Exec) {
+    description = "Run Ironbank docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDockerIronbank
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/ironbank"
+}
+
+// Serverless integration tests
+tasks.register("runServerlessDLQTests", Exec) {
+    description = "Run serverless DLQ integration tests"
+    dependsOn installIntegrationTestGems
+    dependsOn unpackTarDistribution
+    dependsOn ':logstash-core:copyGemjar'
+    workingDir "${projectDir}/qa/integration"
+    environment "BUNDLE_PATH", "${buildDir}/qa/integration/vendor"
+    environment "SERVERLESS", "true"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec",
+        "-fd", "specs/dlq_spec.rb", "-e", "using pipelines.yml"
+}
 
 tasks.register("generateLicenseReport", JavaExec) {
     dependsOn generateLicenseReportInputs
@@ -809,27 +833,18 @@ bootstrap.dependsOn assemblyDeps
 //check.dependsOn runIntegrationTest
 
 
-def selectOsType() {
-    if (project.ext.has("jdk_bundle_os")) {
-        return project.ext.jdk_bundle_os
-    }
-    String osName = System.properties['os.name']
-    switch (osName.toLowerCase()) {
-        case ~/mac os x/:
-            return "darwin"
-        case ~/windows.*/:
-            return "windows"
-        case ~/linux/:
-            return "linux"
-        default:
-            throw new IllegalArgumentException("Can't determine OS type from name: $osName")
-    }
-}
-
 def selectArch() {
+    // 1. Check Gradle project property (e.g., -Pjdk_arch=arm64)
     if (project.ext.has("jdk_arch")) {
         return project.ext.jdk_arch
     }
+    // 2. Check ARCH environment variable (used in CI for cross-compilation)
+    // Matches rake pattern: x86_64 → x86_64, anything else (aarch64, arm64, etc.) → arm64
+    String envArch = System.getenv("ARCH")
+    if (envArch) {
+        return (envArch == "x86_64") ? "x86_64" : "arm64"
+    }
+    // 3. Fall back to host architecture
     String cpu_arch = System.properties["os.arch"]
     switch (cpu_arch) {
         case "amd64":
@@ -1016,100 +1031,81 @@ tasks.register("lint") {
     }
 }
 
-tasks.register("downloadJdk", Download) {
-    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
-
-    project.ext.set("versionFound", true)
-    String osName = selectOsType()
-
-    String jdkArch = selectArch()
-
-    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, jdkArch)
-
-    description = "Download JDK ${jdkDetails.major}, OS: ${osName}"
-
-    // find url of build artifact
-    String artifactApiUrl = jdkDetails.createDownloadUrl()
-
-    project.ext.set("jdkURL", System.getenv("JDK_URL") ?: artifactApiUrl)
-    project.ext.set("jdkDownloadLocation", "${projectDir}/build/${jdkDetails.localPackageName}")
-    project.ext.set("jdkDirectory", "${projectDir}/build/${jdkDetails.unpackedJdkName}")
-
-    String jdkFolderName = ToolingUtils.jdkFolderName(osName)
-    project.ext.set("jdkBundlingDirectory", "${projectDir}/${jdkFolderName}")
-
-    src project.ext.jdkURL
-    onlyIfNewer true
-    overwrite false
-    retries 3
-    quiet true
-    inputs.file("${projectDir}/versions.yml")
-    outputs.file(project.ext.jdkDownloadLocation)
-    dest new File(project.ext.jdkDownloadLocation)
-
-    doLast {
-        mkdir project.ext.jdkBundlingDirectory
-        println "Downloaded to ${project.ext.jdkDownloadLocation}"
+def getTargetPlatforms() {
+    String arch = selectArch()
+    if (arch == "x86_64") {
+        return [[os: "linux", arch: "x86_64"], [os: "windows", arch: "x86_64"], [os: "darwin", arch: "x86_64"]]
+    } else {
+        return [[os: "linux", arch: "arm64"], [os: "darwin", arch: "arm64"]]
     }
 }
 
-tasks.register("deleteLocalJdk", Delete) {
-    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin]
-    String osName = selectOsType()
-    String jdkFolderName = ToolingUtils.jdkFolderName(osName)
-    String jdkBundlingDirectory = "${projectDir}/${jdkFolderName}"
-    delete jdkBundlingDirectory
-}
+["linux", "windows", "darwin"].each { osName ->
+    ["x86_64", "arm64"].each { archName ->
+        if (osName == "windows" && archName == "arm64") { return }
+        String taskSuffix = "${osName.capitalize()}${archName == 'x86_64' ? 'X64' : 'Arm64'}"
+        String jdkFolderName = ToolingUtils.jdkFolderName(osName, archName)
 
-// Cannot use tarTree as it does not handle symlinks
-tasks.register("untarJdk", Exec) {
-    dependsOn downloadJdk
-    description = "unpack the downloaded JDK's tar.gz"
-    commandLine 'tar', 'xf', project.ext.jdkDownloadLocation, '-C', project.ext.jdkBundlingDirectory, '--strip-components', '1'
-    inputs.file(project.ext.jdkDownloadLocation)
-    outputs.dir(project.ext.jdkBundlingDirectory)
-}
+        tasks.register("downloadJdk${taskSuffix}", Download) {
+            def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+            // Use provider for lazy evaluation - only resolve URL when task executes
+            src provider { System.getenv("JDK_URL") ?: jdkDetails.createDownloadUrl() }
+            onlyIfNewer true
+            overwrite false
+            retries 3
+            quiet true
+            inputs.file("${projectDir}/versions.yml")
+            dest new File("${projectDir}/build/${jdkDetails.localPackageName}")
+            doFirst { mkdir "${projectDir}/${jdkFolderName}" }
+        }
 
-tasks.register("unzipJdk", Copy) {
-    dependsOn downloadJdk
-    description = "unpack the downloaded JDK's zip"
-    String rootName = null
-    from(zipTree("$project.ext.jdkDownloadLocation")) {
-        eachFile { fcd ->
-            rootName = rootName ?: fcd.relativePath.segments[0]
-            fcd.relativePath = new RelativePath(true, fcd.relativePath.segments.drop(1))
+        if (osName == "windows") {
+            tasks.register("unpackJdk${taskSuffix}", Copy) {
+                dependsOn "downloadJdk${taskSuffix}"
+                def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+                String rootName = null
+                from(zipTree("${projectDir}/build/${jdkDetails.localPackageName}")) {
+                    eachFile { fcd ->
+                        rootName = rootName ?: fcd.relativePath.segments[0]
+                        fcd.relativePath = new RelativePath(true, fcd.relativePath.segments.drop(1))
+                    }
+                }
+                into "${projectDir}/${jdkFolderName}"
+                doLast { delete "${projectDir}/${jdkFolderName}/$rootName" }
+            }
+        } else {
+            tasks.register("unpackJdk${taskSuffix}", Exec) {
+                dependsOn "downloadJdk${taskSuffix}"
+                def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+                commandLine 'tar', 'xf', "${projectDir}/build/${jdkDetails.localPackageName}", '-C', "${projectDir}/${jdkFolderName}", '--strip-components', '1'
+                doFirst { mkdir "${projectDir}/${jdkFolderName}" }
+            }
         }
     }
-    into project.ext.jdkBundlingDirectory
+}
+
+tasks.register("copyAllJdks") {
+    dependsOn bootstrap
+    getTargetPlatforms().each { platform ->
+        String taskSuffix = "${platform.os.capitalize()}${platform.arch == 'x86_64' ? 'X64' : 'Arm64'}"
+        dependsOn "unpackJdk${taskSuffix}"
+    }
     doLast {
-        delete "${project.ext.jdkBundlingDirectory}/$rootName"
+        String arch = selectArch()
+        String jdkFolder = ToolingUtils.jdkFolderName("linux", arch)
+        File releaseFile = file("${projectDir}/${jdkFolder}/release")
+        if (releaseFile.exists()) {
+            def content = releaseFile.text
+            def matcher = content =~ /IMPLEMENTOR_VERSION="([^"]+)"/
+            if (matcher.find()) {
+                file("${projectDir}/JDK_VERSION").write(matcher.group(1))
+            }
+        }
     }
 }
 
-tasks.register("decompressJdk") {
-    description = "unpack the downloaded JDK's (wrapper task for unzipJdk, untarJdk)"
-    String osName = selectOsType()
-    switch (osName) {
-        case "windows":
-            dependsOn ":unzipJdk"
-            break
-        default:
-            dependsOn ":untarJdk"
-    }
-}
-
-tasks.register("copyJdk", Copy) {
-    dependsOn = [extractBundledJdkVersion, decompressJdk, bootstrap]
-    description = "Download, unpack and copy the JDK"
-    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
-    doLast {
-        System.out.println "Download location is ${project.ext.jdkDownloadLocation}, Decompressing ${project.ext.jdkDirectory} to \"${project.ext.jdkBundlingDirectory}\""
-    }
-}
-
-tasks.register("extractBundledJdkVersion", ExtractBundledJdkVersion) {
-    dependsOn "decompressJdk"
-    osName = selectOsType()
+tasks.register("deleteAllJdks", Delete) {
+    delete fileTree(projectDir) { include 'jdk-*' }
 }
 
 tasks.register("javaTests") {
@@ -1118,9 +1114,39 @@ tasks.register("javaTests") {
 }
 
 clean {
-    dependsOn deleteLocalJdk
-    String jdkVersionFilename = tasks.findByName("extractBundledJdkVersion").outputFilename
-    delete "${projectDir}/${jdkVersionFilename}"
+    dependsOn deleteAllJdks
+    delete "${projectDir}/JDK_VERSION"
+    delete fileTree(projectDir) {
+        include 'output*.csv'
+        include 'output*.json'
+    }
+    delete fileTree("${projectDir}/.buildkite/scripts/snyk/artifact-scan") {
+        include 'output*.csv'
+        include 'output*.json'
+    }
+}
+
+tasks.register("extractArtifactVersions") {
+    description = "Extract versions from a Logstash artifact (generates SBOM for Snyk scanning)"
+    dependsOn bootstrap
+
+    doLast {
+        def artifactDir = project.findProperty('artifactDir')
+        def outputFile = project.findProperty('outputFile') ?: 'output.csv'
+
+        if (!artifactDir) {
+            throw new GradleException("artifactDir property required. Usage: ./gradlew extractArtifactVersions -PartifactDir=/path/to/logstash -PoutputFile=output.csv")
+        }
+
+        rake(projectDir, buildDir, 'extract:artifact_versions', artifactDir, outputFile)
+    }
+}
+
+tasks.register("cleanExtraction") {
+    description = "Clean artifact extraction output files"
+    doLast {
+        rake(projectDir, buildDir, 'extract:clean')
+    }
 }
 
 if (System.getenv('OSS') != 'true') {

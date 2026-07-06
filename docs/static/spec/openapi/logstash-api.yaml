@@ -905,6 +905,14 @@ paths:
                           last_1_minute: 120
                           last_5_minutes: 110
                           last_15_minutes: 112
+                        p50:
+                          last_1_minute: 125
+                          last_5_minutes: 105
+                          last_15_minutes: 108
+                        p90:
+                          last_1_minute: 125
+                          last_5_minutes: 112
+                          last_15_minutes: 116  
                       byte_size:
                         current: 32767
                         average:
@@ -912,6 +920,21 @@ paths:
                           last_1_minute: 15234
                           last_5_minutes: 14012
                           last_15_minutes: 14567
+                        p50:
+                          lifetime: 14815
+                          last_1_minute: 15240
+                          last_5_minutes: 14030
+                          last_15_minutes: 14600
+                        p90:
+                          lifetime: 14825
+                          last_1_minute: 15300
+                          last_5_minutes: 14050
+                          last_15_minutes: 14630
+                        max:
+                          lifetime: 14830
+                          last_1_minute: 16000
+                          last_5_minutes: 14080
+                          last_15_minutes: 14670
                     events:
                       duration_in_millis: 365495
                       in: 216610
@@ -1188,11 +1211,42 @@ paths:
                       heartbeat-ruby-stdout:
                         batch:
                           event_count:
+                            current: 78
                             average:
                               lifetime: 115
+                              last_1_minute: 120
+                              last_5_minutes: 110
+                              last_15_minutes: 112
+                            p50:
+                              last_1_minute: 125
+                              last_5_minutes: 105
+                              last_15_minutes: 108
+                            p90:
+                              last_1_minute: 125
+                              last_5_minutes: 112
+                              last_15_minutes: 116  
                           byte_size:
+                            current: 32767
                             average:
                               lifetime: 14820
+                              last_1_minute: 15234
+                              last_5_minutes: 14012
+                              last_15_minutes: 14567
+                            p50:
+                              lifetime: 14815
+                              last_1_minute: 15240
+                              last_5_minutes: 14030
+                              last_15_minutes: 14600
+                            p90:
+                              lifetime: 14825
+                              last_1_minute: 15300
+                              last_5_minutes: 14050
+                              last_15_minutes: 14630
+                            max:
+                              lifetime: 14830
+                              last_1_minute: 16000
+                              last_5_minutes: 14080
+                              last_15_minutes: 14670
                         events:
                           queue_push_duration_in_millis: 159
                           in: 45
@@ -1687,6 +1741,12 @@ paths:
                                           properties:
                                             worker_utilization:
                                               $ref: '#/components/schemas/FlowWindows'
+                                        recovery_log:
+                                          type: array
+                                          description: "If the pipeline has successfully recovered from a crash, include a list of timestamps"
+                                          items:
+                                            type: string
+                                            description: An ISO8601-compliant timestamp
                                     impacts:
                                       type: array
                                       description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
@@ -1806,6 +1866,37 @@ paths:
                                 worker_utilization:
                                   last_1_minute: 100.0
                                   last_5_minutes: 100.0
+                recoveryCase:
+                  description: "A pipeline has recently recovered from a crash"
+                  value:
+                    status: "yellow"
+                    symptom: "1 indicator is unhealthy (`pipelines`)"
+                    indicators:
+                      pipelines:
+                        status: "yellow"
+                        symptom: "1 indicator is concerning (`crashy-pipeline`)"
+                        indicators:
+                          crashy-pipeline:
+                            status: "yellow"
+                            symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
+                            diagnosis:
+                              - id: "logstash:health:pipeline:recovery:diagnosis:5m-recovery-recent"
+                                cause: "pipeline has recovered from crashes 1 time in the last 5 minutes"
+                                action: "inspect logs to determine source of crash"
+                            impacts:
+                              - id: "logstash:health:pipeline:recovery:impact:intermittent_processing"
+                                severity: 2
+                                description: "the pipeline recently recovered from a crash"
+                                impact_areas: [ "pipeline_execution" ]
+                            details:
+                              status:
+                                state: "RUNNING"
+                              flow:
+                                worker_utilization:
+                                  last_1_minute: 0.1
+                                  last_5_minutes: 0.1
+                              recovery_log:
+                                - "2026-04-01T21:12:04.498144Z"
       x-metaTags:
         - content: Logstash
           name: product_name

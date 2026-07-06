@@ -18,7 +18,6 @@
 require "fileutils"
 require "delegate"
 
-require "logstash/util/byte_value"
 require "logstash/util/substitution_variables"
 require "logstash/util/time_value"
 require "i18n"
@@ -47,6 +46,7 @@ module LogStash
       "config.string",
       "dead_letter_queue.enable",
       "dead_letter_queue.flush_interval",
+      "dead_letter_queue.flush_check_interval",
       "dead_letter_queue.max_bytes",
       "dead_letter_queue.storage_policy",
       "dead_letter_queue.retain.age",
@@ -56,10 +56,12 @@ module LogStash
       "path.dead_letter_queue",
       "path.queue",
       "pipeline.batch.delay",
+      "pipeline.batch.output_chunking.growth_threshold_factor",
       "pipeline.batch.metrics.sampling_mode",
       "pipeline.batch.size",
       "pipeline.id",
       "pipeline.reloadable",
+      "pipeline.recoverable",
       "pipeline.system",
       "pipeline.workers",
       "pipeline.ordered",
@@ -448,131 +450,15 @@ module LogStash
     java_import org.logstash.settings.PasswordSetting
     java_import org.logstash.settings.ValidatedPasswordSetting
 
-    # The CoercibleString allows user to enter any value which coerces to a String.
-    # For example for true/false booleans; if the possible_strings are ["foo", "true", "false"]
-    # then these options in the config file or command line will be all valid: "foo", true, false, "true", "false"
-    #
-    class CoercibleString < Coercible
-      def initialize(name, default = nil, strict = true, possible_strings = [], &validator_proc)
-        @possible_strings = possible_strings
-        super(name, Object, default, strict, &validator_proc)
-      end
+    java_import org.logstash.settings.CoercibleStringSetting
 
-      def coerce(value)
-        value.to_s
-      end
+    java_import org.logstash.settings.ExistingFilePathSetting
 
-      def validate(value)
-        super(value)
-        unless @possible_strings.empty? || @possible_strings.include?(value)
-          raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
-        end
-      end
-    end
+    java_import org.logstash.settings.WritableDirectorySetting
 
-    class ExistingFilePath < Setting
-      def initialize(name, default = nil, strict = true)
-        super(name, ::String, default, strict) do |file_path|
-          if !::File.exist?(file_path)
-            raise ::ArgumentError.new("File \"#{file_path}\" must exist but was not found.")
-          else
-            true
-          end
-        end
-      end
-    end
+    java_import org.logstash.settings.BytesSetting
 
-    class WritableDirectory < Setting
-      def initialize(name, default = nil, strict = false)
-        super(name, ::String, default, strict)
-      end
-
-      def validate(path)
-        super(path)
-
-        if ::File.directory?(path)
-          if !::File.writable?(path)
-            raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not writable.")
-          end
-        elsif ::File.symlink?(path)
-          # TODO(sissel): I'm OK if we relax this restriction. My experience
-          # is that it's usually easier and safer to just reject symlinks.
-          raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It cannot be a symlink.")
-        elsif ::File.exist?(path)
-          raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not a directory.")
-        else
-          parent = ::File.dirname(path)
-          if !::File.writable?(parent)
-            raise ::ArgumentError.new("Path \"#{path}\" does not exist and I cannot create it because the parent path \"#{parent}\" is not writable.")
-          end
-        end
-
-        # If we get here, the directory exists and is writable.
-        true
-      end
-
-      def value
-        super.tap do |path|
-          if !::File.directory?(path)
-            # Create the directory if it doesn't exist.
-            begin
-              logger.info("Creating directory", setting: name, path: path)
-              ::FileUtils.mkdir_p(path)
-            rescue => e
-              # TODO(sissel): Catch only specific exceptions?
-              raise ::ArgumentError.new("Path \"#{path}\" does not exist, and I failed trying to create it: #{e.class.name} - #{e}")
-            end
-          end
-        end
-      end
-    end
-
-    class Bytes < Coercible
-      def initialize(name, default = nil, strict = true)
-        super(name, ::Integer, default, strict = true) { |value| valid?(value) }
-      end
-
-      def valid?(value)
-        value.is_a?(::Integer) && value >= 0
-      end
-
-      def coerce(value)
-        case value
-        when ::Numeric
-          value
-        when ::String
-          LogStash::Util::ByteValue.parse(value)
-        else
-          raise ArgumentError.new("Could not coerce '#{value}' into a bytes value")
-        end
-      end
-
-      def validate(value)
-        unless valid?(value)
-          raise ArgumentError.new("Invalid byte value \"#{value}\".")
-        end
-      end
-    end
-
-    class TimeValue < Coercible
-      include LogStash::Util::Loggable
-
-      def initialize(name, default, strict = true, &validator_proc)
-        super(name, Util::TimeValue, default, strict, &validator_proc)
-      end
-
-      def coerce(value)
-        if value.is_a?(::Integer)
-          deprecation_logger.deprecated("Integer value for `#{name}` does not have a time unit and will be interpreted in nanoseconds. " +
-                                        "Time units will be required in a future release of Logstash. " +
-                                        "Acceptable unit suffixes are: `d`, `h`, `m`, `s`, `ms`, `micros`, and `nanos`.")
-
-          return Util::TimeValue.new(value, :nanosecond)
-        end
-
-        Util::TimeValue.from_value(value)
-      end
-    end
+    java_import org.logstash.settings.TimeValueSetting
 
     class ArrayCoercible < Coercible
       def initialize(name, klass, default, strict = true, &validator_proc)
@@ -596,26 +482,6 @@ module LogStash
 
         if @validator_proc && !@validator_proc.call(input)
           raise ArgumentError.new("Failed to validate setting \"#{@wrapped_setting.name}\" with value: #{input}")
-        end
-      end
-    end
-
-    class SplittableStringArray < ArrayCoercible
-      DEFAULT_TOKEN = ","
-
-      def initialize(name, klass, default, strict = true, tokenizer = DEFAULT_TOKEN, &validator_proc)
-        @element_class = klass
-        @token = tokenizer
-        super(name, klass, default, strict, &validator_proc)
-      end
-
-      def coerce(value)
-        if value.is_a?(Array)
-          value
-        elsif value.nil?
-          []
-        else
-          value.split(@token).map(&:strip)
         end
       end
     end

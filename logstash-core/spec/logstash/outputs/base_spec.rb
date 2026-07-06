@@ -39,7 +39,7 @@ class LogStash::Outputs::NOOPShared < ::LogStash::Outputs::Base
   def register; end
 end
 
-class LogStash::Outputs::NOOPLegacy < ::LogStash::Outputs::Base
+class LogStash::Outputs::NOOPDefault < ::LogStash::Outputs::Base
   def register; end
 end
 
@@ -58,11 +58,9 @@ describe "LogStash::Outputs::Base#new" do
 
   context "single" do
     let(:klass) { LogStash::Outputs::NOOPSingle }
+    let(:params) { { "dummy_option" => "potatoes", "codec" => "json" } }
 
     it "should instantiate cleanly" do
-      params = { "dummy_option" => "potatoes", "codec" => "json", "workers" => 2 }
-      worker_params = params.dup; worker_params["workers"] = 1
-
       expect { subject }.not_to raise_error
     end
 
@@ -79,19 +77,15 @@ describe "LogStash::Outputs::Base#new" do
     end
   end
 
-  context "legacy" do
-    let(:klass) { LogStash::Outputs::NOOPLegacy }
+  context "default (no concurrency declared)" do
+    let(:klass) { LogStash::Outputs::NOOPDefault }
 
-    it "should set concurrency correctly" do
-      expect(subject.concurrency).to eq(:legacy)
+    it "should default concurrency to :single" do
+      expect(subject.concurrency).to eq(:single)
     end
 
-    it "should default the # of workers to 1" do
-      expect(subject.workers).to eq(1)
-    end
-
-    it "should default concurrency to :legacy" do
-      expect(subject.concurrency).to eq(:legacy)
+    it "should accept the deprecated workers setting without error" do
+      expect { klass.new("workers" => 1) }.not_to raise_error
     end
   end
 

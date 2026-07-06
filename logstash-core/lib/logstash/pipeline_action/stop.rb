@@ -30,6 +30,7 @@ module LogStash module PipelineAction
         pipeline.shutdown
       end
 
+      agent.untrack_ssl_resources(pipeline_id)
       LogStash::ConvergeResult::SuccessfulAction.new
     end
 

@@ -40,4 +40,6 @@ public interface QueueReadClient {
     public <E extends Exception> void executeWithTimers(final TimerMetric.ExceptionalRunnable<E> runnable) throws E;
 
     boolean isEmpty();
+
+    int estimateBatchMetricsFootprintInBytes();
 }

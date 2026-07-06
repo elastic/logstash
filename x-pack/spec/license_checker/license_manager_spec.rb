@@ -6,6 +6,8 @@ require "spec_helper"
 require "logstash/json"
 require "license_checker/license_manager"
 require 'monitoring/monitoring'
+require "logstash/runner"
+require "logstash/ssl_file_tracker"
 
 class Observer
   attr_reader :xpack_info
@@ -23,6 +25,7 @@ end
 
 describe LogStash::LicenseChecker::LicenseManager do
   let(:subject) { described_class.new(license_reader, 'monitoring') }
+
   let(:status) { "active"}
   let(:type) { 'trial' }
 

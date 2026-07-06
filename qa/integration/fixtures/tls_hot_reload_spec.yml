@@ -1,0 +1,4 @@
+---
+services:
+  - logstash
+  - elasticsearch_tls

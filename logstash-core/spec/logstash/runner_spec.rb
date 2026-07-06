@@ -200,6 +200,69 @@ describe LogStash::Runner do
     end
   end
 
+  describe "SSL file tracker creation" do
+    subject(:runner) { LogStash::Runner.new("") }
+    let(:fake_tracker) { double("SslFileTracker").as_null_object }
+    let(:config_file) do
+      path = Stud::Temporary.pathname
+      File.write(path, "input { generator { count => 1 } } output { null {} }")
+      path
+    end
+
+    # Settings are mutated by `-S`, `-f`, and `-t` flags.
+    # Reset them before and after each example so we neither inherit nor leak global state.
+    SSL_FILE_TRACKER_TEST_SETTINGS = {
+      "config.reload.automatic" => false,
+      "ssl.reload.automatic"    => false,
+      "config.test_and_exit"    => false,
+      "path.config"             => nil,
+    }.freeze
+
+    def reload_settings
+      SSL_FILE_TRACKER_TEST_SETTINGS.each { |k, v| LogStash::SETTINGS.set_value(k, v) }
+    end
+
+    before do
+      require "logstash/ssl_file_tracker"
+      allow(LogStash::SslFileTracker).to receive(:new).and_return(fake_tracker)
+      reload_settings
+    end
+
+    after { reload_settings }
+
+    it "creates the tracker when both config.reload.automatic and ssl.reload.automatic are true" do
+      runner.run(["-f", config_file, "-Sconfig.reload.automatic=true", "-Sssl.reload.automatic=true"])
+      expect(LogStash::SslFileTracker).to have_received(:new)
+    end
+
+    it "does not create the tracker when config.reload.automatic is false" do
+      runner.run(["-f", config_file, "-Sssl.reload.automatic=true"])
+      expect(LogStash::SslFileTracker).not_to have_received(:new)
+    end
+
+    it "does not create the tracker when ssl.reload.automatic is false" do
+      runner.run(["-f", config_file, "-Sconfig.reload.automatic=true"])
+      expect(LogStash::SslFileTracker).not_to have_received(:new)
+    end
+
+    it "creates the tracker when a bootstrap_check flips config.reload.automatic (CPM-style)" do
+      flip_check = Class.new do
+        def self.check(settings)
+          settings.set("config.reload.automatic", true)
+        end
+      end
+      runner.bootstrap_checks = [flip_check]
+      runner.run(["-f", config_file, "-Sssl.reload.automatic=true"])
+      expect(LogStash::SslFileTracker).to have_received(:new)
+    end
+
+    it "closes the tracker if the runner aborts before the agent takes ownership" do
+      # -t: config.test_and_exit
+      expect(fake_tracker).to receive(:close)
+      runner.run(["-t", "-f", config_file, "-Sconfig.reload.automatic=true", "-Sssl.reload.automatic=true"])
+    end
+  end
+
   describe "--config.test_and_exit" do
     subject { LogStash::Runner.new("") }
     let(:args) { ["-t", "-e", pipeline_string] }

@@ -70,7 +70,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     @cc_dbs = CC_DB_TYPES.each_with_object({}) do |database_type, memo|
       database_filename = "GeoLite2-#{database_type}.mmdb"
       vendored_database_path = ::File.expand_path(database_filename, vendored_cc_licensed_dbs)
-      fail("vendored #{database_type} database not present in #{vendored_cc_licensed_dbs}") unless ::File::exists?(vendored_database_path)
+      fail("vendored #{database_type} database not present in #{vendored_cc_licensed_dbs}") unless ::File.exist?(vendored_database_path)
 
       cc_dir_path = ::File.expand_path("CC", @data_dir_path)
       FileUtils.mkdir_p(cc_dir_path)

@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/installing-logstash.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Installing Logstash [installing-logstash]
