@@ -1,21 +1,24 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/resiliency.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Queues and data resiliency [resiliency]
 
-As data flows through the event processing pipeline, {{ls}} may encounter situations that prevent it from delivering events to the configured output. For example, the data might contain unexpected data types, or {{ls}} might terminate abnormally.
+As data flows through the event processing pipeline, {{ls}} can encounter situations that prevent it from delivering events to the configured output, such as unexpected data types or an abnormal {{ls}} shutdown.
 
 **Memory queue (MQ)**
 :   By default, {{ls}} uses [in-memory bounded queues](/reference/memory-queue.md) between pipeline stages (inputs → pipeline workers) to buffer events.
-Memory queues have [limitations](/reference/memory-queue.md#mem-queue-limitations), but also offer [benefits](/reference/memory-queue.md##mem-queue-benefits) that make them a good choice for many users. 
+Memory queues have [limitations](/reference/memory-queue.md#mem-queue-limitations), but also offer [benefits](/reference/memory-queue.md#mem-queue-benefits) that make them a good choice for many users. 
 If memory queues don't offer the resiliency you need, {{ls}} provides more options. 
 
 ## {{ls}} data resiliency options [ls-queues]
 
 To guard against data loss and ensure that events flow through the pipeline without interruption, {{ls}} provides additional data resiliency features.
-These features are disabled by default. To turn on these features, you must explicitly enable them in the {{ls}} [settings file](/reference/logstash-settings-file.md).
+These features are turned off by default. To use them, you must explicitly turn them on in the {{ls}} [settings file](/reference/logstash-settings-file.md).
 
 **Persistent queues (PQ)**
 :   [Persistent queues (PQ)](/reference/persistent-queues.md) protect against data loss by storing events in an internal queue on disk.
@@ -29,11 +32,11 @@ serverless: ga
 stack: ga 9.1+
 ```
 
-When you use {{ls}} to send data streams to {{es}}, you have an additional option for data resiliency--the {{es}} [failure store](docs-content://manage-data/data-store/data-streams/failure-store.md).
+When you use {{ls}} to send data streams to {{es}}, you have an additional option for data resiliency: the {{es}} [failure store](docs-content://manage-data/data-store/data-streams/failure-store.md).
 The {{es}} failure store for data streams offers {{ls}} users another alternative for handling events that can't be processed. 
 
 A failure store is a secondary set of indices inside a data stream that is dedicated to storing failed documents. 
-When a data stream's failure store is enabled, failures are captured in a separate index and persisted to be analyzed later. 
-{{ls}} offers the Dead Letter Queue (DLQ), but the failure store is likely be a more practical option for most {{es}} users.
+When a data stream's failure store is turned on, failures are captured in a separate index and persisted to be analyzed later. 
+{{ls}} offers the Dead Letter Queue (DLQ), but the failure store is likely to be a more practical option for most {{es}} users.
 
-Check out [Failure store](docs-content://manage-data/data-store/data-streams/failure-store.md) for details.
+Refer to [Failure store](docs-content://manage-data/data-store/data-streams/failure-store.md) for details.
