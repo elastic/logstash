@@ -18,8 +18,7 @@ require 'monitoring/monitoring'
 describe LogStash::Monitoring::InternalPipelineSource do
   context 'license testing' do
     let(:xpack_monitoring_interval) { 1 }
-    let(:options) { { "collection_interval" => xpack_monitoring_interval,
-                        "collection_timeout_interval" => 600 } }
+    let(:options) { { "collection_interval" => xpack_monitoring_interval } }
 
     subject { described_class.new(pipeline_config, mock_agent, system_settings) }
     let(:mock_agent) { double("agent")}

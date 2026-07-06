@@ -24,7 +24,6 @@ module LogStash module Instrument module PeriodicPoller
 
     DEFAULT_OPTIONS = {
       :polling_interval => 5,
-      :polling_timeout => 120
     }
 
     attr_reader :metric
@@ -39,25 +38,12 @@ module LogStash module Instrument module PeriodicPoller
     def update(time, result, exception)
       return unless exception
 
-      if exception.is_a?(Concurrent::TimeoutError)
-        # On a busy system this can happen, we just log it as a debug
-        # event instead of an error, Some of the JVM calls can take a long time or block.
-        logger.debug("Timeout exception",
-                :poller => self,
-                :result => result,
-                :polling_timeout => @options[:polling_timeout],
-                :polling_interval => @options[:polling_interval],
-                :exception => exception.class,
-                :executed_at => time)
-      else
-        logger.error("Exception",
-                :poller => self,
-                :result => result,
-                :exception => exception.class,
-                :polling_timeout => @options[:polling_timeout],
-                :polling_interval => @options[:polling_interval],
-                :executed_at => time)
-      end
+      logger.error("Exception",
+              :poller => self,
+              :result => result,
+              :exception => exception.class,
+              :polling_interval => @options[:polling_interval],
+              :executed_at => time)
     end
 
     def collect
@@ -66,8 +52,7 @@ module LogStash module Instrument module PeriodicPoller
 
     def start
       logger.debug("Starting",
-                   :polling_interval => @options[:polling_interval],
-                   :polling_timeout => @options[:polling_timeout]) if logger.debug?
+                   :polling_interval => @options[:polling_interval]) if logger.debug?
 
       collect # Collect data right away if possible
       @task.execute
@@ -82,7 +67,6 @@ module LogStash module Instrument module PeriodicPoller
     def configure_task
       @task = Concurrent::TimerTask.new { collect }
       @task.execution_interval = @options[:polling_interval]
-      @task.timeout_interval = @options[:polling_timeout]
       @task.add_observer(self)
     end
   end

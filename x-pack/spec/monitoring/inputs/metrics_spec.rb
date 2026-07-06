@@ -14,8 +14,7 @@ require 'monitoring/monitoring'
 
 describe LogStash::Inputs::Metrics do
   let(:xpack_monitoring_interval) { 1 }
-  let(:options) { { "collection_interval" => xpack_monitoring_interval,
-                      "collection_timeout_interval" => 600 } }
+  let(:options) { { "collection_interval" => xpack_monitoring_interval } }
   let(:elasticsearch_url) { nil }
   let(:elasticsearch_username) { nil }
   let(:elasticsearch_password) { nil }

@@ -58,7 +58,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "clamp", "~> 1", ">= 1.3.3" #(MIT license) for command line args/flags
   gem.add_runtime_dependency "filesize", "~> 0.2" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 1"  #(MIT license)
-  gem.add_runtime_dependency "concurrent-ruby", "~> 1", "< 1.1.10" # pinned until https://github.com/elastic/logstash/issues/13956
+  gem.add_runtime_dependency "concurrent-ruby", "~> 1"
   gem.add_runtime_dependency "rack", '~> 3'
   gem.add_runtime_dependency "sinatra", '~> 4'
   gem.add_runtime_dependency 'puma', '~> 8.0'
@@ -78,7 +78,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "jrjackson", "= #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
 
-  gem.add_runtime_dependency "multi_json", "~> 1.19.1" # pinned until concurrent-ruby pin is lifted, multi_json 1.20.0-java requires concurrent-ruby ~> 1.2
+  gem.add_runtime_dependency "multi_json", "~> 1"
   gem.add_runtime_dependency "elasticsearch", '>= 8', '< 10'
   gem.add_runtime_dependency "manticore", '~> 0.6'
 

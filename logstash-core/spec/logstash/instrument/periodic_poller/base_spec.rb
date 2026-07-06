@@ -24,24 +24,31 @@ describe LogStash::Instrument::PeriodicPoller::Base do
 
   subject { described_class.new(metric, options) }
 
-  describe "#update" do
-    it "logs an timeout exception to debug level" do
-      exception = Concurrent::TimeoutError.new
-      expect(subject.logger).to receive(:debug).with(anything, hash_including(:exception => exception.class))
-      subject.update(Time.now, "hola", exception)
+  describe "#configure_task" do
+    it "creates a TimerTask without a timeout_interval" do
+      task = subject.instance_variable_get(:@task)
+      expect(task).to be_a(Concurrent::TimerTask)
+      expect(task.timeout_interval).to be_nil
     end
 
-    it "logs any other exception to error level" do
+    it "sets the execution_interval from options" do
+      custom = described_class.new(metric, :polling_interval => 42)
+      task = custom.instance_variable_get(:@task)
+      expect(task.execution_interval).to eq(42)
+    end
+  end
+
+  describe "#update" do
+    it "logs any exception to error level" do
       exception = Class.new
       expect(subject.logger).to receive(:error).with(anything, hash_including(:exception => exception.class))
       subject.update(Time.now, "hola", exception)
     end
 
     it "doesnt log anything when no exception is received" do
-      exception = Concurrent::TimeoutError.new
       expect(subject.logger).not_to receive(:debug).with(anything)
       expect(subject.logger).not_to receive(:error).with(anything)
-      subject.update(Time.now, "hola", exception)
+      subject.update(Time.now, "hola", nil)
     end
   end
 end

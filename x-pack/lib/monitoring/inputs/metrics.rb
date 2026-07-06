@@ -30,9 +30,10 @@ module LogStash module Inputs
     # Polling frequency in seconds on the metric store
     config :collection_interval, :type => :integer, :default => 10
 
-    # Maximum time in seconds a polling iteration of the metric store can take before it dies
-    # When it dies, the snapshot will wait the `collection_interval` before doing another snapshot.
-    config :collection_timeout_interval, :type => :integer, :default => 10 * 60
+    # @deprecated This setting is no longer effective. TimerTask timeouts were removed in
+    #   concurrent-ruby 1.1.10 because they caused thread leaks via unsafe Thread#raise.
+    #   See: https://github.com/ruby-concurrency/concurrent-ruby/pull/926
+    config :collection_timeout_interval, :type => :integer, :default => 10 * 60, :deprecated => "This setting no longer has any effect and will be removed in a future release."
 
     # Collect per-plugin / queue / other component stats
     config :extended_performance_collection, :type => :boolean, :default => true
@@ -56,8 +57,7 @@ module LogStash module Inputs
 
     def configure_snapshot_poller
       @timer_task = Concurrent::TimerTask.new({
-        :execution_interval => @collection_interval,
-        :timeout_interval => @collection_timeout_interval
+        :execution_interval => @collection_interval
       }) do
         update(metric.collector.snapshot_metric) unless @agent.nil?
       end

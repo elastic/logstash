@@ -143,6 +143,14 @@ module LogStash
             "https://www.elastic.co/guide/en/logstash/current/monitoring-with-elastic-agent.html"
             )
 
+        if runner.settings.set?("xpack.monitoring.collection.timeout_interval") ||
+           runner.settings.set?("monitoring.collection.timeout_interval")
+          deprecation_logger.deprecated(
+            "The setting `monitoring.collection.timeout_interval` has no effect and will be removed in a future release. " \
+            "Timeout enforcement on monitoring collection was removed because it relied on an unsafe threading mechanism."
+          )
+        end
+
         logger.trace("registering the metrics pipeline")
         LogStash::SETTINGS.set("node.uuid", runner.agent.id)
         internal_pipeline_source = LogStash::Monitoring::InternalPipelineSource.new(setup_metrics_pipeline, runner.agent, LogStash::SETTINGS.clone, runner.ssl_file_tracker)
