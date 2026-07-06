@@ -1,4 +1,4 @@
-name: openapi-pr
+name: openapi-lint
 on:
   pull_request:
     paths:
