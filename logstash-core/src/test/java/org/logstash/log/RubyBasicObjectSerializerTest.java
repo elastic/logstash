@@ -76,7 +76,7 @@ public class RubyBasicObjectSerializerTest {
     @Test
     public void testSerializationWithRubyArrayValue() throws JsonProcessingException {
         final ThreadContext context = RUBY.getCurrentContext();
-        final RubyArray<RubySymbol> rubyArray = new RubyArray<>(RUBY, 2);
+        final RubyArray<?> rubyArray = RubyArray.newArray(RUBY, 2);
         rubyArray.push(context, RubySymbol.newSymbol(RUBY, "one"));
         rubyArray.push(context, RubySymbol.newSymbol(RUBY, "two"));
 
