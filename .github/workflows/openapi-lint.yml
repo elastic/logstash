@@ -2,7 +2,7 @@ name: openapi-lint
 on:
   pull_request:
     paths:
-      - 'docs/static/spec/openapi/**'
+      - 'docs/static/spec/openapi/logstash-api.yaml'
 permissions:
   contents: read
 jobs:
