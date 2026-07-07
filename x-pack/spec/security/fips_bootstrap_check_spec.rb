@@ -46,14 +46,14 @@ describe LogStash::Security::FipsBootstrapCheck do
   context "when FIPS mode requires a missing provider" do
     before do
       settings.set("xpack.security.fips_mode.enabled", true)
-      settings.set("xpack.security.fips_mode.required_providers", ["BCFIPS", "BCJSSE:2*"])
+      settings.set("xpack.security.fips_mode.required_providers", ["LOGSTASH_MISSING_FIPS_PROVIDER", "LOGSTASH_MISSING_JSSE_PROVIDER:2*"])
     end
 
     it "raises a bootstrap check error with missing providers" do
       expect { check }.to raise_error(LogStash::BootstrapCheckError) do |error|
         expect(error.message).to include("required FIPS security providers")
-        expect(error.message).to include("missing provider \"BCFIPS\"")
-        expect(error.message).to include("missing provider \"BCJSSE\"")
+        expect(error.message).to include("missing provider \"LOGSTASH_MISSING_FIPS_PROVIDER\"")
+        expect(error.message).to include("missing provider \"LOGSTASH_MISSING_JSSE_PROVIDER\"")
       end
     end
   end
