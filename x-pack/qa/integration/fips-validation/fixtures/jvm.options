@@ -1,0 +1,11 @@
+# Example FIPS 140-3 JVM options for Logstash.
+# Adjust paths for your installation before using this file.
+-Dio.netty.ssl.provider=JDK
+-Djava.security.properties=${LS_SETTINGS_DIR}/security/java.security
+-Djavax.net.ssl.trustStore=${LS_SETTINGS_DIR}/security/cacerts.bcfks
+-Djavax.net.ssl.trustStoreType=BCFKS
+-Djavax.net.ssl.trustStoreProvider=BCFIPS
+-Djavax.net.ssl.trustStorePassword=changeit
+-Dssl.KeyManagerFactory.algorithm=PKIX
+-Dssl.TrustManagerFactory.algorithm=PKIX
+-Dorg.bouncycastle.fips.approved_only=true
