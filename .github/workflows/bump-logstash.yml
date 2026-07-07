@@ -12,8 +12,8 @@ on:
         required: true
         type: string
       logstash_release_track:
-        description: 'Release track (example: 9.current, 9.previous, main)'
-        required: true
+        description: 'Release track (example: 9.current, 9.previous, main). Optional; when omitted the release track in versions.yml is left unchanged.'
+        required: false
         type: string
 jobs:
   bump:

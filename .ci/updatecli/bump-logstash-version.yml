@@ -35,6 +35,14 @@ sources:
     spec:
       command: test -f Gemfile.jruby-3.4.lock.release
 
+conditions:
+  release_track_provided:
+    name: Check if logstash release track should be updated
+    kind: shell
+    disablesourceinput: true
+    spec:
+      command: test -n "${LOGSTASH_RELEASE_TRACK}"
+
 targets:
   update_logstash_version:
     name: Update logstash version in versions.yml
@@ -61,6 +69,8 @@ targets:
       kind: yaml
       disablesourceinput: true
       scmid: default
+      dependson:
+        - 'condition#release_track_provided'
       spec:
         file: versions.yml
         key: $.logstash-release-track
