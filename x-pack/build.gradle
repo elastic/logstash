@@ -20,6 +20,7 @@ buildscript {
 
 configurations {
   geolite2
+  fipsProviderJars
 }
 
 dependencies {
@@ -28,6 +29,18 @@ dependencies {
   testImplementation 'junit:junit:4.13.2'
 
   geolite2('org.elasticsearch:geolite2-databases:20191119') {
+    transitive = false
+  }
+  fipsProviderJars('org.bouncycastle:bc-fips:2.0.0') {
+    transitive = false
+  }
+  fipsProviderJars('org.bouncycastle:bcpkix-fips:2.0.7') {
+    transitive = false
+  }
+  fipsProviderJars('org.bouncycastle:bctls-fips:2.0.19') {
+    transitive = false
+  }
+  fipsProviderJars('org.bouncycastle:bcutil-fips:2.0.3') {
     transitive = false
   }
 }
@@ -42,6 +55,11 @@ tasks.register("unzipGeolite", Copy) {
     include "GeoLite2-City.mmdb"
   }
   into file("${projectDir}/spec/filters/geoip/vendor")
+}
+
+tasks.register("copyFipsProviderJars", Copy) {
+  from configurations.fipsProviderJars
+  into file("${buildDir}/fips-provider-jars")
 }
 
 tasks.register("rubyTests", Test) {
@@ -64,12 +82,14 @@ tasks.register("rubyIntegrationTests", Test) {
   dependsOn ":copyEs"
   dependsOn ":assemble"
   dependsOn "buildFipsValidationGem"
+  dependsOn "copyFipsProviderJars"
   inputs.files fileTree("${projectDir}/qa")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
   inputs.files fileTree("${rootProject.projectDir}/Gemfile.lock")
   inputs.files fileTree("${rootProject.projectDir}/logstash-core/lib")
   systemProperty 'logstash.root.dir', projectDir.parent
+  systemProperty 'logstash.fips.provider.jars.dir', file("${buildDir}/fips-provider-jars")
   if (project.hasProperty('rubyIntegrationSpecs')) {
     systemProperty 'org.logstash.xpack.integration.specs', project.property('rubyIntegrationSpecs')
   }

@@ -111,4 +111,6 @@ The `logstash.yml` file includes these settings.
 | `otel.exporter.otlp.certificate` {applies_to}`stack: preview 9.5.0+` | Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate. Required when the endpoint uses a self-signed or private CA. | *N/A* |
 | `otel.exporter.otlp.client.key` {applies_to}`stack: preview 9.5.0+` | Path to a PEM-encoded client private key for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.certificate`. | *N/A* |
 | `otel.exporter.otlp.client.certificate` {applies_to}`stack: preview 9.5.0+` | Path to a PEM-encoded client certificate for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.client.key`. | *N/A* |
+| `xpack.security.fips_mode.enabled` | Set to `true` to enable {{ls}} FIPS mode. {{ls}} does not ship or configure Bouncy Castle FIPS provider jars, `java.security` files, truststores, or related JVM options. You must provide those files and JVM settings before enabling this setting. | `false` |
+| `xpack.security.fips_mode.required_providers` | Optional list of required Java security providers to verify when `xpack.security.fips_mode.enabled` is `true`. Values can be provider names, such as `BCFIPS`, or provider names with simple version patterns, such as `BCFIPS:2*`. | `[]` |
 

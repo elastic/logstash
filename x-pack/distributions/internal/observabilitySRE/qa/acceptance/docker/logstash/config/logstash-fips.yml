@@ -1,5 +1,7 @@
 api.http.host: "0.0.0.0"
 xpack.monitoring.enabled: false
+xpack.security.fips_mode.enabled: true
+xpack.security.fips_mode.required_providers: ["BCFIPS", "BCJSSE"]
 
 pipeline.ordered: false
 pipeline.workers: 2
