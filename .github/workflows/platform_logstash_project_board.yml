@@ -14,6 +14,9 @@ env:
   AREA_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AMlnlzgIB8yM'
   DATA_PROCESSING_OPTION_ID: '41c049c0'
   
+permissions:
+  contents: none
+
 jobs:
   add_to_ingest_project:
     runs-on: ubuntu-latest
