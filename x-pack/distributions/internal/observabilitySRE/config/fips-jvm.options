@@ -6,4 +6,4 @@
 -Djavax.net.ssl.trustStorePassword=changeit
 -Dssl.KeyManagerFactory.algorithm=PKIX
 -Dssl.TrustManagerFactory.algorithm=PKIX
--Dorg.bouncycastle.fips.approved_only=true
+# C:HYBRID mode is configured in java.security; approved_only is intentionally not set.

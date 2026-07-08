@@ -34,7 +34,7 @@ allprojects {
                 systemProperty "javax.net.ssl.trustStorePassword", "changeit"
                 systemProperty "ssl.KeyManagerFactory.algorithm", "PKIX"
                 systemProperty "ssl.TrustManagerFactory.algorithm", "PKIX"
-                systemProperty "org.bouncycastle.fips.approved_only", "true"
+                // C:HYBRID mode is configured in java.security; approved_only is intentionally not set.
             }
         }
     }

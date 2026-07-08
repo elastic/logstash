@@ -67,8 +67,8 @@ ENV LS_JAVA_OPTS="\
     -Djavax.net.ssl.trustStoreProvider=BCFIPS \
     -Djavax.net.ssl.trustStorePassword=changeit \
     -Dssl.KeyManagerFactory.algorithm=PKIX \
-    -Dssl.TrustManagerFactory.algorithm=PKIX \
-    -Dorg.bouncycastle.fips.approved_only=true"
+    -Dssl.TrustManagerFactory.algorithm=PKIX"
+    # C:HYBRID mode is configured in java.security; approved_only is intentionally not set.
 
 # Example test run, most use cases will override this
 CMD ["./gradlew", "--info", "--stacktrace", "-PfedrampHighMode=true", "runIntegrationTests"]

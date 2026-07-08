@@ -185,9 +185,32 @@ setup_vendored_jruby() {
   fi
 }
 
+setup_fips_jvm_flags() {
+  # Detect the settings directory: honour --path.settings if provided, else default
+  local settings_dir="${LOGSTASH_HOME}/config"
+  local found_settings=0
+  for arg in "$@"; do
+    if [ $found_settings -eq 1 ]; then
+      settings_dir="$arg"
+      break
+    fi
+    [ "$arg" = "--path.settings" ] && found_settings=1
+  done
+
+  local yml="${settings_dir}/logstash.yml"
+  if [ -f "$yml" ] && grep -qE "^\s*xpack\.security\.fips_mode\.enabled\s*:\s*true" "$yml"; then
+    # Prevent non-FIPS BC 1.84 from registering as a JVM security provider.
+    # BC 1.84 JARs are still loaded (jruby-openssl needs them for class structure)
+    # but SecurityHelper is redirected to BCFIPS/BCJSSE in fips_jruby_openssl.rb.
+    JAVA_OPTS="${JAVA_OPTS} -Djruby.openssl.provider.register=false -Djruby.openssl.ssl.provider=BCJSSE"
+    export JAVA_OPTS
+  fi
+}
+
 setup() {
   >&2 setup_java
   >&2 setup_vendored_jruby
+  setup_fips_jvm_flags "$@"
 }
 
 ruby_exec() {

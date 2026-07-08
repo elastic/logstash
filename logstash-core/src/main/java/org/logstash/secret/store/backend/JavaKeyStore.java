@@ -59,10 +59,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.SecureRandom;
+import java.security.Security;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -75,7 +76,10 @@ import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
  * <p>This class is threadsafe.</p>
  */
 public final class JavaKeyStore implements SecretStore {
-    private static final String KEYSTORE_TYPE = "pkcs12";
+    private static final boolean FIPS_MODE = Security.getProvider("BCFIPS") != null &&
+            Security.getProviders().length > 0 && "BCFIPS".equals(Security.getProviders()[0].getName());
+    private static final String KEYSTORE_TYPE = FIPS_MODE ? "BCFKS" : "pkcs12";
+    private static final String PBE_ALGORITHM = FIPS_MODE ? "PBEWithHmacSHA256AndAES_256" : "PBE";
     private static final Logger LOGGER = LogManager.getLogger(JavaKeyStore.class);
     private static final String PATH_KEY = "keystore.file";
     private final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
@@ -113,7 +117,7 @@ public final class JavaKeyStore implements SecretStore {
             Files.createFile(keyStorePath);
             try {
                 keyStore = KeyStore.Builder.newInstance(KEYSTORE_TYPE, null, protectionParameter).getKeyStore();
-                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+                SecretKeyFactory factory = SecretKeyFactory.getInstance(PBE_ALGORITHM);
                 byte[] base64 = SecretStoreUtil.base64Encode(LOGSTASH_MARKER.getKey().getBytes(StandardCharsets.UTF_8));
                 SecretKey secretKey = factory.generateSecret(new PBEKeySpec(SecretStoreUtil.asciiBytesToChar(base64)));
                 keyStore.setEntry(LOGSTASH_MARKER.toExternalForm(), new KeyStore.SecretKeyEntry(secretKey), protectionParameter);
@@ -125,7 +129,7 @@ public final class JavaKeyStore implements SecretStore {
                 }
                 LOGGER.info("Created Logstash keystore at {}", keyStorePath.toAbsolutePath());
                 return this;
-            } catch (Exception e) {
+            } catch (Exception | Error e) {
                 throw new SecretStoreException.CreateException("Failed to create Logstash keystore.", e);
             }
         } catch (SecretStoreException sse) {
@@ -206,7 +210,7 @@ public final class JavaKeyStore implements SecretStore {
         if (!existing) {
             //create the pass
             byte[] randomBytes = new byte[32];
-            new Random().nextBytes(randomBytes);
+            new SecureRandom().nextBytes(randomBytes);
             return SecretStoreUtil.base64EncodeToChars(randomBytes);
         }
         //read the pass
@@ -327,7 +331,7 @@ public final class JavaKeyStore implements SecretStore {
         try {
             lock.lock();
             loadKeyStore();
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(PBE_ALGORITHM);
             //PBEKey requires an ascii password, so base64 encode it
             byte[] base64 = SecretStoreUtil.base64Encode(secret);
             PBEKeySpec passwordBasedKeySpec = new PBEKeySpec(SecretStoreUtil.asciiBytesToChar(base64));
@@ -340,7 +344,7 @@ public final class JavaKeyStore implements SecretStore {
                 SecretStoreUtil.clearBytes(secret);
             }
             LOGGER.debug("persisted secret {}", identifier.toExternalForm());
-        } catch (Exception e) {
+        } catch (Exception | Error e) {
             throw new SecretStoreException.PersistException(identifier, e);
         } finally {
             releaseLock(lock);
@@ -385,7 +389,7 @@ public final class JavaKeyStore implements SecretStore {
             try {
                 lock.lock();
                 loadKeyStore();
-                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+                SecretKeyFactory factory = SecretKeyFactory.getInstance(PBE_ALGORITHM);
                 KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(identifier.toExternalForm(), protectionParameter);
                 //not found
                 if (secretKeyEntry == null) {
@@ -399,7 +403,7 @@ public final class JavaKeyStore implements SecretStore {
                 passwordBasedKeySpec.clearPassword();
                 LOGGER.debug("retrieved secret {}", identifier.toExternalForm());
                 return secret;
-            } catch (Exception e) {
+            } catch (Exception | Error e) {
                 throw new SecretStoreException.RetrievalException(identifier, e);
             } finally {
                 releaseLock(lock);

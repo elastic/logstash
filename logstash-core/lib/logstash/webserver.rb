@@ -254,7 +254,11 @@ module LogStash
 
       raise("Password not provided!") unless @ssl_params.fetch(:keystore_password).value
 
-      java.security.KeyStore.getInstance("JKS")
+      fips_active = !java.security.Security.getProvider("BCFIPS").nil? &&
+        java.security.Security.getProviders.first&.getName == "BCFIPS"
+      keystore_type = @ssl_params[:keystore_type] || (fips_active ? "BCFKS" : "JKS")
+
+      java.security.KeyStore.getInstance(keystore_type)
           .load(java.io.FileInputStream.new(@ssl_params.fetch(:keystore_path)),
                 @ssl_params.fetch(:keystore_password).value.chars&.to_java(:char))
     rescue => e

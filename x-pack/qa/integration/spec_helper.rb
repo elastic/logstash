@@ -11,7 +11,10 @@ require "json"
 require "json-schema"
 
 RSpec.configure do |c|
-  if java.lang.System.getProperty("org.bouncycastle.fips.approved_only") == "true"
+  # Exclude skip_fips examples when running under a FIPS-configured JVM.
+  # Detection uses BCFIPS provider presence rather than approved_only since
+  # we run C:HYBRID mode which does not set approved_only=true.
+  if !java.security.Security.getProvider("BCFIPS").nil?
     c.filter_run_excluding skip_fips: true
   end
 end

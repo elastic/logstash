@@ -31,16 +31,16 @@ dependencies {
   geolite2('org.elasticsearch:geolite2-databases:20191119') {
     transitive = false
   }
-  fipsProviderJars('org.bouncycastle:bc-fips:2.0.0') {
+  fipsProviderJars('org.bouncycastle:bc-fips:2.0.1') {
     transitive = false
   }
   fipsProviderJars('org.bouncycastle:bcpkix-fips:2.0.7') {
     transitive = false
   }
-  fipsProviderJars('org.bouncycastle:bctls-fips:2.0.19') {
+  fipsProviderJars('org.bouncycastle:bctls-fips:2.0.22') {
     transitive = false
   }
-  fipsProviderJars('org.bouncycastle:bcutil-fips:2.0.3') {
+  fipsProviderJars('org.bouncycastle:bcutil-fips:2.0.5') {
     transitive = false
   }
 }

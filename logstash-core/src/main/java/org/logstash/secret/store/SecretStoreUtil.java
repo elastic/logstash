@@ -21,9 +21,9 @@
 package org.logstash.secret.store;
 
 import java.nio.ByteBuffer;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Random;
 
 /**
  * Conversion utility between String, bytes, and chars. All methods attempt to keep sensitive data out of memory. Sensitive data should avoid using Java {@link String}'s.
@@ -36,7 +36,7 @@ final public class SecretStoreUtil {
     private SecretStoreUtil() {
     }
 
-    private static final Random RANDOM = new Random();
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * Converts bytes from ascii encoded text to a char[] and zero outs the original byte[]

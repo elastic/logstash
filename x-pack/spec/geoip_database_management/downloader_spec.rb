@@ -2,6 +2,11 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
+require 'geoip_database_management/downloader'
+require 'geoip_database_management/metadata'
+require 'geoip_database_management/data_path'
+require 'geoip_database_management/util'
+
 describe LogStash::GeoipDatabaseManagement::Downloader, aggregate_failures: true, verify_stubs: true do
   let(:temp_metadata_path) { Stud::Temporary.directory }
   let(:data_path) { LogStash::GeoipDatabaseManagement::DataPath.new(temp_metadata_path) }

@@ -153,6 +153,54 @@ describe LogStash::WebServer do
     end
   end
 
+  describe "#validate_keystore_access!" do
+    let(:keystore_password) { double("password", value: "changeit") }
+    let(:mock_input_stream) { double("FileInputStream") }
+    let(:ssl_params) { { keystore_path: "/path/to/keystore", keystore_password: keystore_password } }
+
+    def stub_keystore_load(type)
+      keystore = double("keystore")
+      allow(java.security.KeyStore).to receive(:getInstance).with(type).and_return(keystore)
+      allow(java.io.FileInputStream).to receive(:new).with("/path/to/keystore").and_return(mock_input_stream)
+      allow(keystore).to receive(:load)
+    end
+
+    context "in non-FIPS mode" do
+      before do
+        allow(java.security.Security).to receive(:getProvider).with("BCFIPS").and_return(nil)
+        allow(java.security.Security).to receive(:getProviders).and_return([])
+        stub_keystore_load("JKS")
+      end
+
+      it "uses JKS by default" do
+        ws = LogStash::WebServer.new(logger, agent, webserver_options.merge(:ssl_params => ssl_params))
+        expect(java.security.KeyStore).to have_received(:getInstance).with("JKS")
+      end
+    end
+
+    context "in FIPS mode" do
+      let(:mock_bcfips) { double("BCFIPSProvider", getName: "BCFIPS") }
+
+      before do
+        allow(java.security.Security).to receive(:getProvider).with("BCFIPS").and_return(mock_bcfips)
+        allow(java.security.Security).to receive(:getProviders).and_return([mock_bcfips])
+      end
+
+      it "uses BCFKS by default" do
+        stub_keystore_load("BCFKS")
+        ws = LogStash::WebServer.new(logger, agent, webserver_options.merge(:ssl_params => ssl_params))
+        expect(java.security.KeyStore).to have_received(:getInstance).with("BCFKS")
+      end
+
+      it "uses the explicitly configured keystore type when provided" do
+        stub_keystore_load("PKCS12")
+        opts = webserver_options.merge(:ssl_params => ssl_params.merge(keystore_type: "PKCS12"))
+        ws = LogStash::WebServer.new(logger, agent, opts)
+        expect(java.security.KeyStore).to have_received(:getInstance).with("PKCS12")
+      end
+    end
+  end
+
   context "when configured with http basic auth" do
     around(:each) do |example|
       begin

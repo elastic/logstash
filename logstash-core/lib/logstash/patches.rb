@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require "logstash/patches/fips_jruby_openssl"
 require "logstash/patches/bugfix_jruby_2558"
 require "logstash/patches/cabin"
 require "logstash/patches/profile_require_calls"

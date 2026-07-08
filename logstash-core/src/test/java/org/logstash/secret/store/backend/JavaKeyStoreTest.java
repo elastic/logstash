@@ -30,6 +30,7 @@ import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreException;
 import org.logstash.secret.store.SecretStoreFactory;
+import org.logstash.secret.store.SecretStoreUtil;
 import org.logstash.secret.store.SecureConfig;
 
 import java.io.File;
@@ -733,5 +734,52 @@ public class JavaKeyStoreTest {
             executorService.shutdownNow();
             executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
         }
+    }
+
+    @Test
+    public void testKeystoreTypeIsFipsAwareAtClassLoad() {
+        // The FIPS_MODE flag is read at class-load time via BCFIPS provider presence.
+        // We verify the constant values are self-consistent: if FIPS_MODE is true,
+        // KEYSTORE_TYPE should be "BCFKS" and PBE_ALGORITHM should be the FIPS algorithm.
+        // If FIPS_MODE is false, KEYSTORE_TYPE should be "pkcs12" and PBE_ALGORITHM "PBE".
+        // Since we can't change the provider list after class load, we verify the currently
+        // loaded values are internally consistent.
+        java.security.Provider[] providers = java.security.Security.getProviders();
+        boolean fipsMode = java.security.Security.getProvider("BCFIPS") != null &&
+                providers.length > 0 && "BCFIPS".equals(providers[0].getName());
+        // Access via reflection since the fields are private
+        try {
+            java.lang.reflect.Field fipsModeField = JavaKeyStore.class.getDeclaredField("FIPS_MODE");
+            fipsModeField.setAccessible(true);
+            boolean loadedFipsMode = (boolean) fipsModeField.get(null);
+            assertThat(loadedFipsMode).isEqualTo(fipsMode);
+
+            java.lang.reflect.Field keystoreTypeField = JavaKeyStore.class.getDeclaredField("KEYSTORE_TYPE");
+            keystoreTypeField.setAccessible(true);
+            String keystoreType = (String) keystoreTypeField.get(null);
+
+            java.lang.reflect.Field pbeAlgorithmField = JavaKeyStore.class.getDeclaredField("PBE_ALGORITHM");
+            pbeAlgorithmField.setAccessible(true);
+            String pbeAlgorithm = (String) pbeAlgorithmField.get(null);
+
+            if (fipsMode) {
+                assertThat(keystoreType).isEqualTo("BCFKS");
+                assertThat(pbeAlgorithm).isEqualTo("PBEWithHmacSHA256AndAES_256");
+            } else {
+                assertThat(keystoreType).isEqualTo("pkcs12");
+                assertThat(pbeAlgorithm).isEqualTo("PBE");
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            fail("Could not access FIPS_MODE, KEYSTORE_TYPE or PBE_ALGORITHM fields via reflection: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSecretStoreUtilUsesSecureRandom() throws Exception {
+        // Verify that SecretStoreUtil.RANDOM is a SecureRandom, not java.util.Random
+        java.lang.reflect.Field randomField = SecretStoreUtil.class.getDeclaredField("RANDOM");
+        randomField.setAccessible(true);
+        Object randomInstance = randomField.get(null);
+        assertThat(randomInstance).isInstanceOf(java.security.SecureRandom.class);
     }
 }

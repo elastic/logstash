@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+
 require "openssl"
 
 # :nodoc:
@@ -45,40 +46,25 @@ class OpenSSL::SSL::SSLContext
   # OpenSSL::SSL::OP_NO_COMPRESSION) may not be available in all Ruby
   # versions/platforms.
   def self.__default_options
-    # ruby-core is refusing to patch ruby's default openssl settings to be more
-    # secure, so let's fix that here. The next few lines setting options and
-    # ciphers come from jmhodges' proposed patch
     ssloptions = OpenSSL::SSL::OP_ALL
 
-    # TODO(sissel): JRuby doesn't have this. Maybe work on a fix?
     if defined?(OpenSSL::SSL::OP_DONT_INSERT_EMPTY_FRAGMENTS)
       ssloptions &= ~OpenSSL::SSL::OP_DONT_INSERT_EMPTY_FRAGMENTS
     end
 
-    # TODO(sissel): JRuby doesn't have this. Maybe work on a fix?
     if defined?(OpenSSL::SSL::OP_NO_COMPRESSION)
       ssloptions |= OpenSSL::SSL::OP_NO_COMPRESSION
     end
 
-    # Disable SSLv2 and SSLv3. They are insecure and highly discouraged.
     ssloptions |= OpenSSL::SSL::OP_NO_SSLv2 if defined?(OpenSSL::SSL::OP_NO_SSLv2)
     ssloptions |= OpenSSL::SSL::OP_NO_SSLv3 if defined?(OpenSSL::SSL::OP_NO_SSLv3)
     ssloptions
   end
 
-  # Overwriting the DEFAULT_PARAMS const idea from here: https://www.ruby-lang.org/en/news/2014/10/27/changing-default-settings-of-ext-openssl/
-  #
-  # This monkeypatch doesn't enforce a `VERIFY_MODE` on the SSLContext,
-  # SSLContext are both used for the client and the server implementation,
-  # If set the `verify_mode` to peer the server won't accept any connection,
-  # because it will try to verify the client certificate, this is a protocol
-  # details implemented at the plugin level.
-  #
-  # For more details see: https://github.com/elastic/logstash/issues/3657
   remove_const(:DEFAULT_PARAMS) if const_defined?(:DEFAULT_PARAMS)
   DEFAULT_PARAMS = {
     :ssl_version => "TLS",
     :ciphers => MOZILLA_INTERMEDIATE_CIPHERS,
-    :options => __default_options # Not a constant because it's computed at start-time.
+    :options => __default_options
   }
 end

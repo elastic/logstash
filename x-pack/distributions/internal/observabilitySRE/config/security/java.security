@@ -1,4 +1,4 @@
-security.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
+security.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider C:HYBRID;ENABLE{All};
 security.provider.2=org.bouncycastle.jsse.provider.BouncyCastleJsseProvider fips:BCFIPS
 security.provider.3=SUN
 security.provider.4=-BC
@@ -109,4 +109,5 @@ jdk.io.permissionsUseCanonicalPath=false
 
 jdk.tls.alpnCharset=ISO_8859_1
 
-org.bouncycastle.fips.approved_only=true
+# C:HYBRID mode allows non-approved algorithms outside security-sensitive contexts.
+# This matches Elasticsearch's FIPS configuration. approved_only is intentionally not set.

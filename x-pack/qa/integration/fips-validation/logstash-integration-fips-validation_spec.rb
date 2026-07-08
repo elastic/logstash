@@ -2,7 +2,9 @@ require_relative "../spec_helper"
 
 context "FipsValidation Integration Plugin" do
   def fips_configured_jvm?
-    java.lang.System.getProperty("org.bouncycastle.fips.approved_only") == "true"
+    # Detect FIPS by checking for the BCFIPS provider rather than approved_only,
+    # since we run C:HYBRID mode which does not set approved_only=true.
+    !java.security.Security.getProvider("BCFIPS").nil?
   end
 
   def fips_provider_jars
@@ -79,8 +81,8 @@ context "FipsValidation Integration Plugin" do
         "-Djavax.net.ssl.trustStoreProvider=BCFIPS",
         "-Djavax.net.ssl.trustStorePassword=changeit",
         "-Dssl.KeyManagerFactory.algorithm=PKIX",
-        "-Dssl.TrustManagerFactory.algorithm=PKIX",
-        "-Dorg.bouncycastle.fips.approved_only=true"
+        "-Dssl.TrustManagerFactory.algorithm=PKIX"
+        # C:HYBRID mode is configured in java.security; approved_only is intentionally not set.
       ].join("\n")
     )
 

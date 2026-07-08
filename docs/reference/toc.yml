@@ -40,6 +40,7 @@ toc:
       - file: connecting-to-serverless.md
       - file: config-examples.md
   - file: secure-connection.md
+  - file: fips-plugin-compatibility.md
   - file: advanced-logstash-configurations.md
     children:
       - file: multiple-pipelines.md
