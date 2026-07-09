@@ -16,8 +16,8 @@ bundled_jdk:
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
 # *and* for which jars artifacts are published for compile-time
 jruby:
-  version: 9.4.13.0
-  sha256: 226d9c3a2e332f8f249838f96c20e87e0df2b9a464a11477b47be6dafb66412c
+  version: 9.4.15.0
+  sha256: c8b8c5a7a1581fdba3ba73f7c375f793f6528117b444cc6baf6fb29bbcf9696d
 # jruby-runtime-override, if specified, will override the jruby version installed in vendor/jruby
 #jruby-runtime-override:
 #  url: https://oss.sonatype.org/content/repositories/snapshots/org/jruby/jruby-dist/9.3.0.0-SNAPSHOT/jruby-dist-9.3.0.0-20210723.214927-259-bin.tar.gz
