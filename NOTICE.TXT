@@ -3383,7 +3383,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    limitations under the License.
 
 ==========
-Notice for: com.fasterxml.jackson.core:jackson-core-2.21.2
+Notice for: com.fasterxml.jackson.core:jackson-core-2.21.4
 ----------
 
 # Jackson JSON processor
@@ -3610,7 +3610,7 @@ from the source code management (SCM) system project uses.
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.core:jackson-databind-2.21.2
+Notice for: com.fasterxml.jackson.core:jackson-databind-2.21.4
 ----------
 
 # Jackson JSON processor
@@ -3846,7 +3846,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.dataformat:jackson-dataformat-cbor-2.21.2
+Notice for: com.fasterxml.jackson.dataformat:jackson-dataformat-cbor-2.21.4
 ----------
 
 This copy of Jackson JSON processor databind module is licensed under the
@@ -4061,7 +4061,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.module:jackson-module-afterburner-2.21.2
+Notice for: com.fasterxml.jackson.module:jackson-module-afterburner-2.21.4
 ----------
 
 This copy of Jackson JSON processor databind module is licensed under the
@@ -7099,10 +7099,10 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
    of your accepting any such warranty or additional liability.
 
 ==========
-Notice for: jrjackson-0.5.0
+Notice for: jrjackson-0.5.2
 ----------
 
-https://github.com/guyboertje/jrjackson/blob/v0.4.6/README.md
+https://github.com/guyboertje/jrjackson/blob/v0.5.2/README.md
 
 LICENSE applicable to this library:
 
