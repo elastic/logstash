@@ -337,6 +337,9 @@ class LogStash::Runner < Clamp::StrictCommand
     elsif JavaVersion::CURRENT < JavaVersion::JAVA_17
       deprecation_logger.deprecated I18n.t("logstash.runner.java.version_17_minimum",
                                            :java_home => java.lang.System.getProperty("java.home"))
+    elsif JavaVersion::CURRENT < JavaVersion::JAVA_21
+      deprecation_logger.deprecated I18n.t("logstash.runner.java.version_21_minimum",
+                                           :java_home => java.lang.System.getProperty("java.home"))
     end
 
     logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]

@@ -452,6 +452,12 @@ en:
           Running Logstash with the bundled JDK is recommended.
           The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
           If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), the version you supply with LS_JAVA_HOME must meet the minimum requirements.
+        version_21_minimum: >-
+          Starting from Logstash 8.19.19, the minimum required version of Java will be Java 21;
+          your Java version from `%{java_home}` does not meet this requirement.
+          Running Logstash with the bundled JDK is recommended.
+          The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
+          If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), the version you supply with LS_JAVA_HOME must meet the minimum requirements.
     agent:
       sighup: >-
         SIGHUP received.
