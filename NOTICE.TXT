@@ -6689,7 +6689,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
-<<<<<<< HEAD
 Notice for: jls-grok-0.11.5
 ----------
 
@@ -7100,16 +7099,10 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
    of your accepting any such warranty or additional liability.
 
 ==========
-Notice for: jrjackson-0.5.0
-----------
-
-https://github.com/guyboertje/jrjackson/blob/v0.4.6/README.md
-=======
 Notice for: jrjackson-0.5.2
 ----------
 
 https://github.com/guyboertje/jrjackson/blob/v0.5.2/README.md
->>>>>>> bb92531e (Bump jackson and jrjackson dependencies (#19249))
 
 LICENSE applicable to this library:
 
