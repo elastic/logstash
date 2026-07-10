@@ -327,8 +327,8 @@ public final class CompiledPipeline {
 
         @Override
         public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+            final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
             if (!batch.isEmpty()) {
-                final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = (RubyArray<RubyEvent>) Create.newArray(context);
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> filterBatch = (RubyArray<RubyEvent>) Create.allocArray(context, 1);
                 // send batch one-by-one as single-element batches down the filters
@@ -339,7 +339,7 @@ public final class CompiledPipeline {
                 compiledOutputs.compute(outputBatch, flush, shutdown);
                 return outputBatch.size();
             } else if (flush || shutdown) {
-                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
+                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = (RubyArray<RubyEvent>) Create.newArray(context);
                 _compute(EMPTY_ARRAY, outputBatch, flush, shutdown);
                 compiledOutputs.compute(outputBatch, flush, shutdown);
                 return outputBatch.size();
