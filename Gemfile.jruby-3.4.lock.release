@@ -18,6 +18,7 @@ PATH
       jrjackson (= 0.5.3)
       manticore (~> 0.6)
       minitar (~> 1)
+      multi_json (~> 1.19.1)
       observer (~> 0.1)
       pry (~> 0.12)
       puma (~> 8.0)
