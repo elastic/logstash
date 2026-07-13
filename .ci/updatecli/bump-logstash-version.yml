@@ -41,13 +41,14 @@ conditions:
     kind: shell
     disablesourceinput: true
     spec:
-      command: test -n "${LOGSTASH_RELEASE_TRACK}"
+      command: test -n "{{ env "LOGSTASH_RELEASE_TRACK" }}"
 
 targets:
   update_logstash_version:
     name: Update logstash version in versions.yml
     kind: yaml
     disablesourceinput: true
+    disableconditions: true
     scmid: default
     spec:
       file: versions.yml
@@ -58,6 +59,7 @@ targets:
     name: Update logstash-core version in versions.yml
     kind: yaml
     disablesourceinput: true
+    disableconditions: true
     scmid: default
     spec:
       file: versions.yml
@@ -74,12 +76,13 @@ targets:
       spec:
         file: versions.yml
         key: $.logstash-release-track
-        value: '{{ requiredEnv "LOGSTASH_RELEASE_TRACK" }}'
+        value: '{{ env "LOGSTASH_RELEASE_TRACK" }}'
 
   update_gemfile_lock_dependency:
     name: Update logstash-core dependency in lockfile
     kind: file
     disablesourceinput: true
+    disableconditions: true
     scmid: default
     dependson:
       - 'source#lock_file_exists'
@@ -92,6 +95,7 @@ targets:
     name: Update logstash-core spec in lockfile
     kind: file
     disablesourceinput: true
+    disableconditions: true
     scmid: default
     dependson:
       - 'source#lock_file_exists'
