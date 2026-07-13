@@ -15,6 +15,9 @@ on:
         description: 'Release track (example: 9.current, 9.previous, main). Optional; when omitted the release track in versions.yml is left unchanged.'
         required: false
         type: string
+permissions:
+  contents: read
+
 jobs:
   bump:
     permissions:

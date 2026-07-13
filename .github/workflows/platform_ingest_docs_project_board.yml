@@ -14,6 +14,9 @@ env:
   AREA_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AEzn4zgEgZSo'
   INGEST_DOCS_OPTION_ID: 'def2f8e6'
   
+permissions:
+  contents: none
+
 jobs:
   add_to_ingest_project:
     runs-on: ubuntu-latest
