@@ -633,4 +633,14 @@ describe LogStash::Runner do
       end
     end
   end
+
+  describe "logging the JVM UseCompressedOops setting" do
+    subject { LogStash::Runner.new("") }
+    let(:args) { ["-t", "-e", "input { } output { }"] }
+
+    it "logs whether compressed ordinary object pointers are enabled" do
+      expect(logger).to receive(:info).with("Compressed ordinary object pointers (oops)", hash_including("compressed_oops" => a_string_matching(/\A(?:true|false)\z/)))
+      expect(subject.run(args)).to eq(0)
+    end
+  end
 end
