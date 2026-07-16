@@ -30,7 +30,7 @@ import java.util.Objects;
 public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMetric.ValueHistogram> implements HistogramMetric {
 
     private final Recorder recorder;
-    private volatile Histogram lifetimeSnapshot;
+    private final Histogram lifetimeSnapshot;
     public static UserMetric.Factory<HistogramMetric> FACTORY =
             HistogramMetric.PROVIDER.getFactory(LifetimeHistogramMetric::new);
 
@@ -38,7 +38,7 @@ public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMet
         super(name);
         //TODO recorder should be provided as a parameter constructor or lazy-initialized by a supplier, but this is sufficient for now
         this.recorder = new Recorder(3);
-        this.lifetimeSnapshot = compactCopy(recorder.getIntervalHistogram());
+        this.lifetimeSnapshot = recorder.getIntervalHistogram();
     }
 
     @Override
@@ -51,57 +51,36 @@ public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMet
 
     @Override
     public int estimateBatchMetricsFootprintInBytes() {
-        // Recorder has at least a couple histograms, so we have no less than 3 instances
-        return 3 * estimateSingleHistogramFootprintInBytes();
+        syncFromRecorder();
+        // the recorder retains 1-2 internal histograms that are _potenially_ as big
+        // as the lifetime snapshot we are accumulating.
+        return 3 * this.lifetimeSnapshot.getEstimatedFootprintInBytes();
     }
 
     @Override
-    public int estimateSingleHistogramFootprintInBytes() {
-        return this.lifetimeSnapshot.getEstimatedFootprintInBytes();
+    public ValueHistogram getValue() {
+        syncFromRecorder();
+        return ValueHistogram.snapshotFrom(this.lifetimeSnapshot);
     }
 
-    @Override
-    public synchronized ValueHistogram getValue() {
-        Histogram uncommitted = recorder.getIntervalHistogram();
-        this.lifetimeSnapshot = combineHistograms(lifetimeSnapshot, uncommitted);
-        return ValueHistogram.of(this.lifetimeSnapshot);
-    }
-
-    private static Histogram combineHistograms(Histogram lifetime, Histogram other) {
-        if (Objects.isNull(other) || other.getTotalCount()  == 0) {
-            return lifetime;
+    private synchronized void syncFromRecorder() {
+        final Histogram uncommitted = recorder.getIntervalHistogram();
+        if (uncommitted.getTotalCount() != 0) {
+            this.lifetimeSnapshot.add(uncommitted);
         }
-
-        final Histogram result = compactCopy(lifetime);
-
-        result.setAutoResize(true);
-        result.add(other);
-        result.setAutoResize(false);
-
-        return result;
     }
 
     /**
-     * A "compact copy" has no concurrency primitives and therefore is NOT intended for updates outside
-     * the scope in which it was created.
-     *
-     * @param source the source histogram
-     * @return a copy that is just a `Histogram` without concurrency overhead.
+     * A {@link ValueHistogram} is a read-only view of a histogram.
      */
-    static Histogram compactCopy(Histogram source) {
-        final Histogram result = new PackedHistogram(source); // infers structure, not data
-        result.add(source);
-        return result;
-    }
-
     public static class ValueHistogram {
-        private final Histogram delegate;
+        private final PackedHistogram delegate;
 
-        public static ValueHistogram of(Histogram value) {
-            return new ValueHistogram(value);
+        public static ValueHistogram snapshotFrom(Histogram value) {
+            return new ValueHistogram(compactCopy(value));
         }
 
-        private ValueHistogram(Histogram delegate) {
+        private ValueHistogram(PackedHistogram delegate) {
             this.delegate = delegate;
         }
 
@@ -117,15 +96,37 @@ public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMet
             return delegate.getMaxValue();
         }
 
+        public int getEstimatedFootprintInBytes() {
+            // the cost of a pointer to the delegate plus the cost of the delegate itself
+            return Long.BYTES + delegate.getEstimatedFootprintInBytes();
+        }
+
+        /**
+         * @param other: an instance to compare
+         * @return the difference between this histogram and the {@code other} histogram
+         */
         public ValueHistogram subtract(ValueHistogram other) {
             if (Objects.isNull(other) || Objects.isNull(other.delegate) || other.delegate.getTotalCount() <= 0) {
                 return this;
             }
 
-            final Histogram result = compactCopy(this.delegate);
+            final PackedHistogram result = compactCopy(this.delegate);
             result.subtract(other.delegate);
 
-            return of(result);
+            return new ValueHistogram(result);
+        }
+
+        /**
+         * A "compact copy" has no concurrency primitives and therefore is NOT intended for updates outside
+         * the scope in which it was created.
+         *
+         * @param source the source histogram
+         * @return a copy that is just a `Histogram` without concurrency overhead.
+         */
+        private static PackedHistogram compactCopy(Histogram source) {
+            final PackedHistogram result = new PackedHistogram(source); // infers structure, not data
+            result.add(source);
+            return result;
         }
     }
 }
