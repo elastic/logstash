@@ -88,3 +88,8 @@
 # Sets the maximum nesting depth. The depth is a count of objects and arrays that have not
 # been closed, `{` and `[` respectively.
 #-Dlogstash.jackson.stream-read-constraints.max-nesting-depth=1000
+
+# Bypass JDK version check
+#
+# Setting this to true permit to run Logstash with an unsupported JDK version.
+#-Dlogstash.jdk.force=true
