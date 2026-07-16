@@ -43,7 +43,7 @@ report() {
   # for big projects Snyk recommends pruning dependencies
   # https://support.snyk.io/hc/en-us/articles/360002061438-CLI-returns-the-error-Failed-to-get-Vulns
   GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null)
-  ./snyk monitor --prune-repeated-subdependencies --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" || :
+  ./snyk monitor --prune-repeated-subdependencies --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --configuration-matching="^runtime" --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" || :
 }
 
 resolve_latest_branches
@@ -52,12 +52,6 @@ download_auth_snyk
 # clone Logstash repo, build and report
 for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
-  if [ "$TARGET_BRANCH" == "7.17" ]; then
-    echo "Installing and configuring JDK11."
-    export OLD_PATH=$PATH
-    install_java_11
-    export PATH=$PWD/jdk-11.0.24+8/bin:$PATH
-  fi
   git reset --hard HEAD # reset if any generated files appeared
   # check if target branch exists
   echo "Checking out $TARGET_BRANCH branch."
@@ -66,11 +60,5 @@ do
     report "$TARGET_BRANCH"
   else
     echo "$TARGET_BRANCH branch doesn't exist."
-  fi
-  if [ "$TARGET_BRANCH" == "7.17" ]; then
-    # reset state
-    echo "Removing JDK11 installation."
-    rm -rf jdk-11.0.24+8
-    export PATH=$OLD_PATH
   fi
 done

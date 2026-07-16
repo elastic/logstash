@@ -49,6 +49,16 @@
 #
 # pipeline.batch.delay: 50
 #
+# Controls when output batches are split into smaller chunks. When the event count of a batch
+# increases by this multiplication factor by the end of the pipeline's filter section, it is
+# chunked based on the value of `pipeline.batch.size`. For example: a batch size of 50 that grows
+# to over 50,000 events (1000x50=50,000) will be sent to outputs 50 events at a time instead of a
+# single enormous batch. Useful when batch size grows unpredictably due to filter plugins such
+# as split or clone.
+# Default is 1000 (effectively disabled). Set to a lower value to enable chunking.
+#
+# pipeline.batch.output_chunking.growth_threshold_factor: 1000
+#
 # Set the pipeline's batch metrics reporting mode. It can be "disabled" to disable it.
 # "minimal" to collect only 1% of the batches metrics, "full" to collect all batches.
 # Default is "minimal".
@@ -111,6 +121,23 @@
 # Setting the interval this way is not recommended and might change in later versions.
 #
 # config.reload.interval: 3s
+#
+# Whether to allow the pipeline reload feature to recover a pipeline that has crashed.
+# Requires `config.reload.automatic`. Pipeline cannot include non-reloadable plugins.
+# Accepts one of the following values:
+# - `false` (default): never recover after observing crash
+# - `auto`: recover if-and-only-if `queue.type` is set to `persisted`
+# - `true`: always recover after observing crash (WARNING: risk of data loss)
+#
+# pipeline.recoverable: false
+#
+# Whether to automatically reload pipelines when SSL certificate or key files
+# referenced by pipeline configurations change on disk.
+# Requires `config.reload.automatic: true` (or Centralized Pipeline Management).
+# When enabled, Logstash watches referenced SSL files and triggers a pipeline
+# reload on change, which may increase inotify watch usage.
+#
+# ssl.reload.automatic: false
 #
 # Show fully compiled configuration as debug log message
 # NOTE: --log.level must be 'debug'
@@ -252,6 +279,14 @@
 #
 # dead_letter_queue.flush_interval: 5000
 
+# If using dead_letter_queue.enable: true, the interval in milliseconds that the DLQ scheduler checks for stale segments
+# to be flushed. A smaller value ensures faster segment rotation at the cost of CPU with more frequent scheduler runs.
+# A larger value reduces scheduler overhead but may delay segment sealing.
+# Minimum value is 1000 and cannot be greater than dead_letter_queue.flush_interval. 
+# Default is 1000.
+#
+# dead_letter_queue.flush_check_interval: 1000
+
 # If using dead_letter_queue.enable: true, controls which entries should be dropped to avoid exceeding the size limit.
 # Set the value to `drop_newer` (default) to stop accepting new events that would push the DLQ size over the limit.
 # Set the value to `drop_older` to remove queue pages containing the oldest events to make space for new ones.
@@ -271,6 +306,65 @@
 # Default is path.data/dead_letter_queue
 #
 # path.dead_letter_queue:
+#
+# ------------ OpenTelemetry Metrics Settings --------------
+# Export Logstash metrics to an OpenTelemetry-compatible backend via OTLP.
+# This allows you to send Logstash metrics to any OTLP-compatible collector
+# or monitoring platform (e.g., Prometheus via OTLP receiver, Elastic, Grafana Cloud).
+#
+# System properties take precedence over logstash.yml settings.
+# Use -D<property>=<value> to set system properties (e.g., -Dotel.service.name=my-logstash).
+#
+# Enable OpenTelemetry metrics export (default: false)
+#
+# otel.metrics.enabled: false
+#
+# OTLP metrics endpoint URL (default: "http://localhost:4317").
+# For gRPC, typically port 4317. For HTTP, typically port 4318.
+# System property: otel.exporter.otlp.endpoint
+#
+# otel.exporter.otlp.endpoint: "http://localhost:4317"
+#
+# Export interval with time unit, e.g., "10s", "1m" (default: "10s")
+# System property: otel.metric.export.interval
+#
+# otel.metric.export.interval: "10s"
+#
+# Protocol to use for OTLP export: "grpc" (default) or "http"
+# System property: otel.exporter.otlp.protocol
+#
+# otel.exporter.otlp.protocol: "grpc"
+#
+# HTTP headers as comma-separated key=value pairs to include in every OTLP request.
+# Examples: "Authorization=ApiKey xxx" or "Authorization=Bearer xxx,X-Custom=foo"
+# System property: otel.exporter.otlp.headers
+#
+# otel.exporter.otlp.headers:
+#
+# Additional resource attributes as comma-separated key=value pairs.
+# These are attached to all exported metrics to identify this Logstash instance.
+# Example: "environment=production,cluster=us-west,team=platform"
+# System property: otel.resource.attributes
+#
+# otel.resource.attributes:
+#
+# Service name for metrics (default: "logstash").
+# System property: otel.service.name
+#
+# otel.service.name: "logstash"
+#
+# Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate.
+# Required when the endpoint uses a self-signed or private CA certificate.
+# System property: otel.exporter.otlp.certificate
+#
+# otel.exporter.otlp.certificate:
+#
+# Paths to a PEM-encoded client private key and certificate for mutual TLS (mTLS).
+# Both must be set together. System properties: otel.exporter.otlp.client.key
+# and otel.exporter.otlp.client.certificate
+#
+# otel.exporter.otlp.client.key:
+# otel.exporter.otlp.client.certificate:
 #
 # ------------ Debugging Settings --------------
 #

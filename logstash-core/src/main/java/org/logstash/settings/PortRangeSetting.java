@@ -21,6 +21,7 @@ package org.logstash.settings;
 
 import org.jruby.RubyInteger;
 import org.jruby.RubyRange;
+import org.jruby.api.Convert;
 import org.logstash.RubyUtil;
 
 // Ideally would be a Coercible<Range<Integer>>, but given the fact that
@@ -81,9 +82,10 @@ public class PortRangeSetting extends Coercible<Object> {
 
         if (obj instanceof RubyRange) {
             RubyRange rubyRange = (RubyRange) obj;
-            RubyInteger begin = rubyRange.begin(RubyUtil.RUBY.getCurrentContext()).convertToInteger();
-            RubyInteger end = rubyRange.end(RubyUtil.RUBY.getCurrentContext()).convertToInteger();
-            return new Range<>(begin.getIntValue(), end.getIntValue());
+            final org.jruby.runtime.ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+            RubyInteger begin = rubyRange.begin(context).convertToInteger();
+            RubyInteger end = rubyRange.end(context).convertToInteger();
+            return new Range<>(Convert.toInt(context, begin), Convert.toInt(context, end));
         }
         throw new IllegalArgumentException("Could not coerce [" + obj + "](type: " + obj.getClass() + ") into a port range");
     }

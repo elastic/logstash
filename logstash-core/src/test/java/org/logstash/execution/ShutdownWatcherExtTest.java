@@ -33,10 +33,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
-import javax.annotation.concurrent.NotThreadSafe;
-
-import org.apache.logging.log4j.junit.LoggerContextRule;
-import org.apache.logging.log4j.test.appender.ListAppender;
+import org.apache.logging.log4j.core.test.junit.LoggerContextRule;
+import org.apache.logging.log4j.core.test.appender.ListAppender;
 import org.assertj.core.api.Assertions;
 import org.jruby.RubySystemExit;
 import org.jruby.exceptions.RaiseException;
@@ -54,7 +52,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for {@link ShutdownWatcherExt}.
  */
-@NotThreadSafe
 public final class ShutdownWatcherExtTest extends RubyTestBase {
 
     private static final String CONFIG = "log4j2-test1.xml";

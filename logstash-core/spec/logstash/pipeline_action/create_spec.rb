@@ -31,6 +31,8 @@ describe LogStash::PipelineAction::Create do
   before do
     clear_data_dir
     allow(agent).to receive(:health_observer).and_return(double("HealthObserver").as_null_object)
+    allow(agent).to receive(:track_ssl_resources)
+    allow(agent).to receive(:untrack_ssl_resources)
   end
 
   subject { described_class.new(pipeline_config, metric) }
@@ -85,9 +87,39 @@ describe LogStash::PipelineAction::Create do
 
     context "with an error raised during `#register`" do
       let(:pipeline_config) { mock_pipeline_config(:main, "input { dummyblockinginput { id => '123' } } filter { ruby { init => '1/0' code => '1+2' } } output { null {} }") }
+      let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
 
       it "returns false" do
         expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
+      end
+
+      it "clears the pipeline plugin metrics on a failed start" do
+        subject.execute(agent, pipelines)
+
+        snapshot = metric.collector.snapshot_metric.metric_store.get_with_path("stats/pipelines/main")
+        pipeline_metric = snapshot.dig(:stats, :pipelines, :main)
+
+        expect(pipeline_metric).not_to include(:plugins)
+        expect(pipeline_metric).not_to include(:events)
+        expect(pipeline_metric).not_to include(:flow)
+        expect(pipeline_metric).not_to include(:batch)
+      end
+
+      it "does not bloat plugin metrics across repeated failed start attempts" do
+        3.times do
+          described_class.new(pipeline_config, metric).execute(agent, pipelines)
+        end
+
+        snapshot = metric.collector.snapshot_metric.metric_store.get_with_path("stats/pipelines/main")
+        plugins_metric = snapshot.dig(:stats, :pipelines, :main, :plugins)
+
+        codecs = plugins_metric&.dig(:codecs)
+        outputs = plugins_metric&.dig(:outputs)
+        filters = plugins_metric&.dig(:filters)
+
+        expect(codecs.to_h).to be_empty
+        expect(outputs.to_h).to be_empty
+        expect(filters.to_h).to be_empty
       end
     end
   end

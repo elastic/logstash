@@ -73,9 +73,6 @@ import org.logstash.FieldReference;
 import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
 
-import static org.logstash.common.io.DeadLetterQueueUtils.listFiles;
-import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPaths;
-import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPathsSortedBySegmentId;
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
@@ -127,6 +124,9 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
     }
 
+    static final Duration MIN_FLUSH_PERIOD = Duration.ofMillis(1000);
+    static final Duration MIN_FLUSH_CHECK_INTERVAL = Duration.ofMillis(1000);
+
     @VisibleForTesting
     static final String SEGMENT_FILE_PATTERN = "%d.log";
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueWriter.class);
@@ -177,21 +177,25 @@ public final class DeadLetterQueueWriter implements Closeable {
     private static class FixedRateScheduler implements SchedulerService {
 
         private final ScheduledExecutorService scheduledExecutor;
+        private final Duration flushCheckInterval;
 
-        FixedRateScheduler() {
+        FixedRateScheduler(final Duration flushCheckInterval, final String pipelineId) {
+            //Set the name with pipeline ID for better visibility
+            final String threadName = pipelineId != null ? "dlq-flush-check[" + pipelineId + "]" : "dlq-flush-check";
+            
+            this.flushCheckInterval = flushCheckInterval;
             scheduledExecutor = Executors.newScheduledThreadPool(1, r -> {
                 Thread t = new Thread(r);
                 //Allow this thread to die when the JVM dies
                 t.setDaemon(true);
-                //Set the name
-                t.setName("dlq-flush-check");
+                t.setName(threadName);
                 return t;
             });
         }
 
         @Override
         public void repeatedAction(Runnable action) {
-            scheduledExecutor.scheduleAtFixedRate(action, 1L, 1L, TimeUnit.SECONDS);
+            scheduledExecutor.scheduleAtFixedRate(action, flushCheckInterval.toMillis(), flushCheckInterval.toMillis(), TimeUnit.MILLISECONDS);
         }
 
         @Override
@@ -218,21 +222,24 @@ public final class DeadLetterQueueWriter implements Closeable {
         private final long maxSegmentSize;
         private final long maxQueueSize;
         private final Duration flushInterval;
+        private final Duration flushCheckInterval;
         private boolean startScheduledFlusher;
         private QueueStorageType storageType = QueueStorageType.DROP_NEWER;
         private Duration retentionTime = null;
         private Clock clock = Clock.systemDefaultZone();
         private SchedulerService customSchedulerService = null;
+        private String pipelineId;
 
-        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, Duration flushInterval) {
-            this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, true);
+        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, final Duration flushInterval, final Duration flushCheckInterval) {
+            this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, flushCheckInterval, true);
         }
 
-        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, Duration flushInterval, boolean startScheduledFlusher) {
+        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, final Duration flushInterval, final Duration flushCheckInterval, boolean startScheduledFlusher) {
             this.queuePath = queuePath;
             this.maxSegmentSize = maxSegmentSize;
             this.maxQueueSize = maxQueueSize;
             this.flushInterval = flushInterval;
+            this.flushCheckInterval = flushCheckInterval;
             this.startScheduledFlusher = startScheduledFlusher;
         }
 
@@ -243,6 +250,11 @@ public final class DeadLetterQueueWriter implements Closeable {
 
         public Builder retentionTime(Duration retentionTime) {
             this.retentionTime = retentionTime;
+            return this;
+        }
+
+        public Builder pipelineId(final String pipelineId) {
+            this.pipelineId = pipelineId;
             return this;
         }
 
@@ -262,29 +274,64 @@ public final class DeadLetterQueueWriter implements Closeable {
             if (customSchedulerService != null && startScheduledFlusher) {
                 throw new IllegalArgumentException("Both default scheduler and custom scheduler were defined, ");
             }
+
+            final Duration normalizedFlushInterval = normalizeFlushInterval(flushInterval);
+
             SchedulerService schedulerService;
             if (customSchedulerService != null) {
                 schedulerService = customSchedulerService;
             } else {
                 if (startScheduledFlusher) {
-                    schedulerService = new FixedRateScheduler();
+                    final Duration normalizedFlushCheckInterval = normalizeFlushCheckInterval(flushCheckInterval, normalizedFlushInterval);
+                    schedulerService = new FixedRateScheduler(normalizedFlushCheckInterval, pipelineId);
                 } else {
                     schedulerService = new NoopScheduler();
                 }
             }
 
-            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, retentionTime, clock, schedulerService);
+            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, normalizedFlushInterval, storageType, retentionTime, clock, schedulerService);
+        }
+
+        @VisibleForTesting
+        Duration normalizeFlushInterval(final Duration flushInterval) {
+            if (!startScheduledFlusher) return flushInterval;
+
+            Duration effectiveFlushInterval = flushInterval;
+            if (flushInterval.compareTo(MIN_FLUSH_PERIOD) < 0) {
+                logger.warn("dead_letter_queue.flush_interval ({} ms) is below the minimum of {} ms; using {} ms",
+                        flushInterval.toMillis(), MIN_FLUSH_PERIOD.toMillis(), MIN_FLUSH_PERIOD.toMillis());
+                effectiveFlushInterval = MIN_FLUSH_PERIOD;
+            }
+            return effectiveFlushInterval;
+        }
+
+        @VisibleForTesting
+        Duration normalizeFlushCheckInterval(final Duration flushCheckInterval, final Duration effectiveFlushInterval) {
+            Duration effectiveFlushCheckInterval = flushCheckInterval;
+            // can't exceed flush interval
+            if (effectiveFlushCheckInterval.compareTo(effectiveFlushInterval) > 0) {
+                logger.warn("dead_letter_queue.flush_check_interval ({} ms) cannot be greater than dead_letter_queue.flush_interval ({} ms); using {} ms",
+                        effectiveFlushCheckInterval.toMillis(), effectiveFlushInterval.toMillis(), effectiveFlushInterval.toMillis());
+                effectiveFlushCheckInterval = effectiveFlushInterval;
+            }
+            // can't be less than 1s
+            if (effectiveFlushCheckInterval.compareTo(MIN_FLUSH_CHECK_INTERVAL) < 0) {
+                logger.warn("dead_letter_queue.flush_check_interval ({} ms) is below the minimum of {} ms; using {} ms for the flush check interval",
+                        effectiveFlushCheckInterval.toMillis(), MIN_FLUSH_CHECK_INTERVAL.toMillis(), MIN_FLUSH_CHECK_INTERVAL.toMillis());
+                effectiveFlushCheckInterval = MIN_FLUSH_CHECK_INTERVAL;
+            }
+            return effectiveFlushCheckInterval;
         }
     }
 
     public static Builder newBuilder(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                     final Duration flushInterval) {
-        return new Builder(queuePath, maxSegmentSize, maxQueueSize, flushInterval);
+                                     final Duration flushInterval, final Duration flushCheckInterval) {
+        return new Builder(queuePath, maxSegmentSize, maxQueueSize, flushInterval, flushCheckInterval);
     }
 
     @VisibleForTesting
     static Builder newBuilderWithoutFlusher(final Path queuePath, final long maxSegmentSize, final long maxQueueSize) {
-        return new Builder(queuePath, maxSegmentSize, maxQueueSize, Duration.ZERO, false);
+        return new Builder(queuePath, maxSegmentSize, maxQueueSize, Duration.ZERO, Duration.ZERO, false);
     }
 
     private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
@@ -303,10 +350,7 @@ public final class DeadLetterQueueWriter implements Closeable {
 
         cleanupTempFiles();
         updateOldestSegmentReference();
-        currentSegmentIndex = listSegmentPaths(queuePath)
-                .map(s -> s.getFileName().toString().split("\\.")[0])
-                .mapToInt(Integer::parseInt)
-                .max().orElse(0);
+        currentSegmentIndex = DeadLetterQueueUtils.maxSegmentId(queuePath);
         nextWriter();
         this.lastEntryTimestamp = Timestamp.now();
         this.flusherService = flusherService;
@@ -547,8 +591,6 @@ public final class DeadLetterQueueWriter implements Closeable {
             updateOldestSegmentReference();
             cleanNextSegment = isOldestSegmentExpired();
         } while (cleanNextSegment);
-
-        this.currentQueueSize.set(computeQueueSize());
     }
 
     /**
@@ -563,8 +605,10 @@ public final class DeadLetterQueueWriter implements Closeable {
      * */
     private long deleteTailSegment(Path segment, String motivation) throws IOException {
         try {
+            long segmentSize = Files.size(segment);
             long eventsInSegment = DeadLetterQueueUtils.countEventsInSegment(segment);
             Files.delete(segment);
+            currentQueueSize.addAndGet(-segmentSize);
             logger.debug("Removed segment file {} due to {}", segment, motivation);
             return eventsInSegment;
         } catch (NoSuchFileException nsfex) {
@@ -577,9 +621,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     // package-private for testing
     void updateOldestSegmentReference() throws IOException {
         final Optional<Path> previousOldestSegmentPath = oldestSegmentPath;
-        oldestSegmentPath = listSegmentPathsSortedBySegmentId(this.queuePath)
-                .filter(p -> p.toFile().length() > 1) // take the files that have content to process
-                .findFirst();
+        oldestSegmentPath = DeadLetterQueueUtils.oldestSegmentPath(this.queuePath, 1);
         if (!oldestSegmentPath.isPresent()) {
             oldestSegmentTimestamp = Optional.empty();
             return;
@@ -634,14 +676,13 @@ public final class DeadLetterQueueWriter implements Closeable {
     // package-private for testing
     void dropTailSegment() throws IOException {
         // remove oldest segment
-        final Optional<Path> oldestSegment = listSegmentPathsSortedBySegmentId(queuePath).findFirst();
+        final Optional<Path> oldestSegment = DeadLetterQueueUtils.oldestSegmentPath(queuePath, 0);
         if (oldestSegment.isPresent()) {
             final Path beheadedSegment = oldestSegment.get();
             deleteTailSegment(beheadedSegment, "dead letter queue size exceeded dead_letter_queue.max_bytes size(" + maxQueueSize + ")");
         } else {
             logger.info("Queue size {} exceeded, but no complete DLQ segments found", maxQueueSize);
         }
-        this.currentQueueSize.set(computeQueueSize());
     }
 
     /**
@@ -656,6 +697,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         return event.includes(DEAD_LETTER_QUEUE_METADATA_KEY);
     }
 
+    // main method for flush scheduler
     private void scheduledFlushCheck() {
         logger.trace("Running scheduled check");
         lock.lock();
@@ -716,7 +758,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private long computeQueueSize() throws IOException {
-        return listSegmentPaths(this.queuePath)
+        return DeadLetterQueueUtils.listSegmentPaths(this.queuePath)
                 .mapToLong(DeadLetterQueueWriter::safeFileSize)
                 .sum();
     }
@@ -753,12 +795,12 @@ public final class DeadLetterQueueWriter implements Closeable {
     // segment file with the same base name exists, or rename the
     // temp file to the segment file, which can happen when a process ends abnormally
     private void cleanupTempFiles() throws IOException {
-        listFiles(queuePath, ".log.tmp")
+        DeadLetterQueueUtils.listFiles(queuePath, ".log.tmp")
                 .forEach(this::cleanupTempFile);
     }
 
     // check if there is a corresponding .log file - if yes delete the temp file, if no atomic move the
-    // temp file to be a new segment file..
+    // temp file to be a new segment file.
     private void cleanupTempFile(final Path tempFile) {
         String segmentName = tempFile.getFileName().toString().split("\\.")[0];
         Path segmentFile = queuePath.resolve(String.format("%s.log", segmentName));

@@ -46,6 +46,7 @@ require "logstash/settings"
 require "logstash/version"
 require 'logstash/plugins'
 require "logstash/bootstrap_check/default_config"
+require "logstash/bootstrap_check/ssl_reload"
 require 'logstash/deprecation_message'
 
 java_import 'org.logstash.FileLockFactory'
@@ -59,7 +60,8 @@ class LogStash::Runner < Clamp::StrictCommand
   # Ordered list of check to run before starting logstash
   # theses checks can be changed by a plugin loaded into memory.
   DEFAULT_BOOTSTRAP_CHECKS = [
-      LogStash::BootstrapCheck::DefaultConfig
+      LogStash::BootstrapCheck::DefaultConfig,
+      LogStash::BootstrapCheck::SslReload,
   ]
 
   # Node Settings
@@ -110,6 +112,11 @@ class LogStash::Runner < Clamp::StrictCommand
          I18n.t("logstash.runner.flag.plugin-classloaders"),
          :attribute_name => "pipeline.plugin_classloaders",
          :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
+
+  option ["--pipeline.batch.output_chunking.growth_threshold_factor"], "FACTOR",
+    I18n.t("logstash.runner.flag.pipeline-batch-output-chunking-growth-threshold-factor"),
+    :attribute_name => "pipeline.batch.output_chunking.growth_threshold_factor",
+    :default => LogStash::SETTINGS.get_default("pipeline.batch.output_chunking.growth_threshold_factor")
 
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
@@ -236,7 +243,7 @@ class LogStash::Runner < Clamp::StrictCommand
   SYSTEM_SETTINGS = LogStash::SETTINGS.clone
   LogStash::PLUGIN_REGISTRY.setup!
 
-  attr_reader :agent, :settings, :source_loader
+  attr_reader :agent, :settings, :source_loader, :ssl_file_tracker
   attr_accessor :bootstrap_checks
 
   def initialize(*args)
@@ -260,6 +267,7 @@ class LogStash::Runner < Clamp::StrictCommand
     LogStash::Util::SettingsHelper.post_process
 
     require "logstash/util"
+    require "logstash/util/byte_value"
     require "logstash/util/java_version"
     require "stud/task"
 
@@ -284,12 +292,12 @@ class LogStash::Runner < Clamp::StrictCommand
       deprecation_logger.deprecated msg
     end
 
-    if JavaVersion::CURRENT < JavaVersion::JAVA_17
-      deprecation_logger.deprecated I18n.t("logstash.runner.java.version_17_minimum",
+    if JavaVersion::CURRENT < JavaVersion::JAVA_21
+      deprecation_logger.deprecated I18n.t("logstash.runner.java.version_21_minimum",
                                            :java_home => java.lang.System.getProperty("java.home"))
     end
 
-    logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]
+    deprecation_logger.deprecated I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]
     # Skip any validation and just return the version
     if version?
       show_version
@@ -299,6 +307,15 @@ class LogStash::Runner < Clamp::StrictCommand
     logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
     jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
     logger.info "JVM bootstrap flags: #{jvmArgs}"
+
+    begin
+      hotspot_diagnostic_bean = ManagementFactory.getPlatformMXBean(com.sun.management.HotSpotDiagnosticMXBean.java_class)
+      compressed_oops = hotspot_diagnostic_bean.getVMOption("UseCompressedOops").getValue()
+      max_heap_size = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax()
+      logger.info("Compressed ordinary object pointers (oops)", "max_heap_size" => LogStash::Util::ByteValue.human_readable(max_heap_size), "compressed_oops" => compressed_oops)
+    rescue => e
+      logger.warn("Could not determine if JVM uses compressed object pointers representation. This is generally used to save memory, but doesn't impact Logstash functionalities.", "exception" => e.message)
+    end
 
 
     # Verify the Jackson defaults
@@ -325,6 +342,14 @@ class LogStash::Runner < Clamp::StrictCommand
     rescue LogStash::BootstrapCheckError => e
       signal_usage_error(e.message)
       return 1
+    end
+
+    # CPM BootstrapCheck may have flipped `config.reload.automatic`, so evaluate here
+    # before :after_bootstrap_checks hooks (CPM/monitoring) add their sources.
+    if @settings.get_value("config.reload.automatic") && @settings.get_value("ssl.reload.automatic")
+      require "logstash/ssl_file_tracker"
+      java_import org.logstash.common.FileWatchService
+      @ssl_file_tracker = LogStash::SslFileTracker.new(FileWatchService.create)
     end
     @dispatcher.fire(:after_bootstrap_checks)
 
@@ -382,7 +407,7 @@ class LogStash::Runner < Clamp::StrictCommand
     @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
 
     @dispatcher.fire(:before_agent)
-    @agent = create_agent(@settings, @source_loader)
+    @agent = create_agent(@settings, @source_loader, @ssl_file_tracker)
     @dispatcher.fire(:after_agent)
 
     # enable sigint/sigterm before starting the agent
@@ -426,6 +451,7 @@ class LogStash::Runner < Clamp::StrictCommand
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
     Stud::untrap("HUP", sighup_id) unless sighup_id.nil?
     FileLockFactory.releaseLock(@data_path_lock) if @data_path_lock
+    @ssl_file_tracker&.close
     @log_fd.close if @log_fd
   end # def self.main
 

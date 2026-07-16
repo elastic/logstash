@@ -21,7 +21,7 @@ case "$WORKFLOW_TYPE" in
         ;;
 esac
 
-SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
+SKIP_DOCKER=1 ./gradlew artifactAll || error "artifactAll build failed."
 
 STACK_VERSION="$(./$(dirname "$0")/../common/qualified-version.sh)"
 info "Build complete, setting STACK_VERSION to $STACK_VERSION."

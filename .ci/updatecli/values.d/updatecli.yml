@@ -1,0 +1,6 @@
+path: .updatecli-version
+
+pull_request:
+  labels:
+    - dependencies
+    - backport-skip

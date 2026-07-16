@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+steps:
+  - label: ":pipeline: Cleanup stale Snyk artifact-scan projects"
+    command: |
+      set -euo pipefail
+      source .buildkite/scripts/common/vm-agent.sh
+      python3 -m pip install pyyaml requests
+      export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
+      python3 .buildkite/scripts/snyk/cleanup-artifact-stale-projects/cleanup-stale-projects.py

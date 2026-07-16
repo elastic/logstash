@@ -144,6 +144,8 @@ module LogStash; class JavaPipeline < AbstractPipeline
     @finished_execution.make_false
     @finished_run.make_false
 
+    log_batch_metrics_memory_consumption
+
     @thread = Thread.new do
       error_log_params = ->(e) {
         exception_logging_keys(e,
@@ -253,7 +255,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       registered << plugin
     end
   rescue => e
-    registered.each(&:do_close)
+    registered.each { |plugin| close_plugin_and_ignore(plugin) }
     raise e
   end
 
@@ -267,7 +269,39 @@ module LogStash; class JavaPipeline < AbstractPipeline
       @preserve_event_order = preserve_event_order?(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
+      batch_output_chunking_growth_threshold_factor = settings.get("pipeline.batch.output_chunking.growth_threshold_factor")
       batch_metric_sampling = settings.get("pipeline.batch.metrics.sampling_mode")
+
+
+      queue_type = settings.get('queue.type')
+      queue_is_ephemeral = (queue_type == MEMORY)
+      pipeline_recoverable = settings.get('pipeline.recoverable')
+      pipeline_is_recoverable = case pipeline_recoverable
+                                when 'true'  then true
+                                when 'false' then false
+                                when 'auto'  then !queue_is_ephemeral
+                                end
+      config_reload_automatic = settings.get('config.reload.automatic')
+
+      if pipeline_is_recoverable
+        if !config_reload_automatic
+          @logger.warn("Pipeline is configured to be recoverable with `pipeline.recoverable: #{pipeline_recoverable}`, " +
+                         "but config reloading has been disabled with `config.reload.automatic: #{config_reload_automatic}`; " +
+                         "if this pipeline crashes it will NOT be recovered.",
+                       default_logging_keys)
+        elsif queue_is_ephemeral
+          @logger.warn("Pipeline with `queue.type: #{queue_type}` is configured to be recoverable " +
+                         "with `pipeline.recoverable: #{pipeline_recoverable}`; " +
+                         "in the event of a crash in-flight events will be lost, " +
+                         "so enabling auto-recovery increases the risk of data loss.",
+                       default_logging_keys)
+        else
+          @logger.info("Pipeline with `queue.type: #{queue_type}` is configured to be recoverable " +
+                         "with `pipeline.recoverable: #{pipeline_recoverable}`; " +
+                         "in the event of a crash some in-flight events may be re-processed",
+                       default_logging_keys)
+        end
+      end
 
       max_inflight = batch_size * pipeline_workers
 
@@ -275,8 +309,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       config_metric.gauge(:workers, pipeline_workers)
       config_metric.gauge(:batch_size, batch_size)
       config_metric.gauge(:batch_delay, batch_delay)
-      config_metric.gauge(:config_reload_automatic, settings.get("config.reload.automatic"))
-      config_metric.gauge(:config_reload_interval, settings.get("config.reload.interval").to_nanos)
+      config_metric.gauge(:batch_output_chunking_growth_threshold_factor, batch_output_chunking_growth_threshold_factor)
       config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
       config_metric.gauge(:dead_letter_queue_path, dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
       config_metric.gauge(:ephemeral_id, ephemeral_id)
@@ -287,9 +320,11 @@ module LogStash; class JavaPipeline < AbstractPipeline
         "pipeline.workers" => pipeline_workers,
         "pipeline.batch.size" => batch_size,
         "pipeline.batch.delay" => batch_delay,
+        "pipeline.batch.output_chunking.growth_threshold_factor" => batch_output_chunking_growth_threshold_factor,
         "pipeline.max_inflight" => max_inflight,
         "batch_metric_sampling" => batch_metric_sampling,
-        "pipeline.sources" => pipeline_source_details)
+        "pipeline.sources" => pipeline_source_details,
+        "pipeline.recoverable" => pipeline_is_recoverable && config_reload_automatic)
       @logger.info("Starting pipeline", pipeline_log_params)
 
       filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
@@ -488,8 +523,8 @@ module LogStash; class JavaPipeline < AbstractPipeline
       t.join
     end
 
-    filters.each(&:do_close)
-    outputs.each(&:do_close)
+    filters.each { |plugin| close_plugin_and_ignore(plugin) }
+    outputs.each { |plugin| close_plugin_and_ignore(plugin) }
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
@@ -550,6 +585,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       collector.clear("stats/pipelines/#{pipeline_id}/plugins")
       collector.clear("stats/pipelines/#{pipeline_id}/events")
       collector.clear("stats/pipelines/#{pipeline_id}/flow")
+      collector.clear("stats/pipelines/#{pipeline_id}/batch")
     end
   end
 
@@ -582,7 +618,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     rescue => e
       @logger.warn(
         "plugin raised exception while closing, ignoring",
-        exception_logging_keys(e, :plugin => plugin.class.config_name))
+        exception_logging_keys(e, :plugin => plugin.config_name))
     end
   end
 

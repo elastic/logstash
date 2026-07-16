@@ -41,5 +41,13 @@ module LogStash module PipelineAction
       order = self.execution_priority <=> other.execution_priority
       order.nonzero? ? order : self.pipeline_id <=> other.pipeline_id
     end
+
+    def new_failed_action(reason)
+      ConvergeResult::FailedAction.from_action(self, reason);
+    end
+
+    def new_success_action
+      ConvergeResult::SuccessfulAction.new
+    end
   end
 end end

@@ -251,6 +251,12 @@ en:
         pipeline-batch-delay: |+
           When creating pipeline batches, how long to wait while polling
           for the next event.
+        pipeline-batch-output-chunking-growth-threshold-factor: |+
+          Controls when output batches are split into smaller chunks. When the event count of a batch
+          increases by this multiplication factor by the end of the pipeline's filter section, it is
+          chunked based on the value of `pipeline.batch.size`. Useful when batch size grows unpredictably
+          due to filter plugins such as split or clone.
+          Default is 1000 (effectively disabled). Set to a lower value to enable chunking.
         path_settings: |+
           Directory containing logstash.yml file. This can also be
           set through the LS_SETTINGS_DIR environment variable.
@@ -346,8 +352,8 @@ en:
           Running Logstash with the bundled JDK is recommended.
           The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
           If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), you can configure LS_JAVA_HOME to use that version instead.
-        version_17_minimum: >-
-          Starting from Logstash 9.0, the minimum required version of Java is Java 17;
+        version_21_minimum: >-
+          Starting from Logstash 9.4, the minimum required version of Java is Java 21;
           your Java version from `%{java_home}` does not meet this requirement.
           Running Logstash with the bundled JDK is recommended.
           The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.

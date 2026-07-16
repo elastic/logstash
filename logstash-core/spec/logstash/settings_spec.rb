@@ -283,39 +283,20 @@ describe LogStash::Settings do
     context "when running PasswordValidator coerce" do
       it "raises an error when supplied value is not LogStash::Util::Password" do
         expect {
-          LogStash::Setting::ValidatedPassword.new("test.validated.password", "testPassword", password_policies)
-        }.to raise_error(ArgumentError, a_string_including("Setting `test.validated.password` could not coerce LogStash::Util::Password value to password"))
+          LogStash::Setting::ValidatedPasswordSetting.new("test.validated.password", "testPassword", password_policies)
+        }.to raise_error(IllegalArgumentException, a_string_including("Setting `test.validated.password` could not coerce LogStash::Util::Password value to password"))
       end
 
       it "fails on validation" do
         password = LogStash::Util::Password.new("Password!")
         expect {
-          LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
-        }.to raise_error(ArgumentError, a_string_including("Password must contain at least one digit between 0 and 9."))
+          LogStash::Setting::ValidatedPasswordSetting.new("test.validated.password", password, password_policies)
+        }.to raise_error(IllegalArgumentException, a_string_including("Password must contain at least one digit between 0 and 9."))
       end
 
       it "validates the password successfully" do
         password = LogStash::Util::Password.new("Password123!")
-        expect(LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)).to_not be_nil
-      end
-    end
-
-    describe "mode WARN" do
-      let(:password_policies) { super().merge("mode": "WARN") }
-
-      context "when the password does not conform to the policy" do
-        let(:password) { LogStash::Util::Password.new("NoNumbers!") }
-        let(:mock_logger) { double("logger") }
-
-        before :each do
-          allow_any_instance_of(LogStash::Setting::ValidatedPassword).to receive(:logger).and_return(mock_logger)
-        end
-
-        it "logs a warning on validation failure" do
-          expect(mock_logger).to receive(:warn).with(a_string_including("Password must contain at least one digit between 0 and 9."))
-
-          LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
-        end
+        expect(LogStash::Setting::ValidatedPasswordSetting.new("test.validated.password", password, password_policies)).to_not be_nil
       end
     end
   end
@@ -345,18 +326,11 @@ describe LogStash::Settings do
     subject do
       settings = described_class.new
       settings.register(LogStash::Setting::ArrayCoercible.new("host", String, []))
-      settings.register(LogStash::Setting::ArrayCoercible.new("modules", Hash, []))
       settings
     end
 
     let(:values) {{
-      "host" => ["dev1.${lsspecdomain_env}", "dev2.${lsspecdomain_env}", "dev3.${a}"],
-      "modules" => [
-        {"name" => "${lsspecdomain_env}", "testing" => "${lsspecdomain_env}"},
-        {"name" => "${lsspecdomain2_env}", "testing" => "${lsspecdomain2_env}"},
-        {"name" => "${a}", "testing" => "${a}"},
-        {"name" => "${b}", "testing" => "${b}"}
-      ]
+      "host" => ["dev1.${lsspecdomain_env}", "dev2.${lsspecdomain_env}", "dev3.${a}"]
     }}
     let(:yaml_path) do
       p = Stud::Temporary.pathname
@@ -370,15 +344,51 @@ describe LogStash::Settings do
 
     it "can interpolate environment into settings" do
       expect(subject.get('host')).to match_array([])
-      expect(subject.get('modules')).to match_array([])
       subject.from_yaml(yaml_path)
       expect(subject.get('host')).to match_array(["dev1.domain1", "dev2.domain1", "dev3.A"])
-      expect(subject.get('modules')).to match_array([
-                                                      {"name" => "domain1", "testing" => "domain1"},
-                                                      {"name" => "domain2", "testing" => "domain2"},
-                                                      {"name" => "A", "testing" => "A"},
-                                                      {"name" => "B", "testing" => "B"}
-                                                    ])
+    end
+  end
+
+  describe "deprecated pipeline override settings" do
+
+    let(:subject) { described_class.new }
+    before(:each) { subject.register(LogStash::Setting.new("pipeline.id", String, "main")) }
+
+    context '#merge_pipeline_settings' do
+
+      described_class::DEPRECATED_PIPELINE_OVERRIDE_SETTINGS.each do |setting|
+
+        context "the setting (#{setting}) is set" do
+
+          let(:deprecation_logger) { subject.deprecation_logger }
+          let(:setting_value) { double('setting_value') }
+
+          it "a warning is logged" do
+            expect(deprecation_logger).to receive(:deprecated).with(
+              a_string_matching("Config option \"#{setting}\", set for pipeline \"test\", is deprecated as a " +
+                                  "pipeline override setting. Please only set it at the process level.")
+            )
+            subject.merge_pipeline_settings("pipeline.id" => "test", setting => setting_value)
+          end
+
+          it "it does not set (#{setting})" do
+            subject.merge_pipeline_settings(setting => double('setting_value'))
+            expect{ subject.get_setting(setting) }.to raise_error(ArgumentError)
+          end
+
+          context 'other settings are also set' do
+
+            before(:each) do
+              subject.register(LogStash::Setting::BooleanSetting.new("config.debug", false))
+              subject.merge_pipeline_settings(setting => setting_value, "config.debug" => true)
+            end
+
+            it "it leaves other settings intact" do
+              expect(subject.get_setting("config.debug").value).to be(true)
+            end
+          end
+        end
+      end
     end
   end
 end

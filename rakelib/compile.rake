@@ -30,12 +30,6 @@ namespace "compile" do
     logstash-core/lib/logstash/compiler/lscl/lscl_grammar.rb
   )
 
-  task "logstash-core-java" do
-    puts("Building logstash-core using gradle")
-    # this expansion is necessary to use the path separators of the hosting OS
-    sh(File.join(".", "gradlew"), "assemble")
-  end
-
   desc "Build everything"
-  task "all" => ["grammar", "logstash-core-java"]
+  task "all" => ["grammar"]
 end

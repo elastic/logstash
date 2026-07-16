@@ -85,6 +85,11 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @Override
+    protected IRubyObject getRubyPlugin(final ThreadContext context) {
+        return filter;
+    }
+
+    @Override
     protected void doRegister(final ThreadContext context) {
         filter.callMethod(context, "register");
     }

@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-class Http_proxyService < Service
+class HttpProxyService < Service
   def initialize(settings)
     super("http_proxy", settings)
   end

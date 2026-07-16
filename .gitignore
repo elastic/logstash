@@ -16,7 +16,6 @@ out
 local
 test/setup/elasticsearch/elasticsearch-*
 vendor
-!docker/ironbank/go/src/env2yaml/vendor
 .sass-cache
 /data
 .buildpath
@@ -64,3 +63,4 @@ spec/unit/plugin_manager/plugin_aliases.yml
 logstash-core/src/test/resources/org/logstash/plugins/plugin_aliases.yml
 qa/integration/fixtures/logs_rollover/log4j2.properties
 ci/serverless/config/*.log
+jdk/*

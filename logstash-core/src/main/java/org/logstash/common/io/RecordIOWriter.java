@@ -173,7 +173,7 @@ public final class RecordIOWriter implements Closeable {
         return lastWrite != null;
     }
 
-    public boolean isStale(Duration flushPeriod){
+    public boolean isStale(final Duration flushPeriod) {
         return hasWritten() && Instant.now().minus(flushPeriod).isAfter(lastWrite);
     }
 

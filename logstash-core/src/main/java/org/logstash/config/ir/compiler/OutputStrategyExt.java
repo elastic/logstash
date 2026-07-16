@@ -20,26 +20,20 @@
 
 package org.logstash.config.ir.compiler;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.stream.Collectors;
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyClass;
-import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
-import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.plugins.factory.ContextualizerExt;
 
-import static org.logstash.RubyUtil.PLUGIN_CONTEXTUALIZER_MODULE;
+import java.util.stream.Collectors;
 
 public final class OutputStrategyExt {
 
@@ -121,6 +115,8 @@ public final class OutputStrategyExt {
 
         private RubyClass outputClass;
 
+        public abstract IRubyObject getRubyPlugin(final ThreadContext context);
+
         public AbstractOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
         }
@@ -164,80 +160,6 @@ public final class OutputStrategyExt {
         protected abstract IRubyObject reg(ThreadContext context);
     }
 
-    @JRubyClass(name = "Legacy", parent = "AbstractStrategy")
-    public static final class LegacyOutputStrategyExt extends OutputStrategyExt.AbstractOutputStrategyExt {
-
-        private static final long serialVersionUID = 1L;
-
-        private transient BlockingQueue<IRubyObject> workerQueue;
-
-        private transient IRubyObject workerCount;
-
-        private @SuppressWarnings({"rawtypes"}) RubyArray workers;
-
-        public LegacyOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-
-        @JRubyMethod(required = 4)
-        public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
-            final RubyClass outputClass = (RubyClass) args[0];
-            final IRubyObject metric = args[1];
-            final ExecutionContextExt executionContext = (ExecutionContextExt) args[2];
-            final RubyHash pluginArgs = (RubyHash) args[3];
-            workerCount = pluginArgs.op_aref(context, context.runtime.newString("workers"));
-            if (workerCount.isNil()) {
-                workerCount = RubyFixnum.one(context.runtime);
-            }
-            final int count = workerCount.convertToInteger().getIntValue();
-            workerQueue = new ArrayBlockingQueue<>(count);
-            workers = context.runtime.newArray(count);
-            for (int i = 0; i < count; ++i) {
-                final IRubyObject output = ContextualizerExt.initializePlugin(context, executionContext, outputClass, pluginArgs);
-                initOutputCallsite(outputClass);
-                output.callMethod(context, "metric=", metric);
-                workers.append(output);
-                workerQueue.add(output);
-            }
-            return this;
-        }
-
-        @JRubyMethod(name = "worker_count")
-        public IRubyObject workerCount() {
-            return workerCount;
-        }
-
-        @JRubyMethod
-        public IRubyObject workers() {
-            return workers;
-        }
-
-        @Override
-        protected IRubyObject output(final ThreadContext context, final IRubyObject events) throws InterruptedException {
-            final IRubyObject worker = workerQueue.take();
-            try {
-                invokeOutput(context, events, worker);
-                return context.nil;
-            } finally {
-                workerQueue.put(worker);
-            }
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        protected IRubyObject close(final ThreadContext context) {
-            workers.forEach(worker -> ((IRubyObject) worker).callMethod(context, "do_close"));
-            return this;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        protected IRubyObject reg(final ThreadContext context) {
-            workers.forEach(worker -> ((IRubyObject) worker).callMethod(context, "register"));
-            return this;
-        }
-    }
-
     @JRubyClass(name = "SimpleAbstractStrategy", parent = "AbstractStrategy")
     public abstract static class SimpleAbstractOutputStrategyExt
         extends OutputStrategyExt.AbstractOutputStrategyExt {
@@ -263,6 +185,11 @@ public final class OutputStrategyExt {
             initOutputCallsite(outputClass);
             output.callMethod(context, "metric=", metric);
             return this;
+        }
+
+        @Override
+        public IRubyObject getRubyPlugin(final ThreadContext context) {
+            return output;
         }
 
         @Override

@@ -131,7 +131,7 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     protected NamespacedMetricExt createNamespaced(final ThreadContext context,
         final IRubyObject name) {
         MetricExt.validateName(context, name, RubyUtil.METRIC_NO_NAMESPACE_PROVIDED_CLASS);
-        return create(this.metric, (RubyArray) namespaceName.op_plus(normalizeNamespace(name)));
+        return create(this.metric, (RubyArray) namespaceName.op_plus(context, normalizeNamespace(name)));
     }
 
     @Override

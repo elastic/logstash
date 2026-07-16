@@ -122,6 +122,10 @@ public class JvmOptionsParserTest {
                 JvmOptionsParser.getMandatoryJvmOptions(11).contains("-Djruby.regexp.interruptible=true"));
         assertTrue("Contains regexp interruptible for Java 17",
                 JvmOptionsParser.getMandatoryJvmOptions(17).contains("-Djruby.regexp.interruptible=true"));
+        assertTrue("Contains compile invokedynamic for Java 17",
+                JvmOptionsParser.getMandatoryJvmOptions(17).contains("-Djruby.compile.invokedynamic=true"));
+        assertTrue("Contains log4j2 isThreadContextMapInheritable for Java 17",
+                JvmOptionsParser.getMandatoryJvmOptions(17).contains("-Dlog4j2.isThreadContextMapInheritable=true"));
 
     }
 

@@ -1,7 +1,7 @@
 package org.logstash.ackedqueue;
 
 import org.junit.Test;
-import org.logstash.instrument.metrics.ManualAdvanceClock;
+import org.logstash.testutils.time.ManualAdvanceClock;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.timer.TestTimerMetricFactory;
 import org.logstash.instrument.metrics.timer.TimerMetric;

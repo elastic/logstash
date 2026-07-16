@@ -1,0 +1,49 @@
+plugins:
+  - logstash-filter-date:
+      scan_branches:
+        - branch: main
+          logstash: main
+  - logstash-filter-dissect:
+      scan_branches:
+        - branch: main
+          logstash: main
+  - logstash-filter-geoip:
+      scan_branches:
+        - branch: main
+          logstash: main
+  - logstash-filter-useragent
+  - logstash-input-azure_event_hubs
+  - logstash-input-dead_letter_queue:
+      scan_branches:
+        - branch: main
+          logstash: main
+  - logstash-input-file
+  - logstash-integration-jdbc
+  - logstash-integration-kafka:
+      scan_branches:
+        - branch: main
+        - branch: 11.x
+  - logstash-integration-snmp
+  - logstash-integration-aws
+  - logstash-input-http:
+      scan_branches:
+        - branch: main
+        - branch: 3.x
+  - logstash-input-tcp:
+      scan_branches:
+        - branch: main
+        - branch: 6.x
+  - logstash-input-beats:
+      scan_branches:
+        - branch: main
+        - branch: 6.x
+  - logstash-filter-elastic_integration:
+      scan_branches:
+        - branch: main
+          logstash: main
+        - branch: 9.3
+          logstash: 9.3
+        - branch: 9.2
+          logstash: 9.2
+        - branch: 8.19
+          logstash: 8.19

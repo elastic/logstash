@@ -24,7 +24,7 @@ class Bootstrap:
         logstash_branch = os.environ.get("LS_BRANCH")
         if logstash_branch is None:
             # version is not specified, use the main branch, no need to git checkout
-            print(f"LS_BRANCH is not specified, using main branch.")
+            print(f"LS_BRANCH is not specified, using HEAD.")
         else:
             # LS_BRANCH accepts major latest as a major.x or specific branch as X.Y
             if logstash_branch.find(".x") == -1:

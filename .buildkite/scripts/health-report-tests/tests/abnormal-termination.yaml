@@ -24,6 +24,7 @@ expectation:
           diagnosis:
             - cause: "pipeline is not running, likely because it has encountered an error"
               action: "view logs to determine the cause of abnormal pipeline shutdown"
+              help_url: { $include: "health-report-pipeline-" }
           impacts:
             - description: "the pipeline is not currently processing"
               impact_areas: ["pipeline_execution"]

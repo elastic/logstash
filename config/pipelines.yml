@@ -35,14 +35,29 @@
 #   # before dispatching an undersized batch to filters+outputs
 #   pipeline.batch.delay: 50
 #
-#   Set the pipeline event ordering. Options are "auto" (the default), "true" # #   or "false".
-#   "auto" automatically enables ordering if the 'pipeline.workers' setting
-#   is also set to '1', and disables otherwise.
-#   "true" enforces ordering on a pipeline and prevents logstash from starting
-#   a pipeline with multiple workers allocated.
-#   "false" disable any extra processing necessary for preserving ordering.
+#   # Controls when output batches are split into smaller chunks. When the event count of a batch
+#   # increases by this multiplication factor by the end of the pipeline's filter section, it is
+#   # chunked based on the value of `pipeline.batch.size`. For example: a batch size of 50 that grows
+#   # to over 50,000 events (1000x50=50,000) will be sent to outputs 50 events at a time instead of a
+#   # single enormous batch. Useful when batch size grows unpredictably due to filter plugins such
+#   # as split or clone.
+#   # Default is 1000 (effectively disabled). Set to a lower value to enable chunking.
+#   pipeline.batch.output_chunking.growth_threshold_factor: 1000
 #
+#   # Set the pipeline event ordering. Options are "auto" (the default), "true" # #   or "false".
+#   # "auto" automatically enables ordering if the 'pipeline.workers' setting
+#   # is also set to '1', and disables otherwise.
+#   # "true" enforces ordering on a pipeline and prevents logstash from starting
+#   # a pipeline with multiple workers allocated.
+#   # "false" disable any extra processing necessary for preserving ordering.
 #   pipeline.ordered: auto
+#
+#   # Configure this pipeline to be recoverable if it crashes and `config.reload.automatic` is enabled.
+#   # Accepts one of the following values:
+#   # - `false` (default): never recover after observing crash
+#   # - `auto`: recover if-and-only-if `queue.type` is set to `persisted`
+#   # - `true`: always recover after observing crash (WARNING: risk of data loss)
+#   pipeline.recoverable: false
 #
 #   # Internal queuing model, "memory" for legacy in-memory based queuing and
 #   # "persisted" for disk-based acked queueing. Defaults is memory

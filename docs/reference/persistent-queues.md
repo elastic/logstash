@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/persistent-queues.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Persistent queues (PQ) [persistent-queues]

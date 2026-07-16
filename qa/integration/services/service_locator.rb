@@ -39,7 +39,7 @@ class ServiceLocator
       require f
       basename = File.basename(f).gsub(/#{FILE_PATTERN}$/, "")
       service_name = basename.downcase
-      klass = Object.const_get("#{service_name.capitalize}Service")
+      klass = Object.const_get("#{service_name.split('_').map(&:capitalize).join}Service")
       yield service_name, klass
     end
   end

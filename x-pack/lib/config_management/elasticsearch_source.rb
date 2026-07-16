@@ -8,6 +8,8 @@ require "logstash/outputs/elasticsearch"
 require "logstash/json"
 require 'helpers/elasticsearch_options'
 require 'helpers/loggable_try'
+require 'logstash/ssl_file_tracker'
+require 'helpers/elasticsearch_client_holder'
 require "license_checker/licensed"
 
 module LogStash
@@ -22,6 +24,9 @@ module LogStash
       VALID_LICENSES = %w(trial standard gold platinum enterprise)
       FEATURE_INTERNAL = 'management'
       FEATURE_EXTERNAL = 'logstash'
+      NAMESPACE = "xpack.#{FEATURE_INTERNAL}".freeze
+      SSL_TRACK_ID_CPM = :".cpm"
+      SSL_TRACK_ID_LICENSE = :".cpm_license"
       SUPPORTED_PIPELINE_SETTINGS = %w(
         pipeline.workers
         pipeline.batch.size
@@ -33,14 +38,24 @@ module LogStash
         queue.checkpoint.writes
       )
 
-      def initialize(settings)
+      def initialize(settings, ssl_file_tracker = nil)
         super(settings)
 
-        if enabled?
-          @es_options = es_options_from_settings('management', settings)
-          setup_license_checker(FEATURE_INTERNAL)
-          license_check(true)
+        return unless enabled?
+
+        @es_options = es_options_from_settings('management', settings)
+
+        if ssl_file_tracker
+          paths = LogStash::SslFileTracker.paths_from_settings(@settings, NAMESPACE)
+          ssl_file_tracker.register_paths(SSL_TRACK_ID_CPM, paths)
+          ssl_file_tracker.register_paths(SSL_TRACK_ID_LICENSE, paths)
         end
+
+        @es_client_holder = LogStash::Helpers::ElasticsearchClientHolder.create(ssl_file_tracker, SSL_TRACK_ID_CPM) { build_client }
+        setup_license_checker(FEATURE_INTERNAL,
+                              ssl_file_tracker: ssl_file_tracker,
+                              tracking_id: SSL_TRACK_ID_LICENSE)
+        license_check(true)
       end
 
       def match?
@@ -63,13 +78,7 @@ module LogStash
         es_version = get_es_version
         fetcher = get_pipeline_fetcher(es_version)
 
-        begin
-          fetcher.fetch_config(es_version, pipeline_ids, client)
-        rescue LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => e
-          # es-output 12.0.2 throws 404 as error, but we want to handle it as empty config
-          return [] if e.response_code == 404
-          raise e
-        end
+        fetcher.fetch_config(es_version, pipeline_ids, client)
 
         fetcher.get_pipeline_ids.collect do |pid|
           get_pipeline(pid, fetcher)
@@ -185,7 +194,7 @@ module LogStash
       end
 
       def client
-        @client ||= build_client
+        @es_client_holder.get
       end
     end
 
@@ -210,22 +219,46 @@ module LogStash
       SYSTEM_INDICES_API_PATH = "_logstash/pipeline"
 
       def fetch_config(es_version, pipeline_ids, client)
-        es_supports_pipeline_wildcard_search = es_supports_pipeline_wildcard_search?(es_version)
+        # if we are talking with an Elasticsearch that supports wildcard search, and get
+        # a successful response, use it. But wildcard search has a weird quirk that it 404's
+        # when there are no matches, so we need to fall through to traditional client-side
+        # search to rule out a proxy emitting a 404.
+        if es_supports_pipeline_wildcard_search?(es_version)
+          begin
+            logger.trace? && logger.trace("querying for pipelines #{pipeline_ids.join(",")} using server-side wildcard search")
+            response = get_response(client,"#{SYSTEM_INDICES_API_PATH}?id=#{ERB::Util.url_encode(pipeline_ids.join(","))}")
+            intercept_error(response, pipeline_ids)
+            @pipelines = response
+            return @pipelines
+          rescue LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => e
+            raise unless e.response_code == 404
+            logger.warn("got 404 requesting pipelines from Elasticsearch using wildcard search; falling back to client-side filtering")
+          end
+        end
+
+        # client-side filtering
+        logger.trace("querying for pipelines #{pipeline_ids.join(",")} using client-side wildcard search")
+        response = get_response(client,"#{SYSTEM_INDICES_API_PATH}/")
+        intercept_error(response, pipeline_ids)
+        @pipelines = get_wildcard_pipelines(pipeline_ids, response)
+
+      rescue LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => e
+        raise ElasticsearchSource::RemoteConfigError, "Cannot load configuration for pipeline_id: #{pipeline_ids}, server returned `#{e}`"
+      end
+
+      def get_response(client, path)
         retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
         response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
-          path = es_supports_pipeline_wildcard_search ?
-                   "#{SYSTEM_INDICES_API_PATH}?id=#{ERB::Util.url_encode(pipeline_ids.join(","))}" :
-                   "#{SYSTEM_INDICES_API_PATH}/"
           client.get(path)
         }
 
+        response
+      end
+
+      def intercept_error(response, pipeline_ids)
         if response["error"]
           raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
         end
-
-        @pipelines = es_supports_pipeline_wildcard_search ?
-                       response :
-                       get_wildcard_pipelines(pipeline_ids, response)
       end
 
       def es_supports_pipeline_wildcard_search?(es_version)
@@ -271,11 +304,18 @@ module LogStash
       PIPELINE_INDEX = ".logstash"
 
       def fetch_config(es_version, pipeline_ids, client)
+        deprecation_logger.deprecated("Fetching pipeline configs from Elasticsearch #{es_version}; Central Management will soon require Elasticsearch 8.x+")
         request_body_string = LogStash::Json.dump({ "docs" => pipeline_ids.collect { |pipeline_id| { "_id" => pipeline_id } } })
         retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
-        response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
-          client.post("#{PIPELINE_INDEX}/_mget", {}, request_body_string)
-        }
+        response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) do
+          begin
+            client.post("#{PIPELINE_INDEX}/_mget", {}, request_body_string)
+          rescue LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => e
+            raise e unless e.response_code == 404
+            @pipelines = {}
+            return @pipelines
+          end
+        end
 
         if response["error"]
           raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"

@@ -29,6 +29,20 @@ namespace "artifact" do
          else
            "arm64" # default for aarch64, arm64, or any other value (including nil)
          end
+
+  def jdk_folder_for_platform(os_name, arch)
+    normalized_arch = (arch == "x86_64" || arch == "amd64") ? "x64" : "arm64"
+    "jdk-#{os_name}-#{normalized_arch}"
+  end
+
+  def transform_jdk_path(path)
+    return path unless @target_os && @target_arch
+    jdk_folder = jdk_folder_for_platform(@target_os, @target_arch)
+    return path unless path.start_with?("#{jdk_folder}/")
+    canonical_name = (@target_os == "darwin") ? "jdk.app" : "jdk"
+    path.sub(/^#{Regexp.escape(jdk_folder)}\//, "#{canonical_name}/")
+  end
+  
   ## TODO: Install new service files
   def package_files
     res = [
@@ -70,13 +84,13 @@ namespace "artifact" do
       "vendor/jruby/bin/.jruby.module_opts",
       "Gemfile",
       "Gemfile.lock",
-      "x-pack/**/*",
+      "x-pack/lib/**/*",
     ]
-    if @bundles_jdk
+    if @bundles_jdk && @target_os && @target_arch
+      jdk_folder = jdk_folder_for_platform(@target_os, @target_arch)
       res += [
         "JDK_VERSION",
-        "jdk/**/*",
-        "jdk.app/**/*",
+        "#{jdk_folder}/**/*",
       ]
     end
     res
@@ -101,18 +115,10 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/**/Gemfile.lock'
     @exclude_paths << 'vendor/**/gems/**/Gemfile'
 
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rake-*'
-    # exclude ruby-maven-libs 3.3.9 jars until JRuby ships with >= 3.8.9
-    @exclude_paths << 'vendor/bundle/jruby/**/gems/ruby-maven-libs-3.3.9/**/*'
-
-    # remove this after JRuby includes rexml 3.3.x
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rexml-3.2.5/**/*'
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/rexml-3.2.5.gemspec'
-
-    # remove this after JRuby includes net-imap-0.2.4+
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec'
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3/**/*'
-
+    # Exclude env2yaml source files - only compiled classes should be in tarball
+    @exclude_paths << 'docker/data/logstash/env2yaml/**/*.java'
+    @exclude_paths << 'docker/data/logstash/env2yaml/build.gradle'
+    @exclude_paths << 'docker/data/logstash/env2yaml/settings.gradle'
     @exclude_paths.freeze
   end
 
@@ -169,7 +175,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_observabilitySRE"]
+  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_ironbank", "docker_observabilitySRE"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -182,7 +188,6 @@ namespace "artifact" do
       create_archive_pack(license_details, "arm64", "linux", "darwin")
     end
     #without JDK
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     @bundles_jdk = false
     build_tar(*license_details, platform: '-no-jdk')
     build_zip(*license_details, platform: '-no-jdk')
@@ -192,8 +197,8 @@ namespace "artifact" do
   task "archives_docker" => ["prepare", "generate_build_metadata"] do
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
+    @building_docker = true
     create_archive_pack(license_details, ARCH, "linux")
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
   def create_archive_pack(license_details, arch, *oses, &tar_interceptor)
@@ -204,27 +209,23 @@ namespace "artifact" do
   end
 
   def create_single_archive_pack(os_name, arch, license_details, &tar_interceptor)
-    safe_system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
-    if arch == 'arm64'
-      arch = 'aarch64'
-    end
+    @target_os = os_name
+    @target_arch = arch
+    platform_arch = (arch == 'arm64') ? 'aarch64' : arch
     case os_name
     when "linux"
-      build_tar(*license_details, platform: "-linux-#{arch}", &tar_interceptor)
+      build_tar(*license_details, platform: "-linux-#{platform_arch}", &tar_interceptor)
     when "windows"
-      build_zip(*license_details, platform: "-windows-#{arch}")
+      build_zip(*license_details, platform: "-windows-#{platform_arch}")
     when "darwin"
-      build_tar(*license_details, platform: "-darwin-#{arch}", &tar_interceptor)
+      build_tar(*license_details, platform: "-darwin-#{platform_arch}", &tar_interceptor)
     end
-    safe_system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
   end
 
   # Create an archive pack using settings appropriate for the running machine
   def create_local_archive_pack(bundle_jdk)
     @bundles_jdk = bundle_jdk
-    safe_system("./gradlew copyJdk") if bundle_jdk
     build_tar('ELASTIC-LICENSE')
-    safe_system("./gradlew deleteLocalJdk") if bundle_jdk
   end
 
   desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
@@ -250,7 +251,6 @@ namespace "artifact" do
 
     #without JDK
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     build_tar(*license_details, platform: '-no-jdk')
     build_zip(*license_details, platform: '-no-jdk')
   end
@@ -259,15 +259,16 @@ namespace "artifact" do
   task "archives_docker_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
+    @building_docker = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
     create_archive_pack(license_details, ARCH, "linux")
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
   desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
   task "archives_docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
+    @building_docker = true
     exclude_paths = default_exclude_paths + %w(
       bin/logstash-plugin
       bin/logstash-plugin.bat
@@ -276,11 +277,11 @@ namespace "artifact" do
     )
     license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
     create_archive_pack(license_details, ARCH, "linux") do |dedicated_directory_tar|
-      # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
-      # copy additional files into the tarball
-      puts "HELLO(#{dedicated_directory_tar})"
+      Dir.glob("x-pack/distributions/internal/observabilitySRE/config/**/*").each do |source_file|
+        next if File.directory?(source_file)
+        dedicated_directory_tar.write(source_file)
+      end
     end
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
   desc "Build an RPM of logstash with all dependencies"
@@ -292,7 +293,6 @@ namespace "artifact" do
 
     #without JDKs
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos")
   end
 
@@ -305,7 +305,6 @@ namespace "artifact" do
 
     #without JDKs
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos", :oss)
   end
 
@@ -318,7 +317,6 @@ namespace "artifact" do
 
     #without JDKs
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu")
   end
 
@@ -331,7 +329,6 @@ namespace "artifact" do
 
     #without JDKs
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu", :oss)
   end
 
@@ -376,9 +373,15 @@ namespace "artifact" do
   end
 
   desc "Build wolfi docker image"
-  task "docker_wolfi" => %w(prepare generate_build_metadata archives_docker) do
+  task "docker_wolfi" => ["prepare", "generate_build_metadata", "archives_docker"] do
     puts("[docker_wolfi] Building Wolfi docker image")
     build_docker('wolfi')
+  end
+
+  desc "Build ironbank docker image"
+  task "docker_ironbank" => ["prepare", "generate_build_metadata", "archives_docker"] do
+    puts("[docker_ironbank] Building Ironbank docker image")
+    build_docker('ironbank')
   end
 
   desc "Generate Dockerfiles for full and oss images"
@@ -431,6 +434,7 @@ namespace "artifact" do
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
       Rake::Task["artifact:docker_wolfi"].invoke
+      Rake::Task["artifact:docker_ironbank"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
       Rake::Task["artifact:docker_oss"].invoke
       Rake::Task["artifact:docker_observabilitySRE"].invoke
@@ -553,7 +557,8 @@ namespace "artifact" do
     Minitar::Writer.open(gz) do |tar|
       dedicated_directory_tarball = DedicatedDirectoryTarball.new(tar, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}")
       files(exclude_paths).each do |path|
-        dedicated_directory_tarball.write(path)
+        dest_path = transform_jdk_path(path)
+        dedicated_directory_tarball.write(path, dest_path)
       end
 
       source_license_path = "licenses/#{license}.txt"
@@ -563,7 +568,22 @@ namespace "artifact" do
       # add build.rb to tar
       metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
       dedicated_directory_tarball.write(BUILD_METADATA_FILE.path, metadata_file_path_in_tar)
-
+      # add env2yaml for docker builds
+      if @building_docker
+        env2yaml_classes = "docker/data/logstash/env2yaml/classes"
+        if File.directory?(env2yaml_classes)
+          # Add compiled class files
+          Dir.glob("#{env2yaml_classes}/**/*.class").each do |class_file|
+            relative_path = class_file.sub("#{env2yaml_classes}/", "")
+            dedicated_directory_tarball.write(class_file, "env2yaml/classes/#{relative_path}")
+          end
+          # Add dependency JARs
+          Dir.glob("docker/data/logstash/env2yaml/lib/*.jar").each do |jar_file|
+            dedicated_directory_tarball.write(jar_file, "env2yaml/lib/#{File.basename(jar_file)}")
+          end
+        end
+        dedicated_directory_tarball.write("docker/data/logstash/env2yaml/env2yaml", "env2yaml/env2yaml") if File.exist?("docker/data/logstash/env2yaml/env2yaml")
+      end
       # yield to the tar interceptor if we have one
       yield(dedicated_directory_tarball) if block_given?
     end
@@ -641,7 +661,8 @@ namespace "artifact" do
     File.unlink(zippath) if File.exist?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
       files(exclude_paths).each do |path|
-        path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}"
+        dest_path = transform_jdk_path(path)
+        path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{dest_path}"
         zipfile.add(path_in_zip, path)
       end
 
@@ -660,18 +681,20 @@ namespace "artifact" do
   end
 
   def package_with_jdk(platform, jdk_arch, variant = :standard)
-    safe_system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=#{jdk_arch}")
     package(platform, variant, true, jdk_arch)
-    safe_system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
   end
 
   def package(platform, variant = :standard, bundle_jdk = false, jdk_arch = 'x86_64')
     oss = variant == :oss
+    @target_os = "linux"
+    @target_arch = jdk_arch
+    @bundles_jdk = bundle_jdk
 
     require "stud/temporary"
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
     require "fpm/package/gem" # TODO(sissel): fix this in fpm; rpm needs it.
+    require "fpm/package/cpan"
 
     basedir = File.join(File.dirname(__FILE__), "..")
     dir = FPM::Package::Dir.new
@@ -694,7 +717,8 @@ namespace "artifact" do
       # Omit any config dir from /usr/share/logstash for packages, since we're
       # using /etc/logstash below
       next if path.start_with?("config/")
-      dir.input("#{path}=/usr/share/logstash/#{path}")
+      dest_path = transform_jdk_path(path)
+      dir.input("#{path}=/usr/share/logstash/#{dest_path}")
     end
 
     if oss
@@ -877,6 +901,7 @@ namespace "artifact" do
       "VERSION_QUALIFIER" => VERSION_QUALIFIER,
       "BUILD_DATE" => BUILD_DATE
     }
+    
     Dir.chdir("docker") do |dir|
       safe_system(env, "make build-from-local-#{flavor}-artifacts")
     end

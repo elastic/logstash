@@ -205,6 +205,42 @@ describe "Test Monitoring API" do
     end
   end
 
+  it 'retrieves health report' do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # health_report can fail if the subsystem isn't ready
+      result = logstash_service.monitoring_api.health_report rescue nil
+      expect(result).not_to be_nil
+      expect(result).to be_a(Hash)
+      expect(result).to include("status")
+      expect(result["status"]).to match(/^(green|yellow|red)$/)
+    end
+  end
+
+  it 'retrieves node plugins information' do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # node_plugins can fail if the subsystem isn't ready
+      result = logstash_service.monitoring_api.node_plugins rescue nil
+      expect(result).not_to be_nil
+      expect(result).to be_a(Hash)
+      expect(result).to include("plugins")
+      plugins = result["plugins"]
+      expect(plugins).to be_a(Array)
+      expect(plugins.size).to be > 0
+      # verify plugin structure and that stdin plugin is present
+      stdin_plugin = plugins.find { |p| p["name"] == "logstash-input-stdin" }
+      expect(stdin_plugin).not_to be_nil
+      expect(stdin_plugin).to include("name")
+      expect(stdin_plugin["name"]).to eq("logstash-input-stdin")
+      expect(stdin_plugin).to include("version")
+    end
+  end
+
   shared_examples "pipeline metrics" do
     # let(:pipeline_id) { defined?(super()) or fail NotImplementedError }
     let(:settings_overrides) do
@@ -482,9 +518,9 @@ describe "Test Monitoring API" do
 
     #root logger - does not apply to logger.slowlog
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
-    logging_get_assert logstash_service, "WARN", "TRACE"
+    logging_get_assert logstash_service, "WARN", "TRACE", skip: 'logstash.licensechecker.licensereader'
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
-    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE"
+    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE", skip: 'logstash.licensechecker.licensereader'
 
     #package logger
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
@@ -497,11 +533,12 @@ describe "Test Monitoring API" do
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"})
 
     #deprecation package loggers
-    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation" => "ERROR"})
 
     result = logstash_service.monitoring_api.logging_get
     result["loggers"].each do |k, v|
       next if k.eql?("logstash.agent")
+      next if k.eql?("logstash.licensechecker.licensereader")
       #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
       if k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation")
         expect(v).to eq("ERROR")
@@ -510,7 +547,7 @@ describe "Test Monitoring API" do
 
     # all log levels should be reset to original values
     logging_put_assert logstash_service.monitoring_api.logging_reset
-    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE"
+    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE", skip: 'logstash.licensechecker.licensereader'
   end
 
 

@@ -2,13 +2,14 @@ package org.logstash.execution;
 
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
+import org.jruby.api.Create;
 import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
 import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.config.ir.RubyEnvTestCase;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
-import org.logstash.instrument.metrics.ManualAdvanceClock;
+import org.logstash.testutils.time.ManualAdvanceClock;
 import org.logstash.instrument.metrics.MetricExt;
 import org.logstash.instrument.metrics.MetricExtFactory;
 import org.logstash.instrument.metrics.MetricKeys;
@@ -100,7 +101,7 @@ public class ObservedExecutionTest extends RubyEnvTestCase {
         final Ruby runtime = metricExt.getRuntime();
         final ThreadContext context = runtime.getCurrentContext();
 
-        return metricExt.namespace(context, runtime.newArray(Arrays.stream(namespaces).map(runtime::newSymbol).collect(Collectors.toList())));
+        return metricExt.namespace(context, Create.newArray(context, Arrays.stream(namespaces).map(runtime::newSymbol).collect(Collectors.toList())));
     }
 
     /**

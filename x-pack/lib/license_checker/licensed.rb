@@ -30,8 +30,11 @@ module LogStash
     module Licensed
       include LogStash::Util::Loggable
 
-      def setup_license_checker(feature, refresh_period = 30, refresh_unit = TimeUnit::SECONDS)
+      def setup_license_checker(feature, refresh_period = 30, refresh_unit = TimeUnit::SECONDS,
+                                ssl_file_tracker: nil, tracking_id: nil)
         @feature = feature
+        @ssl_file_tracker = ssl_file_tracker
+        @ssl_tracking_id = tracking_id
 
         license_manager = LogStash::LicenseChecker::LicenseManager.new(license_reader, feature, refresh_period, refresh_unit)
         xpack_info = license_manager.current_xpack_info
@@ -73,7 +76,9 @@ module LogStash
       alias_method :license_check, :with_license_check
 
       def license_reader
-        LogStash::LicenseChecker::LicenseReader.new(@settings, @feature, @es_options)
+        LogStash::LicenseChecker::LicenseReader.new(@settings, @feature, @es_options,
+                                                    ssl_file_tracker: @ssl_file_tracker,
+                                                    tracking_id: @ssl_tracking_id)
       end
 
       def update_license_state(xpack_info, is_serverless)

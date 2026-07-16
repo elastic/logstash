@@ -17,6 +17,16 @@
 
 require_relative "environment"
 LogStash::Bundler.setup!({:without => [:build]})
+# Our use of LogStash::Bundler.setup! here leaves us in kind of a wonky state for *all* tests
+# Essentially we end up with a load path that favors bundlers gem env over stdlib. This is
+# not really the call stack in logstash itself, so while this does make the full bundled gem
+# env available for tests, it also has a quirk where stdlib gems are not loaed correctly. The
+# following patch ensures that stdlib gems are bumped to the front of the load path for unit
+# tests.
+## START PATCH ##
+jruby_stdlib = $LOAD_PATH.find { |p| p.end_with?('vendor/jruby/lib/ruby/stdlib') }
+$LOAD_PATH.unshift($LOAD_PATH.delete(jruby_stdlib)) if jruby_stdlib
+## END PATCH ##
 require "logstash-core"
 require "logstash/environment"
 
@@ -25,6 +35,15 @@ require "logstash/environment"
 [LogStash::Environment::LOGSTASH_HOME, LogStash::Environment::LOGSTASH_CORE].each do |path|
   spec_path = File.join(path, "spec")
   $LOAD_PATH.unshift(spec_path) unless $LOAD_PATH.include?(spec_path)
+end
+
+# When running x-pack specs, add x-pack/lib and x-pack/spec at the front so
+# that `require "spec_helper"` resolves to x-pack's rather than the root one.
+if ENV['LOGSTASH_XPACK'].to_s != ""
+  xpack_path = File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack")
+  [File.join(xpack_path, "lib"), File.join(xpack_path, "spec")].each do |path|
+    $LOAD_PATH.unshift(path) unless $LOAD_PATH.include?(path)
+  end
 end
 
 require "rspec/core"

@@ -20,9 +20,6 @@ require "rspec/core/runner"
 require "rspec/core/rake_task"
 require "stud/try"
 
-task :spec    => 'spec:all'
-task :default => :spec
-
 namespace :qa do
   namespace :acceptance do
     desc "Run all acceptance tests"

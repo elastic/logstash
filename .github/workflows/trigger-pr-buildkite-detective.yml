@@ -1,0 +1,22 @@
+name: PR Buildkite Detective
+on:
+  status:
+
+permissions:
+  actions: read
+  contents: read
+  copilot-requests: write
+  issues: write
+  pull-requests: write  # required by gh-aw compiler for add-comment
+
+jobs:
+  run:
+    if: >-
+      github.event.state == 'failure' &&
+      contains(github.event.context, 'buildkite')
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-pr-buildkite-detective.lock.yml@v0
+    with:
+      additional-instructions: |
+        If a step fails, check if the failure is reported as a GitHub issue labeled `flaky-test`. Reference the GitHub issue if so. 
+    secrets:
+      BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_LOGS_API_TOKEN }}

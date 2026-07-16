@@ -119,3 +119,72 @@ shared_examples "not found" do
     expect(LogStash::Json.load(last_response.body)["path"]).not_to be_nil
   end
 end
+
+shared_examples "returns successfully without waiting" do
+
+  it 'returns status code 200' do
+    expect(response.status).to be 200
+  end
+
+  it 'returns immediately' do
+    start_time = Time.now
+    response
+    end_time = Time.now
+    expect(end_time - start_time).to be < 0.5
+  end
+end
+
+shared_examples "bad request response" do
+
+  it 'returns an error response' do
+    expect(response.body).to include(error_message)
+  end
+
+  it 'returns an 400 status' do
+    expect(response.status).to be 400
+  end
+end
+
+shared_examples 'waits until the target status (or better) is reached and returns successfully' do
+
+  before do
+    allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+  end
+
+  it 'returns status code 200' do
+    expect(response.status).to be 200
+  end
+
+  it 'checks for the status until the target status (or better) is reached' do
+    start_time = Time.now
+    response
+    end_time = Time.now
+    expect(end_time - start_time).to be <= timeout_num
+  end
+end
+
+shared_examples 'times out waiting for target status (or better)' do
+
+  let(:expected_time_elapsed) do
+    LogStash::Util::TimeValue.from_value(timeout_string).to_nanos.to_f/1_000_000_000
+  end
+
+  before do
+    allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+  end
+
+  it 'times out waiting for target status (or better)' do
+    start_time = Time.now
+    response
+    end_time = Time.now
+    expect(end_time - start_time).to be >= expected_time_elapsed
+  end
+
+  it 'returns status code 408' do
+    expect(response.status).to eq 408
+  end
+
+  it 'returns a message saying the request timed out' do
+    expect(response.body).to include(described_class::TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [status])
+  end
+end

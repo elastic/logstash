@@ -33,6 +33,7 @@ import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Convert;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Event;
@@ -107,10 +108,12 @@ public final class QueueFactoryExt extends RubyBasicObject {
             return JRubyWrappedAckedQueueExt.create(context, queueSettings, namespacedMetric, batchMetricMode);
 
         } else if (MEMORY_TYPE.equals(type)) {
-            final int batchSize = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
-                    .convertToInteger().getIntValue();
-            final int workers = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
-                    .convertToInteger().getIntValue();
+            final int batchSize = Convert.toInt(context,
+                getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE).convertToInteger()
+            );
+            final int workers = Convert.toInt(context,
+                getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger()
+            );
             int queueSize = batchSize * workers;
             return JrubyWrappedSynchronousQueueExt.create(context, queueSize, batchMetricMode);
         } else {
@@ -160,7 +163,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 .checkpointMaxWrites(getSetting(context, settings, QUEUE_CHECKPOINT_WRITES).toJava(Integer.class))
                 .checkpointMaxAcks(getSetting(context, settings, QUEUE_CHECKPOINT_ACKS).toJava(Integer.class))
                 .checkpointRetry(getSetting(context, settings, QUEUE_CHECKPOINT_RETRY).isTrue())
-                .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Integer.class))
+                .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Long.class))
                 .compressionCodecFactory(extractConfiguredCodec(settings))
                 .build();
     }

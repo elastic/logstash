@@ -45,14 +45,12 @@ if [[ $BUILDKITE == true ]]; then
   ./gradlew clean bootstrap
 else
   echo "--- Detected a distribution that supports \033[33m[$PACKAGE_TYPE]\033[0m packages. Running gradle."
-  ./gradlew clean bootstrap
-  echo "--- Building Logstash artifacts"
-  rake artifact:$PACKAGE_TYPE
+  case "$PACKAGE_TYPE" in
+    "deb") ./gradlew artifactDeb ;;
+    "rpm") ./gradlew artifactRpm ;;
+    *) echo "Unknown PACKAGE_TYPE: $PACKAGE_TYPE" && exit 1 ;;
+  esac
 fi
 
-echo "--- Acceptance: Installing dependencies"
-cd $QA_DIR
-bundle install
-
 echo "--- Acceptance: Running the tests"
-rake qa:acceptance:all
+./gradlew runAcceptanceTests

@@ -43,9 +43,17 @@ description = """Logstash Core Java"""
 String logstashCoreVersion = versionMap['logstash-core']
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
+String jacksonAnnotationsVersion = versionMap['jackson-annotations']
 String jrubyVersion = versionMap['jruby']['version']
 
-String log4jVersion = '2.17.2'
+String log4jVersion = '2.25.4'
+
+// Specifically call use of PluginProcessor to skip GraalVmProcessor (not needed)
+tasks.named('compileJava') {
+    options.compilerArgs.addAll([
+        "-processor", "org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor"
+    ])
+}
 
 tasks.register("sourcesJar", Jar) {
     dependsOn classes
@@ -225,15 +233,12 @@ dependencies {
     runtimeOnly 'commons-logging:commons-logging:1.3.1'
     // also handle libraries relying on log4j 1.x to redirect their logs
     runtimeOnly "org.apache.logging.log4j:log4j-1.2-api:${log4jVersion}"
-    implementation('org.reflections:reflections:0.10.2') {
-        exclude group: 'com.google.guava', module: 'guava'
-    }
     implementation 'commons-codec:commons-codec:1.17.0' // transitively required by httpclient
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     implementation "com.github.luben:zstd-jni:1.5.7-4"
     api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
-    api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+    api "com.fasterxml.jackson.core:jackson-annotations:${jacksonAnnotationsVersion}"
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
@@ -241,8 +246,9 @@ dependencies {
     implementation('com.google.googlejavaformat:google-java-format:1.22.0') {
         exclude group: 'com.google.guava', module: 'guava'
     }
+    implementation 'org.hdrhistogram:HdrHistogram:2.2.2'
     implementation 'org.javassist:javassist:3.30.2-GA'
-    testImplementation "org.apache.logging.log4j:log4j-core:${log4jVersion}:tests"
+    testImplementation "org.apache.logging.log4j:log4j-core-test:${log4jVersion}"
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'junit:junit:4.13.2'
@@ -254,4 +260,12 @@ dependencies {
     api group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     api group: 'commons-codec', name: 'commons-codec', version: '1.17.0'
     api group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.16'
+
+    // OpenTelemetry SDK for metrics export
+    def otelVersion = '1.62.0'
+    implementation platform("io.opentelemetry:opentelemetry-bom:${otelVersion}")
+    implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry:opentelemetry-sdk'
+    implementation 'io.opentelemetry:opentelemetry-sdk-metrics'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 }
