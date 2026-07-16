@@ -304,3 +304,4 @@ The expected Logstash output (excluding initialization) with the configuration a
 ## Feedback [_feedback_3]
 
 If you have any feedback on Java plugin support in Logstash, please comment on our [main Github issue](https://github.com/elastic/logstash/issues/9215) or post in the [Logstash forum](https://discuss.elastic.co/c/logstash).
+
