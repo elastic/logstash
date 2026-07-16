@@ -6,6 +6,10 @@ on:
       - '[0-9]+.[0-9]+'
     paths:
       - 'docs/static/spec/openapi/logstash-api.yaml'
+
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
