@@ -79,9 +79,9 @@ $ tree logstash-filter-mypluginname
 ├── README.md
 ├── Rakefile
 ├── lib
-│   └── logstash
-│       └── filters
-│           └── mypluginname.rb
+│	└── logstash
+│	    └── filters
+│	        └── mypluginname.rb
 ├── logstash-filter-mypluginname.gemspec
 └── spec
     └── filters
