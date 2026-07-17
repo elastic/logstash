@@ -20,6 +20,8 @@ package org.logstash.common;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class BufferedTokenizer {
 
@@ -40,12 +42,15 @@ public class BufferedTokenizer {
     }
 
     static class DataSplitter implements Iterator<String> {
+        private static final Logger logger = LogManager.getLogger(BufferedTokenizer.class);
+
         private final String separator;
         private int currentIdx = 0;
         private int nextSeparatorIdx = -1;
         private final StringBuilder accumulator = new StringBuilder();
         private final int sizeLimit;
         private int lastFragmentSize = 0;
+        private long droppedBytesCount = 0;
 
         DataSplitter(String separator) {
             this.separator = separator;
@@ -109,10 +114,16 @@ public class BufferedTokenizer {
             if (isSizeLimitSet()) {
                 if (!data.contains(separator) && lastFragmentSize > sizeLimit) {
                     // stop accumulating if last fragments already reached the sizeLimit
+                    droppedBytesCount += data.length();
                     return;
                 }
 
-                // we know that data contains at least one separator or that we haven't yet reached 
+                if (droppedBytesCount > 0) {
+                    logger.warn("Input buffer exceeded the sizeLimit and dropped {} bytes", droppedBytesCount);
+                    droppedBytesCount = 0;
+                }
+
+                // we know that data contains at least one separator or that we haven't yet reached
                 // the first separator instance, update lastFragmentSize
                 int lastSeparatorIdx = data.lastIndexOf(separator);
                 if (lastSeparatorIdx == -1) {
@@ -131,12 +142,19 @@ public class BufferedTokenizer {
         public String flush() {
             final String flushed = accumulator.substring(currentIdx);
             final int existingLastFragmentSize = lastFragmentSize;
+            final long existingDroppedBytesCount = droppedBytesCount;
             // empty the accumulator
             accumulator.setLength(0);
             currentIdx = 0;
             lastFragmentSize = 0;
-            if (isSizeLimitSet() && existingLastFragmentSize > sizeLimit) {
-                throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + sizeLimit); 
+            droppedBytesCount = 0;
+            if (isSizeLimitSet()) {
+                if (existingDroppedBytesCount > 0) {
+                    logger.warn("Input buffer exceeded the sizeLimit and dropped {} bytes/characters", existingDroppedBytesCount);
+                }
+                if (existingLastFragmentSize > sizeLimit) {
+                    throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + sizeLimit);
+                }
             }
             return flushed;
         }
