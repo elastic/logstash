@@ -23,39 +23,15 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.4.4 [logstash-9.4.4-release-notes]
 
-### Features and enhancements [logstash-9.4.4-features-enhancements]
+### Updates to dependencies [logstash-9.4.4-dependencies]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.4.4
+* Updated JRuby to 10.0.6.0 [#19279](https://github.com/elastic/logstash/pull/19279)
+* Updated Jackson and jrjackson dependencies [#19286](https://github.com/elastic/logstash/pull/19286)
+* Upgraded Puma to 8.x [#19234](https://github.com/elastic/logstash/pull/19234)
 
-=== Logstash Commits between 9.4 and 9.4.3
+### Updates to documentations [logstash-9.4.4-documentations]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.3..9.4"
-
-fd7c43906 - (HEAD -> 9.4, origin/9.4) Update patch plugin versions in gemfile lock (#19306) (3 days ago) <github-actions[bot]>
-73482ad33 - [9.4] (backport #19295) deps: Bump updatecli version to v0.119.0 (#19298) (4 days ago) <mergify[bot]>
-b319fd086 - [9.4] (backport #19249) Bump jackson and jrjackson dependencies (#19286) (8 days ago) <mergify[bot]>
-3e91c211f - Update jruby to 10.0.6.0 (#19264) (#19279) (8 days ago) <mergify[bot]>
-6985279be - [9.4] (backport #19269) Bump docker/login-action from 4.2.0 to 4.4.0 in the github-actions group across 1 directory (#19272) (11 days ago) <mergify[bot]>
-a302e44db - deps: Bump ironbank version to 10.2 (#19218) (#19219) (2 weeks ago) <mergify[bot]>
-4406f7619 - Update patch plugin versions in gemfile lock (#19260) (2 weeks ago) <github-actions[bot]>
-77e399f68 - Bump logstash version 9.4.4 (#19256) (2 weeks ago) <github-actions[bot]>
-5ddc18a52 - Forwardporting 9.3.7 Release Notes to 9.4 branch (#19253) (2 weeks ago) <Mashhur>
-6269bfb8e - Release notes for 9.4.3 (#19226) (3 weeks ago) <github-actions[bot]>
-71d94f813 - Fix typos in pipeline.workers documentation (#19238) (#19239) (3 weeks ago) <mergify[bot]>
-8b4aa40c9 - upgrade puma to 8.x (#19200) (#19234) (3 weeks ago) <mergify[bot]>
-35ba94551 - Forwardport 9.3.6 release note to 9.4 (#19230) (3 weeks ago) <Mashhur>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.4.3..9.4 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 9.4.3 -> 9.4.5
-logstash-input-azure_event_hubs: 1.5.7 -> 1.5.8
-logstash-input-beats: 7.0.11 -> 7.0.12
-logstash-input-http: 4.1.10 -> 4.1.11
-logstash-integration-kafka: 11.8.9 -> 11.8.10
-logstash-output-elasticsearch: 12.1.3 -> 12.1.6
----------- GENERATED CONTENT ENDS HERE ------------
+* Fixed typos in the `pipeline.workers` documentation [#19239](https://github.com/elastic/logstash/pull/19239)
 
 ### Plugins [logstash-plugin-9.4.4-changes]
 
