@@ -114,32 +114,14 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-19]]
 === Logstash 8.19.19 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.19
+==== New features and enhancements
 
-=== Logstash Commits between 8.19 and 8.19.18
+* Logstash now logs a warning and a deprecation notice at startup when it runs on a JDK older than 21. Support for JDK 17 is deprecated and will be removed in a future release, so update `LS_JAVA_HOME` if you customized it https://github.com/elastic/logstash/pull/19285[#19285]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.18..8.19"
+==== Updates to dependencies
 
-b83b440ef - (HEAD -> 8.19, origin/8.19) Update patch plugin versions in gemfile lock (#19305) (3 days ago) <github-actions[bot]>
-4b687353d - [8.19] (backport #19295) deps: Bump updatecli version to v0.119.0 (#19300) (4 days ago) <mergify[bot]>
-72a8a2e13 - Print warn log and deprecation when running with JDK < 21 (#19285) (5 days ago) <Andrea Selva>
-c892436b9 - Bumped JRuby version to 9.4.15.0 (#19284) (8 days ago) <Andrea Selva>
-c540dfa9c - [8.19] (backport #19249) Bump jackson and jrjackson dependencies (#19288) (8 days ago) <mergify[bot]>
-babcff6b9 - Bump docker/login-action in the github-actions group across 1 directory (#19269) (#19274) (11 days ago) <mergify[bot]>
-1922d814e - bump lock file for 8.19 (#19261) (2 weeks ago) <github-actions[bot]>
-75b19002c - Backport bump jruby 9.4.13 (#19188) (2 weeks ago) <Andrea Selva>
-39e46e7e7 - Bump logstash version 8.19.19 (#19258) (2 weeks ago) <github-actions[bot]>
-c08c890cb - Release notes for 8.19.18 (#19252) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.18..8.19 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 8.19.6 -> 8.19.8
-logstash-input-azure_event_hubs: 1.5.7 -> 1.5.8
-logstash-integration-kafka: 11.8.9 -> 11.8.10
-logstash-output-elasticsearch: 11.22.15 -> 11.22.16
----------- GENERATED CONTENT ENDS HERE ------------
+* Updated JRuby to 9.4.15.0 https://github.com/elastic/logstash/pull/19284[#19284]
+* Updated Jackson and jrjackson dependencies https://github.com/elastic/logstash/pull/19288[#19288]
 
 ==== Plugins
 
