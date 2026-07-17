@@ -23,34 +23,10 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.3.8 [logstash-9.3.8-release-notes]
 
-### Features and enhancements [logstash-9.3.8-features-enhancements]
+### Updates to dependencies [logstash-9.3.8-dependencies]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.3.8
-
-=== Logstash Commits between 9.3 and 9.3.7
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.3.7..9.3"
-
-1c6e86a25 - (HEAD -> 9.3, origin/9.3) Update patch plugin versions in gemfile lock (#19304) (3 days ago) <github-actions[bot]>
-b67532288 - [9.3] (backport #19295) deps: Bump updatecli version to v0.119.0 (#19299) (4 days ago) <mergify[bot]>
-74de809e1 - [Forwardport 8.19]Bumped JRuby version to 9.4.15.0 (#19284) (#19290) (8 days ago) <mergify[bot]>
-3ffe98522 - [9.3] (backport #19249) Bump jackson and jrjackson dependencies (#19289) (8 days ago) <mergify[bot]>
-a1b968c06 - [9.3] (backport #19269) Bump docker/login-action from 4.2.0 to 4.4.0 in the github-actions group across 1 directory (#19273) (11 days ago) <mergify[bot]>
-f3da589b7 - Update patch plugin versions in gemfile lock (#19259) (2 weeks ago) <github-actions[bot]>
-7994df9b9 - Bump logstash version 9.3.8 (#19257) (2 weeks ago) <github-actions[bot]>
-3816d4f05 - Release notes for 9.3.7 (#19251) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.3.7..9.3 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 9.3.5 -> 9.3.7
-logstash-input-azure_event_hubs: 1.5.7 -> 1.5.8
-logstash-input-beats: 7.0.11 -> 7.0.12
-logstash-input-http: 4.1.10 -> 4.1.11
-logstash-integration-kafka: 11.8.9 -> 11.8.10
-logstash-output-elasticsearch: 12.1.3 -> 12.1.6
----------- GENERATED CONTENT ENDS HERE ------------
+* Updated JRuby to 9.4.15.0 [#19290](https://github.com/elastic/logstash/pull/19290)
+* Updated Jackson and jrjackson dependencies [#19289](https://github.com/elastic/logstash/pull/19289)
 
 ### Plugins [logstash-plugin-9.3.8-changes]
 
