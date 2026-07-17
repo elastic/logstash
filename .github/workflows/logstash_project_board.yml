@@ -4,6 +4,9 @@ on:
     types:
       - opened
 
+permissions:
+  contents: none
+
 jobs:
   add-to-project:
     runs-on: ubuntu-latest
