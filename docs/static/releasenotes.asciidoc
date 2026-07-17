@@ -116,7 +116,7 @@ This section summarizes the changes in the following releases:
 
 ==== New features and enhancements
 
-* Logstash now logs a warning and a deprecation notice at startup when it runs on a JDK older than 21. Support for JDK 17 is deprecated and will be removed in a future release, so update `LS_JAVA_HOME` if you customized it https://github.com/elastic/logstash/pull/19285[#19285]
+* Logstash now logs a warning and a deprecation notice at startup when running on a JDK older than 21. Support for JDK 17 is deprecated and will be removed in a future release https://github.com/elastic/logstash/pull/19285[#19285]
 
 ==== Updates to dependencies
 
