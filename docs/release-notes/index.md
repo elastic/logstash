@@ -29,10 +29,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Updated Jackson and jrjackson dependencies [#19286](https://github.com/elastic/logstash/pull/19286)
 * Upgraded Puma to 8.x [#19234](https://github.com/elastic/logstash/pull/19234)
 
-### Updates to documentations [logstash-9.4.4-documentations]
-
-* Fixed typos in the `pipeline.workers` documentation [#19239](https://github.com/elastic/logstash/pull/19239)
-
 ### Plugins [logstash-plugin-9.4.4-changes]
 
 **Elastic_integration Filter - 9.4.5**
