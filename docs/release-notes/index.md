@@ -21,6 +21,77 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.4 [logstash-9.4.4-release-notes]
+
+### Features and enhancements [logstash-9.4.4-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.4.4
+
+=== Logstash Commits between 9.4 and 9.4.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.3..9.4"
+
+fd7c43906 - (HEAD -> 9.4, origin/9.4) Update patch plugin versions in gemfile lock (#19306) (3 days ago) <github-actions[bot]>
+73482ad33 - [9.4] (backport #19295) deps: Bump updatecli version to v0.119.0 (#19298) (4 days ago) <mergify[bot]>
+b319fd086 - [9.4] (backport #19249) Bump jackson and jrjackson dependencies (#19286) (8 days ago) <mergify[bot]>
+3e91c211f - Update jruby to 10.0.6.0 (#19264) (#19279) (8 days ago) <mergify[bot]>
+6985279be - [9.4] (backport #19269) Bump docker/login-action from 4.2.0 to 4.4.0 in the github-actions group across 1 directory (#19272) (11 days ago) <mergify[bot]>
+a302e44db - deps: Bump ironbank version to 10.2 (#19218) (#19219) (2 weeks ago) <mergify[bot]>
+4406f7619 - Update patch plugin versions in gemfile lock (#19260) (2 weeks ago) <github-actions[bot]>
+77e399f68 - Bump logstash version 9.4.4 (#19256) (2 weeks ago) <github-actions[bot]>
+5ddc18a52 - Forwardporting 9.3.7 Release Notes to 9.4 branch (#19253) (2 weeks ago) <Mashhur>
+6269bfb8e - Release notes for 9.4.3 (#19226) (3 weeks ago) <github-actions[bot]>
+71d94f813 - Fix typos in pipeline.workers documentation (#19238) (#19239) (3 weeks ago) <mergify[bot]>
+8b4aa40c9 - upgrade puma to 8.x (#19200) (#19234) (3 weeks ago) <mergify[bot]>
+35ba94551 - Forwardport 9.3.6 release note to 9.4 (#19230) (3 weeks ago) <Mashhur>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.4.3..9.4 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 9.4.3 -> 9.4.5
+logstash-input-azure_event_hubs: 1.5.7 -> 1.5.8
+logstash-input-beats: 7.0.11 -> 7.0.12
+logstash-input-http: 4.1.10 -> 4.1.11
+logstash-integration-kafka: 11.8.9 -> 11.8.10
+logstash-output-elasticsearch: 12.1.3 -> 12.1.6
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.4.4-changes]
+
+**Elastic_integration Filter - 9.4.5**
+
+* Sync up with Elasticsearch 9.4 branch to pull latest dependencies [#477](https://github.com/elastic/logstash-filter-elastic_integration/pull/477)
+
+* Update jackson dependency to 3.1.4 [#467](https://github.com/elastic/logstash-filter-elastic_integration/pull/467)
+
+**Azure_event_hubs Input - 1.5.8**
+
+* Update jackson dependency to 2.21.4 [#118](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/118)
+
+**Beats Input - 7.0.12**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#537](https://github.com/logstash-plugins/logstash-input-beats/pull/537)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Http Input - 4.1.11**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#221](https://github.com/logstash-plugins/logstash-input-http/pull/221)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Kafka Integration - 11.8.10**
+
+* Update jackson dependency to 2.21.4 [#269](https://github.com/logstash-plugins/logstash-integration-kafka/pull/269)
+
+**Elasticsearch Output - 12.1.6**
+
+* Fix serverless compatibility: nil params in pool requests and unsupported template settings [#1276](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1276)
+
+* Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#1274](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1274)
+
+* [Doc] Add note for index option [#1269](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1269)
+
+
 ## 9.4.3 [logstash-9.4.3-release-notes]
 
 ### Features and enhancements [logstash-9.4.3-features-enhancements]
