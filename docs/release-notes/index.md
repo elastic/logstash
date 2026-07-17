@@ -21,6 +21,72 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.3.8 [logstash-9.3.8-release-notes]
+
+### Features and enhancements [logstash-9.3.8-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.3.8
+
+=== Logstash Commits between 9.3 and 9.3.7
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.3.7..9.3"
+
+1c6e86a25 - (HEAD -> 9.3, origin/9.3) Update patch plugin versions in gemfile lock (#19304) (3 days ago) <github-actions[bot]>
+b67532288 - [9.3] (backport #19295) deps: Bump updatecli version to v0.119.0 (#19299) (4 days ago) <mergify[bot]>
+74de809e1 - [Forwardport 8.19]Bumped JRuby version to 9.4.15.0 (#19284) (#19290) (8 days ago) <mergify[bot]>
+3ffe98522 - [9.3] (backport #19249) Bump jackson and jrjackson dependencies (#19289) (8 days ago) <mergify[bot]>
+a1b968c06 - [9.3] (backport #19269) Bump docker/login-action from 4.2.0 to 4.4.0 in the github-actions group across 1 directory (#19273) (11 days ago) <mergify[bot]>
+f3da589b7 - Update patch plugin versions in gemfile lock (#19259) (2 weeks ago) <github-actions[bot]>
+7994df9b9 - Bump logstash version 9.3.8 (#19257) (2 weeks ago) <github-actions[bot]>
+3816d4f05 - Release notes for 9.3.7 (#19251) (3 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.3.7..9.3 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 9.3.5 -> 9.3.7
+logstash-input-azure_event_hubs: 1.5.7 -> 1.5.8
+logstash-input-beats: 7.0.11 -> 7.0.12
+logstash-input-http: 4.1.10 -> 4.1.11
+logstash-integration-kafka: 11.8.9 -> 11.8.10
+logstash-output-elasticsearch: 12.1.3 -> 12.1.6
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.3.8-changes]
+
+**Elastic_integration Filter - 9.3.7**
+
+* Sync up with Elasticsearch 9.3 branch to pull latest dependencies [#478](https://github.com/elastic/logstash-filter-elastic_integration/pull/478)
+
+* Update jackson dependency to 3.1.4 [#470](https://github.com/elastic/logstash-filter-elastic_integration/pull/470)
+
+**Azure_event_hubs Input - 1.5.8**
+
+* Update jackson dependency to 2.21.4 [#118](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/118)
+
+**Beats Input - 7.0.12**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#537](https://github.com/logstash-plugins/logstash-input-beats/pull/537)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Http Input - 4.1.11**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#221](https://github.com/logstash-plugins/logstash-input-http/pull/221)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Kafka Integration - 11.8.10**
+
+* Update jackson dependency to 2.21.4 [#269](https://github.com/logstash-plugins/logstash-integration-kafka/pull/269)
+
+**Elasticsearch Output - 12.1.6**
+
+* Fix serverless compatibility: nil params in pool requests and unsupported template settings [#1276](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1276)
+
+* Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#1274](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1274)
+
+* [Doc] Add note for index option [#1269](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1269)
+
+
 ## 9.3.7 [logstash-9.3.7-release-notes]
 
 ### Updates to dependencies [logstash-9.3.7-dependencies]
