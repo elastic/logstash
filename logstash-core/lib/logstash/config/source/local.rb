@@ -45,7 +45,7 @@ module LogStash module Config module Source
         # if its not the case we will add stdin and stdout
         # this is for backward compatibility reason
         if !INPUT_BLOCK_RE.match(config_string)
-          logger.warn("No input block found in the configuration, adding a default `stdin` input. This is for backward compatibility reasons and might not be what you want.", :pipeline_id => pipeline_id)
+          logger.warn("No input block found in the configuration for pipeline `#{pipeline_id}`. A default `stdin` input was added for backward compatibility. If this is unintentional, add an explicit `input { ... }` block.", :pipeline_id => pipeline_id)
           config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default input", 0, 0, LogStash::Config::Defaults.input)
 
         end
