@@ -25,12 +25,15 @@ import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.logstash.common.BufferedTokenizerTest.toList;
@@ -47,7 +50,32 @@ public final class BufferedTokenizerWithSizeLimitTest {
     private void initSUTWithSizeLimit(int sizeLimit) {
         sut = new BufferedTokenizer("\n", sizeLimit);
     }
+    
+    @Test
+    public void givenFragmentThatOverrunSizeLimitAndDoesntContainsAnySeparatorWhenAnotherFragmentContainingSeparatorIsPresentedThenIteratingMustThrowAnErrorForTheFirstOverrunFragment() {
+        // Provide an overrun fragment without delimiter, from this point on 
+        // the BufferedTokenizer start dropping data because already passed the 
+        // sizeLimit.
+        Iterable<String> it = sut.extract("01234567890");
+        Iterator<String> ite = it.iterator();
+        verifyNoTokensAvailableOnReadSide(ite);
 
+        // Provide another fragment which is inside the sizeLimit and DO NOT contain a delimiter.
+        // Reuse the previous iterator, it's the same returned by this call.
+        sut.extract("AAAAA");
+        verifyNoTokensAvailableOnReadSide(ite);
+        
+        // Exercise flush and expect it throws an exception for the overrun partial token
+        Exception thrownException = assertThrows(IllegalStateException.class, () -> sut.flush());
+        assertThat(thrownException.getMessage(), containsString("input buffer full"));
+    }
+    
+    private void verifyNoTokensAvailableOnReadSide(Iterator<String> ite) {
+        assertFalse(ite.hasNext());
+        Exception thrownException = assertThrows(NoSuchElementException.class, ite::next);
+        assertThat(thrownException.getMessage(), is(emptyOrNullString()));
+    }
+ 
     @Test
     public void givenTokenWithinSizeLimitWhenExtractedThenReturnTokens() {
         List<String> tokens = toList(sut.extract("foo\nbar\n"));
@@ -146,7 +174,10 @@ public final class BufferedTokenizerWithSizeLimitTest {
 
         // with the second fragment passed to extract it overrun the sizeLimit, the tokenizer
         // drop starting from the third fragment
-        assertThat("Accumulator include only a part of an exploding payload", sut.flush().length(), is(lessThan(neverEndingData.length() * 3)));
+        // TODO update when we have the log report of dropped data
+//        assertThat("Accumulator include only a part of an exploding payload", sut.flush().length(), is(lessThan(neverEndingData.length() * 3)));
+        Exception thrownException = assertThrows(IllegalStateException.class, () -> sut.flush());
+        assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
         Iterable<String> tokensIterable = sut.extract("\nbbb\n");
         Iterator<String> tokensIterator = tokensIterable.iterator();

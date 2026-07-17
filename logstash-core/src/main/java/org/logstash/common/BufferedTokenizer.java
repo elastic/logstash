@@ -112,7 +112,8 @@ public class BufferedTokenizer {
                     return;
                 }
 
-                // we know that data contains at least one separator or that we haven't yet reached the first separator instance, update lastFragmentSize
+                // we know that data contains at least one separator or that we haven't yet reached 
+                // the first separator instance, update lastFragmentSize
                 int lastSeparatorIdx = data.lastIndexOf(separator);
                 if (lastSeparatorIdx == -1) {
                     lastFragmentSize += data.length();
@@ -129,9 +130,14 @@ public class BufferedTokenizer {
 
         public String flush() {
             final String flushed = accumulator.substring(currentIdx);
+            final int existingLastFragmentSize = lastFragmentSize;
             // empty the accumulator
             accumulator.setLength(0);
             currentIdx = 0;
+            lastFragmentSize = 0;
+            if (isSizeLimitSet() && existingLastFragmentSize > sizeLimit) {
+                throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + sizeLimit); 
+            }
             return flushed;
         }
 
