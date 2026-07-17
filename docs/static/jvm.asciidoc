@@ -8,6 +8,10 @@
 * Java 17
 * Java 21 (default)
 
+NOTE: Running {ls} on a JDK older than 21 is deprecated and will no longer be
+supported in a future release. {ls} logs a deprecation warning at startup when it
+runs on Java 11 or Java 17.
+
 Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official
 Oracle distribution] or an open-source distribution, such as
@@ -21,7 +25,7 @@ for the official word on supported versions across releases.
 ===== 
 {ls} offers architecture-specific
 https://www.elastic.co/downloads/logstash[downloads] that include
-Adoptium Eclipse Temurin 17, the latest long term support (LTS) release of the JDK.
+Adoptium Eclipse Temurin 21, the latest long term support (LTS) release of the JDK.
 
 Use the LS_JAVA_HOME environment variable if you want to use a JDK other than the
 version that is bundled. 
