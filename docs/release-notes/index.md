@@ -274,6 +274,47 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 
 * Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
 
+## 9.3.8 [logstash-9.3.8-release-notes]
+
+### Updates to dependencies [logstash-9.3.8-dependencies]
+
+* Updated JRuby to 9.4.15.0 [#19290](https://github.com/elastic/logstash/pull/19290)
+* Updated Jackson and jrjackson dependencies [#19289](https://github.com/elastic/logstash/pull/19289)
+
+### Plugins [logstash-plugin-9.3.8-changes]
+
+**Elastic_integration Filter - 9.3.7**
+
+* Sync up with Elasticsearch 9.3 branch to pull latest dependencies [#478](https://github.com/elastic/logstash-filter-elastic_integration/pull/478)
+
+* Update jackson dependency to 3.1.4 [#470](https://github.com/elastic/logstash-filter-elastic_integration/pull/470)
+
+**Azure_event_hubs Input - 1.5.8**
+
+* Update jackson dependency to 2.21.4 [#118](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/118)
+
+**Beats Input - 7.0.12**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#537](https://github.com/logstash-plugins/logstash-input-beats/pull/537)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Http Input - 4.1.11**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#221](https://github.com/logstash-plugins/logstash-input-http/pull/221)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Kafka Integration - 11.8.10**
+
+* Update jackson dependency to 2.21.4 [#269](https://github.com/logstash-plugins/logstash-integration-kafka/pull/269)
+
+**Elasticsearch Output - 12.1.6**
+
+* Fix serverless compatibility: nil params in pool requests and unsupported template settings [#1276](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1276)
+
+* Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#1274](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1274)
+
+* [Doc] Add note for index option [#1269](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1269)
+
 ## 9.3.7 [logstash-9.3.7-release-notes]
 
 ### Updates to dependencies [logstash-9.3.7-dependencies]
