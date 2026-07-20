@@ -15,11 +15,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Node.js
-<<<<<<< HEAD
-        uses: actions/setup-node@v3
-=======
         uses: actions/setup-node@v7
->>>>>>> 816bf4c61 (Bump actions/setup-node in the github-actions group across 1 directory (#19316))
         with:
           node-version: 16.13.2
           cache: npm
