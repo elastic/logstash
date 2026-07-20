@@ -174,8 +174,6 @@ public final class BufferedTokenizerWithSizeLimitTest {
 
         // with the second fragment passed to extract it overrun the sizeLimit, the tokenizer
         // drop starting from the third fragment
-        // TODO update when we have the log report of dropped data
-//        assertThat("Accumulator include only a part of an exploding payload", sut.flush().length(), is(lessThan(neverEndingData.length() * 3)));
         Exception thrownException = assertThrows(IllegalStateException.class, () -> sut.flush());
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
