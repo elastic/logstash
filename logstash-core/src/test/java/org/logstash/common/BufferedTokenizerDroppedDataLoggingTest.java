@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Verifies that BufferedTokenizer logs a WARN message with the dropped byte count whenever
- * buffered data is silently discarded due to the sizeLimit being exceeded.
+ * buffered data is discarded due to the sizeLimit being exceeded.
  *
  * Two trigger points are tested:
  *  1. When a separator arrives after a sequence of dropped fragments (recovery in append).
@@ -76,7 +76,7 @@ public final class BufferedTokenizerDroppedDataLoggingTest {
         sut.extract("\nCC");
 
         assertEquals(1, warnMessages().size());
-        assertThat("Warning must report 10 dropped bytes (AAAAA + BBBBB)", warnMessages().getFirst(), containsString("dropped 10 bytes"));
+        assertThat("Warning must report 10 dropped bytes (AAAAA + BBBBB)", first(warnMessages()), containsString("dropped 10 bytes"));
     }
 
     @Test
@@ -90,7 +90,7 @@ public final class BufferedTokenizerDroppedDataLoggingTest {
         sut.extract("\n");
 
         assertEquals(1, warnMessages().size());
-        assertThat("First warn should report 3 dropped bytes", warnMessages().getFirst(), containsString("dropped 3 bytes"));
+        assertThat("First warn should report 3 dropped bytes", first(warnMessages()), containsString("dropped 3 bytes"));
 
         // Start a new overrun: 11 chars again → accumulated on top of existing content
         sut.extract("01234567890");
@@ -100,7 +100,7 @@ public final class BufferedTokenizerDroppedDataLoggingTest {
         sut.extract("\n");
 
         assertEquals(2, warnMessages().size());
-        assertThat("Second warn should report 7 dropped bytes", warnMessages().getLast(), containsString("dropped 7 bytes"));
+        assertThat("Second warn should report 7 dropped bytes", last(warnMessages()), containsString("dropped 7 bytes"));
     }
     
     @Test
@@ -120,7 +120,7 @@ public final class BufferedTokenizerDroppedDataLoggingTest {
         assertThrows(IllegalStateException.class, () -> sut.flush());
 
         assertEquals(1, warnMessages().size());
-        assertThat("Warning must report 10 dropped bytes (CCCC + DDDDDD)", warnMessages().getFirst(), containsString("dropped 10 bytes"));
+        assertThat("Warning must report 10 dropped bytes (CCCC + DDDDDD)", first(warnMessages()), containsString("dropped 10 bytes"));
     }
 
     @Test
@@ -132,7 +132,7 @@ public final class BufferedTokenizerDroppedDataLoggingTest {
 
         // The warn must have been emitted (before the exception propagated)
         assertEquals(1, warnMessages().size());
-        assertThat("Dropped-data warn must be logged even when flush throws", warnMessages().getFirst(), containsString("dropped 3 bytes"));
+        assertThat("Dropped-data warn must be logged even when flush throws", first(warnMessages()), containsString("dropped 3 bytes"));
     }
 
     @Test
@@ -154,5 +154,13 @@ public final class BufferedTokenizerDroppedDataLoggingTest {
 
     private List<String> warnMessages() {
         return appender.getMessages();
+    }
+
+    private static String first(List<String> list) {
+        return list.get(0);
+    }
+
+    private static String last(List<String> list) {
+        return list.get(list.size() - 1);
     }
 }
