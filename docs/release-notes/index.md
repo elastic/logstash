@@ -21,7 +21,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
 ## 9.4.4 [logstash-9.4.4-release-notes]
 
 ### Updates to dependencies [logstash-9.4.4-dependencies]
@@ -37,22 +36,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Sync up with Elasticsearch 9.4 branch to pull latest dependencies [#477](https://github.com/elastic/logstash-filter-elastic_integration/pull/477)
 
 * Update jackson dependency to 3.1.4 [#467](https://github.com/elastic/logstash-filter-elastic_integration/pull/467)
-=======
-## 9.3.8 [logstash-9.3.8-release-notes]
-
-### Updates to dependencies [logstash-9.3.8-dependencies]
-
-* Updated JRuby to 9.4.15.0 [#19290](https://github.com/elastic/logstash/pull/19290)
-* Updated Jackson and jrjackson dependencies [#19289](https://github.com/elastic/logstash/pull/19289)
-
-### Plugins [logstash-plugin-9.3.8-changes]
-
-**Elastic_integration Filter - 9.3.7**
-
-* Sync up with Elasticsearch 9.3 branch to pull latest dependencies [#478](https://github.com/elastic/logstash-filter-elastic_integration/pull/478)
-
-* Update jackson dependency to 3.1.4 [#470](https://github.com/elastic/logstash-filter-elastic_integration/pull/470)
->>>>>>> 54bfacf5 (Release notes for 9.3.8 (#19313))
 
 **Azure_event_hubs Input - 1.5.8**
 
@@ -81,7 +64,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * [Doc] Add note for index option [#1269](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1269)
 
 
-<<<<<<< HEAD
 ## 9.4.3 [logstash-9.4.3-release-notes]
 
 ### Features and enhancements [logstash-9.4.3-features-enhancements]
@@ -292,8 +274,21 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 
 * Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
 
-=======
->>>>>>> 54bfacf5 (Release notes for 9.3.8 (#19313))
+## 9.3.8 [logstash-9.3.8-release-notes]
+
+### Updates to dependencies [logstash-9.3.8-dependencies]
+
+* Updated JRuby to 9.4.15.0 [#19290](https://github.com/elastic/logstash/pull/19290)
+* Updated Jackson and jrjackson dependencies [#19289](https://github.com/elastic/logstash/pull/19289)
+
+### Plugins [logstash-plugin-9.3.8-changes]
+
+**Elastic_integration Filter - 9.3.7**
+
+* Sync up with Elasticsearch 9.3 branch to pull latest dependencies [#478](https://github.com/elastic/logstash-filter-elastic_integration/pull/478)
+
+* Update jackson dependency to 3.1.4 [#470](https://github.com/elastic/logstash-filter-elastic_integration/pull/470)
+
 ## 9.3.7 [logstash-9.3.7-release-notes]
 
 ### Updates to dependencies [logstash-9.3.7-dependencies]
