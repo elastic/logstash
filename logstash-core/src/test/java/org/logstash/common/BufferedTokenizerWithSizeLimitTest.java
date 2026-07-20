@@ -52,7 +52,7 @@ public final class BufferedTokenizerWithSizeLimitTest {
     }
     
     @Test
-    public void givenFragmentThatOverrunSizeLimitAndDoesntContainsAnySeparatorWhenAnotherFragmentContainingSeparatorIsPresentedThenIteratingMustThrowAnErrorForTheFirstOverrunFragment() {
+    public void givenOversizedFragmentWithoutSeparatorWhenFlushIsInvokedThenThrows() {
         // Provide an overrun fragment without delimiter, from this point on 
         // the BufferedTokenizer start dropping data because already passed the 
         // sizeLimit.
