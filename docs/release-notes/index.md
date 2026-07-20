@@ -274,6 +274,21 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 
 * Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
 
+## 9.3.8 [logstash-9.3.8-release-notes]
+
+### Updates to dependencies [logstash-9.3.8-dependencies]
+
+* Updated JRuby to 9.4.15.0 [#19290](https://github.com/elastic/logstash/pull/19290)
+* Updated Jackson and jrjackson dependencies [#19289](https://github.com/elastic/logstash/pull/19289)
+
+### Plugins [logstash-plugin-9.3.8-changes]
+
+**Elastic_integration Filter - 9.3.7**
+
+* Sync up with Elasticsearch 9.3 branch to pull latest dependencies [#478](https://github.com/elastic/logstash-filter-elastic_integration/pull/478)
+
+* Update jackson dependency to 3.1.4 [#470](https://github.com/elastic/logstash-filter-elastic_integration/pull/470)
+
 ## 9.3.7 [logstash-9.3.7-release-notes]
 
 ### Updates to dependencies [logstash-9.3.7-dependencies]
