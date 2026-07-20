@@ -21,7 +21,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
 ## 9.4.3 [logstash-9.4.3-release-notes]
 
 ### Features and enhancements [logstash-9.4.3-features-enhancements]
@@ -231,7 +230,7 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 **Gelf Input - 3.4.0**
 
 * Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
-=======
+
 ## 9.3.8 [logstash-9.3.8-release-notes]
 
 ### Updates to dependencies [logstash-9.3.8-dependencies]
@@ -272,8 +271,6 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 * Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#1274](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1274)
 
 * [Doc] Add note for index option [#1269](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1269)
-
->>>>>>> 54bfacf5 (Release notes for 9.3.8 (#19313))
 
 ## 9.3.7 [logstash-9.3.7-release-notes]
 
