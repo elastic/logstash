@@ -52,7 +52,7 @@ module LogStash module Config module Source
 
         # include a default stdout output if no outputs given
         if !OUTPUT_BLOCK_RE.match(config_string)
-          logger.warn("No output block found in the configuration, adding a default `stdout` output. This is for backward compatibility reasons and might not be what you want.", :pipeline_id => pipeline_id)
+          logger.warn("No output block found in the configuration for pipeline `#{pipeline_id}`. A default `stdout` output was added for backward compatibility. If this is unintentional, add an explicit `output { ... }` block.", :pipeline_id => pipeline_id)
           config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default output", 0, 0, LogStash::Config::Defaults.output)
         end
 
