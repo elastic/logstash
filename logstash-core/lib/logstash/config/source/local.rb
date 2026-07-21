@@ -32,23 +32,27 @@ module LogStash module Config module Source
   #
   class Local < Base
     class ConfigStringLoader
-      INPUT_BLOCK_RE = /input *{/
-      OUTPUT_BLOCK_RE = /output *{/
+      include LogStash::Util::Loggable
+
+      INPUT_BLOCK_RE = /input\s*{/
+      OUTPUT_BLOCK_RE = /output\s*{/
       EMPTY_RE = /^\s*$/
 
-      def self.read(config_string)
+      def self.read(config_string, pipeline_id = nil)
         config_parts = [org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, config_string)]
 
         # Make sure we have an input and at least 1 output
         # if its not the case we will add stdin and stdout
         # this is for backward compatibility reason
         if !INPUT_BLOCK_RE.match(config_string)
+          logger.warn("No input block found in the configuration for pipeline `#{pipeline_id}`. A default `stdin` input was added for backward compatibility. If this is unintentional, add an explicit `input { ... }` block.", :pipeline_id => pipeline_id)
           config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default input", 0, 0, LogStash::Config::Defaults.input)
 
         end
 
         # include a default stdout output if no outputs given
         if !OUTPUT_BLOCK_RE.match(config_string)
+          logger.warn("No output block found in the configuration for pipeline `#{pipeline_id}`. A default `stdout` output was added for backward compatibility. If this is unintentional, add an explicit `output { ... }` block.", :pipeline_id => pipeline_id)
           config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default output", 0, 0, LogStash::Config::Defaults.output)
         end
 
@@ -201,7 +205,7 @@ module LogStash module Config module Source
 
     def local_pipeline_configs
       config_parts = if config_string?
-        ConfigStringLoader.read(config_string)
+        ConfigStringLoader.read(config_string, @settings.get("pipeline.id"))
       elsif local_config?
         ConfigPathLoader.read(config_path)
       elsif remote_config?

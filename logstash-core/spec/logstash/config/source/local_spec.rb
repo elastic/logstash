@@ -37,6 +37,44 @@ describe LogStash::Config::Source::Local::ConfigStringLoader do
     config_part = subject.read(config_string).first
     expect(config_part).to be_a_source_with_metadata("string", "config_string", config_string)
   end
+
+  context "when the input and output blocks use whitespace other than spaces before the brace" do
+    [
+      ["a newline", "input\n{ generator {} }\noutput\n{ stdout {} }"],
+      ["a tab", "input\t{ generator {} } output\t{ stdout {} }"],
+      ["mixed whitespace", "input \t\n { generator {} } output \n\t { stdout {} }"],
+      ["no whitespace", "input{ generator {} } output{ stdout {} }"]
+    ].each do |description, string|
+      context "with #{description}" do
+        let(:config_string) { string }
+
+        it "detects both blocks and does not inject default input/output" do
+          # only the original config part is returned when both blocks are found
+          expect(subject.read(config_string).size).to eq(1)
+        end
+      end
+    end
+  end
+
+  context "when the input and output blocks are missing" do
+    let(:config_string) { "filter { mutate {} }" }
+
+    it "injects a default input and a default output" do
+      expect(subject.read(config_string).size).to eq(3)
+    end
+
+    it "logs a warning for both the default input and the default output" do
+      expect(subject.logger).to receive(:warn).with(/default `stdin` input/, hash_including(:pipeline_id => nil))
+      expect(subject.logger).to receive(:warn).with(/default `stdout` output/, hash_including(:pipeline_id => nil))
+      subject.read(config_string)
+    end
+
+    it "includes the pipeline id in the warning when provided" do
+      expect(subject.logger).to receive(:warn).with(/default `stdin` input/, hash_including(:pipeline_id => :my_pipeline))
+      expect(subject.logger).to receive(:warn).with(/default `stdout` output/, hash_including(:pipeline_id => :my_pipeline))
+      subject.read(config_string, :my_pipeline)
+    end
+  end
 end
 
 describe LogStash::Config::Source::Local::ConfigPathLoader do
