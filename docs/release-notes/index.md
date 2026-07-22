@@ -25,243 +25,68 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.5.0-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.5.0
+#### OTLP metrics export [logstash-9.5.0-otlp-metrics]
 
-=== Logstash Commits between 9.5 and 9.4.4
+Logstash can now export its internal metrics to any OpenTelemetry-compatible endpoint via OTLP. Enable it with `otel.metrics.enabled: true` in `logstash.yml` and configure the target endpoint, protocol (gRPC or HTTP), export interval, and TLS settings. Nearly all existing Logstash metrics are exported; FlowRate metrics are excluded but can be derived from the reported values.
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.4..9.5"
+Related:
+* Send Logstash Metrics via OTLP [#18857](https://github.com/elastic/logstash/pull/18857)
 
-bb9d5f62a - (HEAD -> 9.5, origin/9.5) [9.5] (backport #19313) Release notes for 9.3.8 (#19325) (32 hours ago) <mergify[bot]>
-94e5b9b5e - Release notes for 9.4.4 (#19314) (#19322) (32 hours ago) <mergify[bot]>
-25f351689 - Bump actions/setup-node in the github-actions group across 1 directory (#19316) (#19318) (2 days ago) <mergify[bot]>
-2e28f2373 - bump lock file for 9.5 (#19302) (8 days ago) <github-actions[bot]>
-55cbe4404 - Track 9.next in .ci/logstash-versions.yml (#19301) (8 days ago) <Cas Donoghue>
-a7c9e1ba4 - chore: deps(updatecli): Bump updatecli version to v0.119.0 (#19295) (#19297) (9 days ago) <mergify[bot]>
-2e9b5b2aa - [9.5] (backport #19249) Bump jackson and jrjackson dependencies (#19287) (12 days ago) <mergify[bot]>
-c563ec851 - Downgrade ES client (#19281) (2 weeks ago) <Cas Donoghue>
-4a5541998 - [9.5 release] Create gemfile.lock from 9.4 (#19277) (2 weeks ago) <Álex Cámara Lara>
-27841cfd1 - Update jruby to 10.0.6.0 (#19264) (2 weeks ago) <Cas Donoghue>
-c2f03e0a0 - Bump docker/login-action in the github-actions group across 1 directory (#19269) (2 weeks ago) <dependabot[bot]>
-0875e0b10 - Forwardporting 9.3.7 and 9.4.3 release notes to main (#19254) (3 weeks ago) <Mashhur>
-9be3f33ea - Fix typos in pipeline.workers documentation (#19238) (4 weeks ago) <James Moon>
-1576c0250 - Forwardport 9.3.6 to main (#19231) (4 weeks ago) <Mashhur>
-c06b494eb - upgrade puma to 8.x (#19200) (4 weeks ago) <João Duarte>
-2a031ac8f - deps: Bump ironbank version to 10.2 (#19218) (4 weeks ago) <github-actions[bot]>
-6d894e856 - Bump actions/checkout in the github-actions group across 1 directory (#19217) (4 weeks ago) <dependabot[bot]>
-7f7a61ca8 - ci: add team Slack mention to version bump pipeline notifications (#19202) (5 weeks ago) <ninalee12>
-eacab559f - Bump OpenTelemetry to 1.62.0 (#19209) (5 weeks ago) <Kaise>
-dcd46afa3 - ci: use copilot-requests: write instead of COPILOT_GITHUB_TOKEN PAT (5 weeks ago) <Victor Martinez>
-421880d55 - document Logstash's file descriptors usage, limits and sizing guidance (#18584) (5 weeks ago) <João Duarte>
-f2400df86 - chore: deps(updatecli): Bump updatecli version to v0.118.0 (#19203) (5 weeks ago) <github-actions[bot]>
-ae40e7278 - Enable AI Agentic Workflow for Buildkite build failure analysis (#19196) (6 weeks ago) <Copilot>
-04868fe4a - Fix flaky `FileWatchServiceTest` (#19184) (7 weeks ago) <Cas Donoghue>
-497b995c7 - chore: deps(updatecli): Bump updatecli version to v0.117.1 (#19183) (7 weeks ago) <github-actions[bot]>
-62f479ee6 - [Doc] Clarify API server TLS keystore auto-reload behavior (#19182) (8 weeks ago) <Kaise>
-dc2b52321 - Forwardports 9.3.5 and 9.4.2 release notes. (#19176) (8 weeks ago) <Mashhur>
-0b09a83ed - Add missed standard types during batch's size estimation (#19158) (8 weeks ago) <Andrea Selva>
-c12cc9b9e - Bump the github-actions group across 1 directory with 2 updates (#19163) (8 weeks ago) <dependabot[bot]>
-89ef160ec - Remove metrics OTLP dataset config option (#19142) (8 weeks ago) <Emily S>
-f71e27b49 - Improve version bump flexibility and automate AWS deps updates to minor automatically while patching dependencies(#19118) (8 weeks ago) <Álex Cámara Lara>
-45b237f37 - Create buildkite pipeline to periodically clean up logstash artifact snyk projects (#19139) (8 weeks ago) <Álex Cámara Lara>
-9f842f511 - change team name (#19154) (9 weeks ago) <ninalee12>
-c904f714c - Remove pipe output plugin from default bundle (#19159) (9 weeks ago) <Kaise>
-d33fe7cc0 - Added known issue to version 9.2.0 for batch's estimate type errors (#19157) (9 weeks ago) <Andrea Selva>
-849ad93f1 - Fix cgroup test isolation in otel_spec by resetting cached state (#19153) (9 weeks ago) <Emily S>
-664798c06 - Make asciidoc RN generator org aware (#19145) (9 weeks ago) <Cas Donoghue>
-7f72fb733 - Send Logstash Metrics via OTLP (#18857) (9 weeks ago) <Emily S>
-76ca7e2c5 - Add RHEL 10, Oracle Linux 10, Rocky Linux 10, and Alma Linux 10 to exhaustive tests (#19123) (9 weeks ago) <Kaise>
-0be31404c - chore: deps(updatecli): Bump updatecli version to v0.117.0 (#19128) (9 weeks ago) <github-actions[bot]>
-a92145cdb - Remove cgi pin in Gemfile (#19119) (10 weeks ago) <Ivona Cvija>
-ba5d2f108 - Upgrade jrjackson and fasterxml.jackson. (#19103) (10 weeks ago) <Mashhur>
-582ea8823 - Remove legacy output concurrency (#19003) (10 weeks ago) <Andrew Cholakian>
-d583fb7cc - Clear pipeline metrics when a pipeline fails to start (#19091) (10 weeks ago) <Kaise>
-2821f4d18 - [Doc] Automatic reload of certificates (#19065) (2 months ago) <Kaise>
-b898885aa - Release notes for 9.4.1 (#19096) (#19097) (2 months ago) <mergify[bot]>
-7a575435f - Request to install JDK 21 in bump gems workflow (#19093) (3 months ago) <Andrea Selva>
-f2f0d3fde - `dead_letter_queue.flush_check_interval` new config for flushing staled segment files. (#19036) (3 months ago) <Mashhur>
-c39872426 - Extend TLS auto-reload to CPM and monitoring service clients (#19045) (3 months ago) <Kaise>
-99e5f0684 - Release notes for 9.4.0 (#18973) (#19075) (3 months ago) <mergify[bot]>
-7c0ca8a7a - Retry transient curl errors when checking JDK (#19073) (3 months ago) <Cas Donoghue>
-6fca7c1ec - Bump tspascoal/get-user-teams-membership (#19067) (3 months ago) <dependabot[bot]>
-ddb85d8a3 - Allow to pull elasticsearch 9.x ruby client versions. This provides an opportunity to upgrade the client in the ES plugins. (#19051) (3 months ago) <Mashhur>
-f87d9c0c2 - Update bundled JDK to 21.0.11 build 10 (#19070) (3 months ago) <github-actions[bot]>
-48b7601ba - Update getting-started-with-logstash min java version (#19058) (3 months ago) <Edmo Vamerlatti Costa>
-a83f41cc6 - Release notes for 9.3.4 (#19042) (#19063) (3 months ago) <mergify[bot]>
-74d9f5b56 - Exclude non-runtime dependencies for snyk scans of jar dependencies (#19039) (3 months ago) <Cas Donoghue>
-89aeb16fe - chore: deps(updatecli): Bump updatecli version to v0.116.3 (#19047) (3 months ago) <github-actions[bot]>
-91739d78f - Auto-reload pipelines on TLS certificate rotation (#18978) (3 months ago) <Kaise>
-65a7b76f0 - Ensure do_close failures don't halt pipeline shutdown (#19035) (3 months ago) <Andrew Cholakian>
-296f936dc - fix forced-shutdown (double SIGINT) behaviour for JRuby 10 (#19017) (3 months ago) <Rye Biesemeyer>
-35a42f82b - Skip fips tests that invoke logstash keystore command (#19026) (3 months ago) <Cas Donoghue>
-a63c5d484 - chore: deps(updatecli): Bump updatecli version to v0.116.2 (#19020) (3 months ago) <github-actions[bot]>
-4a5172655 - require java 21, since jruby 10 requires it (#19010) (3 months ago) <Rye Biesemeyer>
-894ca214c - Optimize DLQ segment directory scans with single-pass logic. (#18970) (3 months ago) <Mashhur>
-3254ac755 - [9.3] Add deprecated JDK cipher to release notes (#18949) (#19007) (3 months ago) <mergify[bot]>
-c3b4dca7d - Log the estimate of batch metrics memory consumption (#18916) (3 months ago) <Andrea Selva>
-f7a42a53f - docs: clarify Gradle test task structure in AGENTS.md (#19004) (3 months ago) <Andrew Cholakian>
-3c4fbaf4c - ci: enable use-release-branches for docs workflows (#18992) (3 months ago) <Martijn Laarman>
-ce7ef0282 - log4j update to 2.25.4 (#18991) (3 months ago) <Rob Bavey>
-3b0163ce5 - chore: deps(updatecli): Bump updatecli version to v0.116.1 (#18988) (3 months ago) <github-actions[bot]>
-c4192aed2 - Bump actions/github-script (#18987) (3 months ago) <dependabot[bot]>
-2ed80127e - Limit exhaustive test triggers to active branches only (#18975) (3 months ago) <Cas Donoghue>
-597df17bc - pin multi_json to 1.19.1 since 1.20.0 has java variant with newer concurrent-ruby pin (#18977) (3 months ago) <João Duarte>
-98760509e - add support for cgroupv2 (#18708) (3 months ago) <João Duarte>
-82c33d7d1 - Expose ruby_plugin on filter/output delegators (#18936) (3 months ago) <Kaise>
-f77ab48b6 - Update jruby to 10.0.5.0 (#18965) (3 months ago) <Cas Donoghue>
-c50aa5582 - Bump logstash version 9.5.0 (#18957) (4 months ago) <github-actions[bot]>
-af19ca630 - Support REACTIVE pipeline recovery with config.reload manager (#18930) (4 months ago) <Rye Biesemeyer>
-8d7a5a31c - DeadLetterQueueUtils#extractSegmentId improvement: replace split with index of and substring methods. (#18874) (4 months ago) <Mashhur>
+#### TLS certificate auto-reload [logstash-9.5.0-tls-auto-reload]
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.4.4..9.5 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 9.4.5 -> 9.5.1
-logstash-filter-elasticsearch: 4.3.1 -> 4.4.1
-logstash-input-elasticsearch: 5.2.2 -> 5.3.2
-logstash-integration-kafka: 11.8.10 -> 12.1.5
-logstash-integration-snmp: 4.2.2 -> 4.3.1
-logstash-output-pipe: 3.0.7 -> 3.0.7
-logstash-output-udp: 3.2.0 -> 3.3.0
----------- GENERATED CONTENT ENDS HERE ------------
+Pipelines now automatically reload when their TLS certificates are rotated on disk, without requiring a full pipeline restart. This capability also extends to Central Pipeline Management and monitoring service clients.
+
+Related:
+* Auto-reload pipelines on TLS certificate rotation [#18978](https://github.com/elastic/logstash/pull/18978)
+* Extend TLS auto-reload to CPM and monitoring service clients [#19045](https://github.com/elastic/logstash/pull/19045)
+
+#### cgroupv2 support [logstash-9.5.0-cgroupv2]
+
+Logstash now reads resource limits from cgroupv2 in addition to cgroupv1, improving container-awareness on modern Linux hosts and Kubernetes environments.
+
+Related:
+* Add support for cgroupv2 [#18708](https://github.com/elastic/logstash/pull/18708)
+
+#### Additional features and enhancements [logstash-9.5.0-more-features]
+
+* New `dead_letter_queue.flush_check_interval` setting to control how frequently stale DLQ segment files are flushed [#19036](https://github.com/elastic/logstash/pull/19036)
+
+* Removed legacy output concurrency mode. The deprecated `concurrency :legacy` option is no longer supported; outputs should use `concurrency :single` or `concurrency :shared` [#19003](https://github.com/elastic/logstash/pull/19003)
+
+* Removed the `pipe` output plugin from the default plugin bundle [#19159](https://github.com/elastic/logstash/pull/19159)
+
+### Fixes [logstash-9.5.0-fixes]
+
+* Pipeline metrics are now cleared when a pipeline fails to start, preventing stale metrics from being reported by the monitoring API [#19091](https://github.com/elastic/logstash/pull/19091)
+
+* Failures in plugin `do_close` no longer halt the pipeline shutdown sequence [#19035](https://github.com/elastic/logstash/pull/19035)
+
+* Fixed forced-shutdown (double SIGINT) behaviour for JRuby 10 [#19017](https://github.com/elastic/logstash/pull/19017)
+
+* Added missed standard types during batch size estimation [#19158](https://github.com/elastic/logstash/pull/19158)
+
+### Updates to dependencies [logstash-9.5.0-dependencies]
+
+* Bump OpenTelemetry to 1.62.0 [#19209](https://github.com/elastic/logstash/pull/19209)
 
 ### Plugins [logstash-plugin-9.5.0-changes]
 
-**Elastic_integration Filter - 9.5.1**
+::::{important}
 
-* Sync up with Elasticsearch 9.5 branch to pull latest dependencies [#476](https://github.com/elastic/logstash-filter-elastic_integration/pull/476)
+This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The upgrade includes Apache Kafka client 4.x with breaking changes — see the [9.5.0 breaking changes](/release-notes/breaking-changes.md#logstash-950-breaking-changes) for details and required actions.
+
+::::
+
+**Elastic_integration Filter - 9.5.1**
 
 * Fixes an issue where a field set by an integration pipeline to `java.util.Date` value-object representing a timestamp could not be converted to a timestamp [#460](https://github.com/elastic/logstash-filter-elastic_integration/issues/460)
 * Applies Elasticsearch geoip module relocation changes [#445](https://github.com/elastic/logstash-filter-elastic_integration/pull/445)
-
-* Include httpclient5/httpcore5 from the `elasticsearch-java` artifact [#458](https://github.com/elastic/logstash-filter-elastic_integration/pull/458)
-
-* Upgrades `tools.jackson.core` dependency to 3.1.1 [#454](https://github.com/elastic/logstash-filter-elastic_integration/pull/454)
-
-* Include Elasticsearch web-utils JAR into the plugin to keep `registered_domain` processor dependencies [#397](https://github.com/elastic/logstash-filter-elastic_integration/pull/397)
-* Fixed `set_security_user` processor to behave consistently with other unsupported processors (`inference`, `enrich`) by tagging events with `_ingest_pipeline_failure` [#269](https://github.com/elastic/logstash-filter-elastic_integration/pull/269)
-* Apply Elasticsearch user-agent plugin refactoring [#408](https://github.com/elastic/logstash-filter-elastic_integration/pull/408)
-
-* Include httpclient5/httpcore5 from the `elasticsearch-java` artifact [#457](https://github.com/elastic/logstash-filter-elastic_integration/pull/457)
-
-* Upgrades `tools.jackson.core` dependency to 3.1.1 [#453](https://github.com/elastic/logstash-filter-elastic_integration/pull/453)
-
-* Upgrades `elasticsearch-java` and `elasticsearch-rest-client` dependencies to 9.latest [#418](https://github.com/elastic/logstash-filter-elastic_integration/pull/418)
-* Upgrades transient `tools.jackson.core` dependency to 3.1.0
-
-* Fixes the `MissingFormatArgumentException` potentially `String.format` may cause in the `SimpleResolverCache` [#393](https://github.com/elastic/logstash-filter-elastic_integration/pull/393)
-
-* Embeds Ingest Node components from Elasticsearch 9.3 [#378](https://github.com/elastic/logstash-filter-elastic_integration/pull/378)
-
-* Upgrades `elasticsearch-java` and `elasticsearch-rest-client` dependencies to 9.latest [#418](https://github.com/elastic/logstash-filter-elastic_integration/pull/418)
-* Upgrades transient `tools.jackson.core` dependency to 3.1.0
-
-* Fixes the `MissingFormatArgumentException` potentially `String.format` may cause in the `SimpleResolverCache` [#392](https://github.com/elastic/logstash-filter-elastic_integration/pull/392)
-
-* Logging compatability with Elasticsearch 9.2 [#373](https://github.com/elastic/logstash-filter-elastic_integration/pull/373)
-* Utilizes Elasticsearch interfaces via Elasticsearch logstash-bridge [#336](https://github.com/elastic/logstash-filter-elastic_integration/pull/336)
-
-* Add `terminate` processor support [#345](https://github.com/elastic/logstash-filter-elastic_integration/pull/345)
-
-* Introduces `proxy` param to support proxy [#316](https://github.com/elastic/logstash-filter-elastic_integration/pull/316)
-* Embeds Ingest Node components from Elasticsearch 9.1
-
-* Embeds Ingest Node components from Elasticsearch 9.0, no functional change [#291](https://github.com/elastic/logstash-filter-elastic_integration/pull/291)
-
-* Pre-release for 9.0, no functional change [#265](https://github.com/elastic/logstash-filter-elastic_integration/pull/265)
-* Embeds Ingest Node components from Elasticsearch 9.0.0 prerelease
-* Compatible with Logstash 8.17+
-
-* Aligns with stack major and minor versions, no functional changes [#285](https://github.com/elastic/logstash-filter-elastic_integration/pull/285)
-* Embeds Ingest Node components from Elasticsearch 8.18
-
-* Provides a guidance in logs when plugin version mismatches with connected Elasticsearch `major.minor` version [#255](https://github.com/elastic/logstash-filter-elastic_integration/pull/255)
-* Embeds Ingest Node components from Elasticsearch 8.17
-* Compatible with Logstash 8.15+
-
-* Aligns with stack major and minor versions, no functional changes [#212](https://github.com/elastic/logstash-filter-elastic_integration/pull/212)
-* Embeds Ingest Node components from Elasticsearch 8.17
-* Compatible with Logstash 8.15+
-
-* Provides a guidance in logs when plugin version mismatches with connected Elasticsearch `major.minor` version [#253](https://github.com/elastic/logstash-filter-elastic_integration/pull/253)
-* Embeds Ingest Node components from Elasticsearch 8.16
-* Compatible with Logstash 8.15+
-
-* Aligns with stack major and minor versions, no functional changes [#210](https://github.com/elastic/logstash-filter-elastic_integration/pull/210)
-* Embeds Ingest Node components from Elasticsearch 8.16
-* Compatible with Logstash 8.15+
-
-* Add `x-elastic-product-origin` header to Elasticsearch requests [#197](https://github.com/elastic/logstash-filter-elastic_integration/pull/197)
-
-* Reflects the Elasticsearch GeoIP changes into the plugin and syncs with Elasticsearch 8.16 branch [#170](https://github.com/elastic/logstash-filter-elastic_integration/pull/170)
-
-* Fixes the connection failure where SSL verification mode is disabled over SSL connection [#165](https://github.com/elastic/logstash-filter-elastic_integration/pull/165)
-
-* Fix: register available PainlessExtension-s, resolving an issue where the pipelines for some integrations would fail to compile [#162](https://github.com/elastic/logstash-filter-elastic_integration/pull/162)
-
-* Update default elasticsearch tree branch to 8.15 [#156](https://github.com/elastic/logstash-filter-elastic_integration/pull/156)
-
-* Updates Elasticsearch Java client used[#155](https://github.com/elastic/logstash-filter-elastic_integration/pull/155)
-
-* [DOC] Documents that integrations are designed to work best with data streams and ECS enabled [#153](https://github.com/elastic/logstash-filter-elastic_integration/pull/153)
-
-* Fixes handling of array-type event fields by treating them as lists [#146](https://github.com/elastic/logstash-filter-elastic_integration/pull/146)
-* Syncs with Elasticsearch 8.14, including support for new user-provided GeoIP database types `ConnectionType`, `Domain` and `Isp` [#147](https://github.com/elastic/logstash-filter-elastic_integration/pull/147)
-
-* [DOC] Removes Tech Preview label and adds link to extending integrations topic in LSR [#142](https://github.com/elastic/logstash-filter-elastic_integration/pull/142)
-
-* Fixes `EventProcessorBuilder#build` to work with JRuby 9.4.6.0 [#133](https://github.com/elastic/logstash-filter-elastic_integration/pull/133)
-
-* Fixes `GeoIpDatabaseProvider.Builder#build` to work with JRuby 9.4.6.0 [#132](https://github.com/elastic/logstash-filter-elastic_integration/pull/132)
-
-* Fixes issue where configured `username`/`password` credentials was not sent to Elasticsearch instances that had anonymous access enabled [#127](https://github.com/elastic/logstash-filter-elastic_integration/pull/127)
-
-* Adds relevant information to Elasticsearch client's User-Agent header [#117](https://github.com/elastic/logstash-filter-elastic_integration/pull/117)
-
-* Non-user facing work to shorten JAR path when packaging [#114](https://github.com/elastic/logstash-filter-elastic_integration/pull/114)
-
-* [DOC] Additional links and formatting fixes to docs [#115](https://github.com/elastic/logstash-filter-elastic_integration/pull/115)
-
-* Synchronize with Elasticsearch 8.12 and include elasticsearch-geo jar to include a missed class [#113](https://github.com/elastic/logstash-filter-elastic_integration/pull/113)
-
-* Support non-encoded API Key [#101](https://github.com/elastic/logstash-filter-elastic_integration/pull/101)
-
-* Re-syncs with Elasticsearch 8.11 [#91](https://github.com/elastic/logstash-filter-elastic_integration/pull/91)
-* Adds support for `reroute` processor [#100](https://github.com/elastic/logstash-filter-elastic_integration/pull/100)
-* Adds support for `geoip` processor to use databases from Logstash's Geoip Database Management service [#88](https://github.com/elastic/logstash-filter-elastic_integration/pull/88)
-* Restores support for `redact` processor using its x-pack licensed implementation [#90](https://github.com/elastic/logstash-filter-elastic_integration/issues/90)
-
-* Re-syncs with Elasticsearch 8.10 [#78](https://github.com/elastic/logstash-filter-elastic_integration/pull/78)
-* BREAKING: The `redact` processor was removed from upstream IngestCommon, and therefore no longer available here.
-* Documentation added for required privileges and unsupported processors [#72](https://github.com/elastic/logstash-filter-elastic_integration/pull/72)
-* Added request header `Elastic-Api-Version` for serverless [#84](https://github.com/elastic/logstash-filter-elastic_integration/pull/84)
-
-* Fixes several related issues with how fields are mapped from the Logstash Event to the IngestDocument and back again [#51](https://github.com/elastic/logstash-filter-elastic_integration/pull/51)
-* `IngestDocument` metadata fields are now separately routed to `[@metadata][_ingest_document]` on the resulting `Event`, fixing an issue where the presence of Elasticsearch-reserved fields such as the top-level `_version` would cause a downstream Elasticsearch output to be unable to index the event [#47][]
-* Top-level `@timestamp` and `@version` fields are no longer excluded from the `IngestDocument`, as required by some existing integration pipelines [#54][]
-* Field-type conversions have been improved by presenting logstash `Timestamp`-type objects as their ISO8601-encoded `String`s mapping any returned `ZonedDateTime`-objects into logstash `Timestamp`s to support several Ingest Common processors and their typical use in Elastic Integration pipelines [#65][], [#70][]
-* Adds proactive reloaders for both datastream-to-pipeline-name mappings and pipeline definitions to ensure upstream changes are made available without impacting processing [#48](https://github.com/elastic/logstash-filter-elastic_integration/pull/48)
-* Presents helpful guidance when run on an unsupported version of Java [#43](https://github.com/elastic/logstash-filter-elastic_integration/pull/43)
-* Fix: now plugin is able to establish a connection to Elasticsearch on Elastic cloud with `cloud_id` and `cloud_auth` authentication pair [#62](https://github.com/elastic/logstash-filter-elastic_integration/pull/62)
-* Adds `pipeline_name` to _override_ the default behaviour of auto-detecting the pipeline name from its data stream [#69](https://github.com/elastic/logstash-filter-elastic_integration/pull/69)
-* BREAKING: http basic authentication with Elasticsearch is now configured with `username` and `password` options to make this plugin behave more similarly to other Elasticsearch-related plugins [#61](https://github.com/elastic/logstash-filter-elastic_integration/pull/61)
-* Improves user-experience when connected to an Elasticsearch that does not have security features enabled (such as when testing against an on-prem cluster) [#64](https://github.com/elastic/logstash-filter-elastic_integration/pull/64)
-* Provides helpful guidance when providing request credentials to an unsecured Elasticsearch cluster. 
-* Tolerates anonymous access of an unsecured Elasticsearch cluster by allowing the plugin to start in an "unsafe" mode without pre-validating permission to use the necessary Elasticsearch APIs.
-
-[#47]: https://github.com/elastic/logstash-filter-elastic_integration/issues/47
-[#54]: https://github.com/elastic/logstash-filter-elastic_integration/issues/54
-[#65]: https://github.com/elastic/logstash-filter-elastic_integration/issues/65
-[#70]: https://github.com/elastic/logstash-filter-elastic_integration/issues/70
-
-* Empty Bootstrap of Logstash filter plugin [#1](https://github.com/logstash-plugins/logstash-filter-elastic_integration/pull/1)
-* Adds basic configuration options required for Elasticsearch connection [#2](https://github.com/logstash-plugins/logstash-filter-elastic_integration/pull/2)
 
 **Elasticsearch Filter - 4.4.1**
 
 * Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#215](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/215)
 
-* Drop a support for Logstash 7.x by requiring `elasticsearch` gem >= 8. Logstash 8+ continues to work as before. [#213](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/213)
+* Drop support for Logstash 7.x by requiring `elasticsearch` gem >= 8. Logstash 8+ continues to work as before [#213](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/213)
 
 **Elasticsearch Input - 5.3.2**
 
@@ -269,181 +94,31 @@ logstash-output-udp: 3.2.0 -> 3.3.0
 
 * Fix serverless request failure caused by conflicting `compatible-with` and `Elastic-Api-Version` headers when using elasticsearch-ruby v9 [#269](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/269)
 
-* Drop a support for Logstash 7.x by requiring elasticsearch gem >= 8. Logstash 8+ continues to work as before [#252](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/252)
+* Drop support for Logstash 7.x by requiring `elasticsearch` gem >= 8. Logstash 8+ continues to work as before [#252](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/252)
 
 **Kafka Integration - 12.1.5**
-
-* Upgrades `httpcore5` dependency to v5.4.2 [#270](https://github.com/logstash-plugins/logstash-integration-kafka/pull/270)
-
-* Update jackson dependency to 2.21.4 [#268](https://github.com/logstash-plugins/logstash-integration-kafka/pull/268)
-
-* Upgrades `httpcore5` dependency to v5.3.6 [#262](https://github.com/logstash-plugins/logstash-integration-kafka/pull/262)
-
-* Upgrade `com.fasterxml.jackson` dependencies to 2.21.2 [#254](https://github.com/logstash-plugins/logstash-integration-kafka/pull/254)
 
 * Fix `sasl_jaas_config` output configuration [#245](https://github.com/logstash-plugins/logstash-integration-kafka/pull/245)
 
 * Update Kafka client to 4.2.0 [#243](https://github.com/logstash-plugins/logstash-integration-kafka/pull/243)
-* Remove explicit `lz4-java` dependency (now transitive from Kafka client)
-* Document `by_duration` offset reset strategy (available since Apache Kafka 4.0.0)
+  * Remove explicit `lz4-java` dependency (now transitive from Kafka client)
+  * Document `by_duration` offset reset strategy (available since Apache Kafka 4.0.0)
 
-* [DOC] Add info about Kafka timestamp behavior [#240](https://github.com/logstash-plugins/logstash-integration-kafka/pull/240)
+* Mask sensitive `sasl_jaas_config` values in debug logs to prevent credential exposure [#232](https://github.com/logstash-plugins/logstash-integration-kafka/pull/232)
 
-* Redact `sasl_jaas_config` to prevent credentials from appearing in debug logs. [#232](https://github.com/logstash-plugins/logstash-integration-kafka/pull/232)
-
-* Re-packaging the plugin [#221](https://github.com/logstash-plugins/logstash-integration-kafka/pull/221)
-
-* Upgrade `kafka-avro-serializer` dependency [#215](https://github.com/logstash-plugins/logstash-integration-kafka/pull/215)
-
-* Upgrade lz4 dependency [#212](https://github.com/logstash-plugins/logstash-integration-kafka/pull/212)
+* Update Kafka client to 4.1.0 and transitive dependencies [#205](https://github.com/logstash-plugins/logstash-integration-kafka/pull/205)
+  * **Breaking:** partitioner options `default` and `uniform_sticky` are removed
+  * `linger_ms` default value changed from `0` to `5`
+  * Add `group_protocols` option for configuring Kafka consumer rebalance protocol
+  * Setting `group_protocol => consumer` opts in to the new consumer group protocol
 
 * Remove duplicated deprecation log entry [#208](https://github.com/logstash-plugins/logstash-integration-kafka/pull/208)
 
-* Update kafka client to 4.1.0 and transitive dependencies [#205](https://github.com/logstash-plugins/logstash-integration-kafka/pull/205)
-* Breaking Change: partitioner options `default` and `uniform_sticky` are removed
-* `linger_ms` default value changed from 0 to 5
-* Add `group_protocols` options for configuring Kafka consumer rebalance protocol
-* Setting `group_protocol => consumer` opts in to the new consumer group protocol
-
-* Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
-
-* Display exception chain comes from kafka client [#200](https://github.com/logstash-plugins/logstash-integration-kafka/pull/200)
-
-* Update kafka client to 3.9.1 and transitive dependencies [#193](https://github.com/logstash-plugins/logstash-integration-kafka/pull/193)
-
-* Docs: fixed setting type reference for `sasl_iam_jar_paths` [#192](https://github.com/logstash-plugins/logstash-integration-kafka/pull/192)   
-
-* Expose the SASL client callback class setting to the Logstash configuration [#177](https://github.com/logstash-plugins/logstash-integration-kafka/pull/177)
-* Adds a mechanism to load AWS IAM authentication as SASL client libraries at startup [#178](https://github.com/logstash-plugins/logstash-integration-kafka/pull/178)
-
-* Support additional `oauth` and `sasl` configuration options for configuring kafka client [#189](https://github.com/logstash-plugins/logstash-integration-kafka/pull/189)
-
-* Update kafka client to 3.8.1 and transitive dependencies [#188](https://github.com/logstash-plugins/logstash-integration-kafka/pull/188)
-* Removed Jar Dependencies dependency [#187](https://github.com/logstash-plugins/logstash-integration-kafka/pull/187)
-
-* Update kafka client to 3.7.1 and transitive dependencies [#186](https://github.com/logstash-plugins/logstash-integration-kafka/pull/186)
-
-* Update avro to 1.11.4 and confluent kafka to 7.4.7 [#184](https://github.com/logstash-plugins/logstash-integration-kafka/pull/184)
-
-* Specify that only headers with UTF-8 encoded values are supported in extended decoration [#174](https://github.com/logstash-plugins/logstash-integration-kafka/pull/174)
-
-* Add "auto_create_topics" option to allow disabling of topic auto creation [#172](https://github.com/logstash-plugins/logstash-integration-kafka/pull/172)
-
-* Add default client_id of logstash to kafka output [#169](https://github.com/logstash-plugins/logstash-integration-kafka/pull/169)
-
-* [DOC] Match anchor ID and references for `message_headers` [#164](https://github.com/logstash-plugins/logstash-integration-kafka/pull/164)
-
-* Add support for setting Kafka message headers in output plugin [#162](https://github.com/logstash-plugins/logstash-integration-kafka/pull/162)
-
-* Fix "retries" and "value_serializer" error handling in output plugin (#160) [#160](https://github.com/logstash-plugins/logstash-integration-kafka/pull/160)
-
-* Fix "Can't modify frozen string" error when record value is `nil` (tombstones) [#155](https://github.com/logstash-plugins/logstash-integration-kafka/pull/155)
-
-* Fix: update Avro library [#150](https://github.com/logstash-plugins/logstash-integration-kafka/pull/150)
-
-* Fix: update snappy dependency [#148](https://github.com/logstash-plugins/logstash-integration-kafka/pull/148)
-
-* Bump kafka client to 3.4.1 [#145](https://github.com/logstash-plugins/logstash-integration-kafka/pull/145)
-
-* Fix nil exception to empty headers of record during event metadata assignment [#140](https://github.com/logstash-plugins/logstash-integration-kafka/pull/140)
-
-* Added TLS truststore and keystore settings specifically to access the schema registry [#137](https://github.com/logstash-plugins/logstash-integration-kafka/pull/137)
-
-* Added config `group_instance_id` to use the Kafka's consumer static membership feature [#135](https://github.com/logstash-plugins/logstash-integration-kafka/pull/135)
-
-* Changed Kafka client to 3.3.1, requires Logstash >= 8.3.0. 
-* Deprecated `default` value for setting `client_dns_lookup` forcing to `use_all_dns_ips` when explicitly used [#130](https://github.com/logstash-plugins/logstash-integration-kafka/pull/130)
-* Changed the consumer's poll from using the one that blocks on metadata retrieval to the one that doesn't [#136](https://github.com/logstash-plugins/logstash-integration-kafka/pull/133)
-
-* Fix: update Avro library on 10.x [#149](https://github.com/logstash-plugins/logstash-integration-kafka/pull/149)
-
-* bump kafka client to 2.8.1 [#115](https://github.com/logstash-plugins/logstash-integration-kafka/pull/115)
-
-* Feat: added connections_max_idle_ms setting for output [#118](https://github.com/logstash-plugins/logstash-integration-kafka/pull/118)
-* Refactor: mixins to follow shared mixin module naming
-
-* Update CHANGELOG.md [#114](https://github.com/logstash-plugins/logstash-integration-kafka/pull/114)
-
-* Added config setting to enable 'zstd' compression in the Kafka output [#112](https://github.com/logstash-plugins/logstash-integration-kafka/pull/112)
-
-* Refactor: leverage codec when using schema registry [#106](https://github.com/logstash-plugins/logstash-integration-kafka/pull/106)
-    Previously using `schema_registry_url` parsed the payload as JSON even if `codec => 'plain'` was set, this is no longer the case.  
-
-* [DOC] Updates description of `enable_auto_commit=false` to clarify that the commit happens after data is fetched AND written to the queue [#90](https://github.com/logstash-plugins/logstash-integration-kafka/pull/90)
-* Fix: update to Gradle 7 [#104](https://github.com/logstash-plugins/logstash-integration-kafka/pull/104)
-* [DOC] Clarify Kafka client does not support proxy [#103](https://github.com/logstash-plugins/logstash-integration-kafka/pull/103)
-
-* [DOC] Removed a setting recommendation that is no longer applicable for Kafka 2.0+ [#99](https://github.com/logstash-plugins/logstash-integration-kafka/pull/99)
-
-* Added config setting to enable schema registry validation to be skipped when an authentication scheme unsupported
-    by the validator is used [#97](https://github.com/logstash-plugins/logstash-integration-kafka/pull/97)
-
-* Fix: Correct the settings to allow basic auth to work properly, either by setting `schema_registry_key/secret` or embedding username/password in the
-    url [#94](https://github.com/logstash-plugins/logstash-integration-kafka/pull/94)
-
-* Test: specify development dependency version [#91](https://github.com/logstash-plugins/logstash-integration-kafka/pull/91)
-
-* Improved error handling in the input plugin to avoid errors 'escaping' from the plugin, and crashing the logstash
-    process [#87](https://github.com/logstash-plugins/logstash-integration-kafka/pull/87)
-
-* Docs: make sure Kafka clients version is updated in docs [#83](https://github.com/logstash-plugins/logstash-integration-kafka/pull/83)
-    Since **10.6.0** Kafka client was updated to **2.5.1**
-
-* Changed `decorate_events` to add also Kafka headers [#78](https://github.com/logstash-plugins/logstash-integration-kafka/pull/78)
-
-* Update Jersey dependency to version 2.33 [#75](https://github.com/logstash-plugins/logstash-integration-kafka/pull/75)
-
-* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 [#71](https://github.com/logstash-plugins/logstash-integration-kafka/pull/71)
-  
-* Switched use from Faraday to Manticore as HTTP client library to access Schema Registry service 
-    to fix issue [#63](https://github.com/logstash-plugins/logstash-integration-kafka/pull/63) 
-
-* Added functionality to Kafka input to use Avro deserializer in retrieving data from Kafka. The schema is retrieved
-    from an instance of Confluent's Schema Registry service [#51](https://github.com/logstash-plugins/logstash-integration-kafka/pull/51)
-     
-* Fix: set (optional) truststore when endpoint id check disabled [#60](https://github.com/logstash-plugins/logstash-integration-kafka/pull/60).
-    Since **10.1.0** disabling server host-name verification (`ssl_endpoint_identification_algorithm => ""`) did not allow 
-    the (output) plugin to set `ssl_truststore_location => "..."`.
-
-* Docs: explain group_id in case of multiple inputs [#59](https://github.com/logstash-plugins/logstash-integration-kafka/pull/59)
-
-* [DOC]Replaced plugin_header file with plugin_header-integration file. [#46](https://github.com/logstash-plugins/logstash-integration-kafka/pull/46)
-* [DOC]Update kafka client version across kafka integration docs [#47](https://github.com/logstash-plugins/logstash-integration-kafka/pull/47)
-* [DOC]Replace hard-coded kafka client and doc path version numbers with attributes to simplify doc maintenance [#48](https://github.com/logstash-plugins/logstash-integration-kafka/pull/48)  
-
-* Changed: retry sending messages only for retriable exceptions [#27](https://github.com/logstash-plugins/logstash-integration-kafka/pull/29)
-
-* [DOC] Fixed formatting issues and made minor content edits [#43](https://github.com/logstash-plugins/logstash-integration-kafka/pull/43)
-
-* added the input `isolation_level` to allow fine control of whether to return transactional messages [#44](https://github.com/logstash-plugins/logstash-integration-kafka/pull/44)
-
-* added the input and output `client_dns_lookup` parameter to allow control of how DNS requests are made [#28](https://github.com/logstash-plugins/logstash-integration-kafka/pull/28)
-
-* Changed: config defaults to be aligned with Kafka client defaults [#30](https://github.com/logstash-plugins/logstash-integration-kafka/pull/30)
-
-* updated kafka client (and its dependencies) to version 2.4.1 ([#16](https://github.com/logstash-plugins/logstash-integration-kafka/pull/16))
-* added the input `client_rack` parameter to enable support for follower fetching
-* added the output `partitioner` parameter for tuning partitioning strategy
-* Refactor: normalized error logging a bit - make sure exception type is logged
-* Fix: properly handle empty ssl_endpoint_identification_algorithm [#8](https://github.com/logstash-plugins/logstash-integration-kafka/pull/8)
-* Refactor : made `partition_assignment_strategy` option easier to configure by accepting simple values from an enumerated set instead of requiring lengthy class paths ([#25](https://github.com/logstash-plugins/logstash-integration-kafka/pull/25))
-
-* Fix links in changelog pointing to stand-alone plugin changelogs.
-* Refactor: scope java_import to plugin class
-
-* Initial release of the Kafka Integration Plugin, which combines
-    previously-separate Kafka plugins and shared dependencies into a single
-    codebase; independent changelogs for previous versions can be found:
-* [Kafka Input Plugin @9.1.0](https://github.com/logstash-plugins/logstash-input-kafka/blob/v9.1.0/CHANGELOG.md)
-* [Kafka Output Plugin @8.1.0](https://github.com/logstash-plugins/logstash-output-kafka/blob/v8.1.0/CHANGELOG.md)
-
 **Snmp Integration - 4.3.1**
 
-* Fix: generate error events with _snmpfailure tag when all SNMP operations fail and the response data is empty (e.g., timeout) [#92](https://github.com/logstash-plugins/logstash-integration-snmp/pull/92)
+* Generate error events with `_snmpfailure` tag when all SNMP operations fail and the response data is empty (e.g., timeout) [#92](https://github.com/logstash-plugins/logstash-integration-snmp/pull/92)
 
 * Handle partial responses and errors gracefully: add `tag_on_failure` (default: `["_snmpfailure"]`) to tag events when SNMP operations fail, and `allow_partial_response` (default: `false`) to preserve partial data from failed `walk`/`table` operations [#91](https://github.com/logstash-plugins/logstash-integration-snmp/pull/91)
-
-**Pipe Output - 3.0.7**
 
 **Udp Output - 3.3.0**
 

@@ -16,6 +16,49 @@ Before you upgrade, carefully review the Logstash breaking changes and take the 
 % ::::
 
 
+## 9.5.0 [logstash-950-breaking-changes]
+
+
+::::{dropdown} Kafka integration plugin upgraded to 12.x (Apache Kafka client 4.x)
+:name: kafka-integration-12x
+
+The bundled Kafka integration plugin has been upgraded from `11.x` to `12.x`, which uses Apache Kafka client 4.x. This introduces the following breaking changes:
+
+* The `partitioner` options `default` and `uniform_sticky` have been removed. Remove any explicit `partitioner` setting that uses these values; the Kafka client now uses its own internal default strategy.
+* The `linger_ms` default value has changed from `0` to `5`. If your output relies on zero-latency batching, explicitly set `linger_ms => 0`.
+
+For more information, check [#205](https://github.com/logstash-plugins/logstash-integration-kafka/pull/205).
+
+**Impact**<br> Kafka output configurations that explicitly set `partitioner => "default"` or `partitioner => "uniform_sticky"` will fail to start. Configurations relying on the previous `linger_ms` default of `0` may observe slightly increased latency (up to 5ms) in exchange for better batching.
+
+**Action**<br> Remove or update any `partitioner` setting that uses the removed values. If zero-latency sending is required, explicitly set `linger_ms => 0` in your Kafka output configuration.
+::::
+
+::::{dropdown} Legacy output concurrency mode removed
+:name: legacy-output-concurrency-removed
+
+The deprecated `concurrency :legacy` output mode has been removed. This mode was superseded by `concurrency :single` and `concurrency :shared` in Logstash 6.x.
+
+For more information, check [#19003](https://github.com/elastic/logstash/pull/19003).
+
+**Impact**<br> Any third-party output plugin that still declares `concurrency :legacy` will fail to load.
+
+**Action**<br> Update affected plugins to declare `concurrency :single` or `concurrency :shared`.
+::::
+
+::::{dropdown} Pipe output plugin removed from default bundle
+:name: pipe-output-removed
+
+The `logstash-output-pipe` plugin is no longer included in the default Logstash plugin bundle. Pipelines that use `output { pipe { ... } }` will fail to start after upgrading.
+
+For more information, check [#19159](https://github.com/elastic/logstash/pull/19159).
+
+**Impact**<br> Any pipeline configuration using the `pipe` output will fail to start with a plugin-not-found error.
+
+**Action**<br> Install the plugin manually before upgrading: `bin/logstash-plugin install logstash-output-pipe`.
+::::
+
+
 ## 9.4.0 [logstash-940-breaking-changes]
 
 
