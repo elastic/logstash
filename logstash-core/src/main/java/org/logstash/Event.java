@@ -216,6 +216,17 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             throw new InvalidTagsTypeException(field, value);
         }
 
+        // Special handling for @timestamp field to ensure it's properly converted to Timestamp object
+        if (field.equals(FieldReference.TIMESTAMP_REFERENCE)) {
+            Timestamp parsedTimestamp = initTimestamp(value);
+            setTimestamp(parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
+            if (parsedTimestamp == null) {
+                tag(TIMESTAMP_FAILURE_TAG);
+                this.setField(TIMESTAMP_FAILURE_FIELD, value);
+            }
+            return;
+        }
+
         switch (field.type()) {
             case FieldReference.META_PARENT:
                 // ConvertedMap.newFromMap already does valuefication
