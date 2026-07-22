@@ -119,7 +119,7 @@ public class BufferedTokenizer {
                 }
 
                 if (droppedBytesCount > 0) {
-                    logger.warn("Input buffer exceeded the sizeLimit and dropped {} bytes", droppedBytesCount);
+                    logger.warn("Input buffer exceeded the sizeLimit of {} and dropped {} bytes from an oversized token", sizeLimit, droppedBytesCount);
                     droppedBytesCount = 0;
                 }
 
@@ -146,7 +146,7 @@ public class BufferedTokenizer {
             
             if (isSizeLimitSet()) {
                 if (existingDroppedBytesCount > 0) {
-                    logger.warn("Input buffer exceeded the sizeLimit and dropped {} bytes/characters", existingDroppedBytesCount);
+                    logger.warn("Input buffer exceeded the sizeLimit of {} and dropped {} bytes from an oversized token", sizeLimit,  existingDroppedBytesCount);
                 }
                 if (existingLastFragmentSize > sizeLimit) {
                     cleanAccumulatorState();
