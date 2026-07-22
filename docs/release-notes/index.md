@@ -21,6 +21,110 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.0 [logstash-9.5.0-release-notes]
+
+### Features and enhancements [logstash-9.5.0-features-enhancements]
+
+#### OTLP metrics export [logstash-9.5.0-otlp-metrics]
+
+Logstash can now export its internal metrics to any OpenTelemetry-compatible endpoint via OTLP. Enable it with `otel.metrics.enabled: true` in `logstash.yml` and configure the target endpoint, protocol (gRPC or HTTP), export interval, and TLS settings. Nearly all existing Logstash metrics are exported. FlowRate metrics are excluded but can be derived from the reported values.
+
+Related:
+* Send Logstash Metrics via OTLP [#18857](https://github.com/elastic/logstash/pull/18857)
+
+#### TLS certificate auto-reload [logstash-9.5.0-tls-auto-reload]
+
+Pipelines now automatically reload when their TLS certificates are rotated on disk, without requiring a full pipeline restart. This capability also extends to Central Pipeline Management and monitoring service clients.
+
+Related:
+* Auto-reload pipelines on TLS certificate rotation [#18978](https://github.com/elastic/logstash/pull/18978)
+* Extend TLS auto-reload to CPM and monitoring service clients [#19045](https://github.com/elastic/logstash/pull/19045)
+
+#### cgroupv2 support [logstash-9.5.0-cgroupv2]
+
+Logstash now reads resource limits from cgroupv2 in addition to cgroupv1, improving container-awareness on modern Linux hosts and Kubernetes environments.
+
+Related:
+* Add support for cgroupv2 [#18708](https://github.com/elastic/logstash/pull/18708)
+
+#### Additional features and enhancements [logstash-9.5.0-more-features]
+
+* New `dead_letter_queue.flush_check_interval` setting to control how frequently stale DLQ segment files are flushed [#19036](https://github.com/elastic/logstash/pull/19036)
+
+* Removed legacy output concurrency mode. The deprecated `concurrency :legacy` option is no longer supported; outputs should use `concurrency :single` or `concurrency :shared` [#19003](https://github.com/elastic/logstash/pull/19003)
+
+* Removed the `pipe` output plugin from the default plugin bundle [#19159](https://github.com/elastic/logstash/pull/19159)
+
+### Fixes [logstash-9.5.0-fixes]
+
+* Pipeline metrics are now cleared when a pipeline fails to start, preventing stale metrics from being reported by the monitoring API [#19091](https://github.com/elastic/logstash/pull/19091)
+
+* Failures in plugin `do_close` no longer halt the pipeline shutdown sequence [#19035](https://github.com/elastic/logstash/pull/19035)
+
+* Fixed forced-shutdown (double SIGINT) behavior for JRuby 10 [#19017](https://github.com/elastic/logstash/pull/19017)
+
+* Added missed standard types during batch size estimation [#19158](https://github.com/elastic/logstash/pull/19158)
+
+### Updates to dependencies [logstash-9.5.0-dependencies]
+
+* Bump OpenTelemetry to 1.62.0 [#19209](https://github.com/elastic/logstash/pull/19209)
+
+### Plugins [logstash-plugin-9.5.0-changes]
+
+::::{important}
+
+This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The upgrade includes Apache Kafka client 4.x with breaking changes — see the [9.5.0 breaking changes](/release-notes/breaking-changes.md#logstash-950-breaking-changes) for details and required actions.
+
+::::
+
+**Elastic_integration Filter - 9.5.1**
+
+* Fixes an issue where a field set by an integration pipeline to `java.util.Date` value-object representing a timestamp could not be converted to a timestamp [#460](https://github.com/elastic/logstash-filter-elastic_integration/issues/460)
+* Applies Elasticsearch geoip module relocation changes [#445](https://github.com/elastic/logstash-filter-elastic_integration/pull/445)
+
+**Elasticsearch Filter - 4.4.1**
+
+* Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#215](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/215)
+
+* Drop support for Logstash 7.x by requiring `elasticsearch` gem >= 8. Logstash 8+ continues to work as before [#213](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/213)
+
+**Elasticsearch Input - 5.3.2**
+
+* Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#274](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/274)
+
+* Fix serverless request failure caused by conflicting `compatible-with` and `Elastic-Api-Version` headers when using elasticsearch-ruby v9 [#269](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/269)
+
+* Drop support for Logstash 7.x by requiring `elasticsearch` gem >= 8. Logstash 8+ continues to work as before [#252](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/252)
+
+**Kafka Integration - 12.1.5**
+
+* Fix `sasl_jaas_config` output configuration [#245](https://github.com/logstash-plugins/logstash-integration-kafka/pull/245)
+
+* Update Kafka client to 4.2.0 [#243](https://github.com/logstash-plugins/logstash-integration-kafka/pull/243)
+  * Remove explicit `lz4-java` dependency (now transitive from Kafka client)
+  * Document `by_duration` offset reset strategy (available since Apache Kafka 4.0.0)
+
+* Mask sensitive `sasl_jaas_config` values in debug logs to prevent credential exposure [#232](https://github.com/logstash-plugins/logstash-integration-kafka/pull/232)
+
+* Update Kafka client to 4.1.0 and transitive dependencies [#205](https://github.com/logstash-plugins/logstash-integration-kafka/pull/205)
+  * **Breaking:** partitioner options `default` and `uniform_sticky` are removed
+  * `linger_ms` default value changed from `0` to `5`
+  * Add `group_protocols` option for configuring Kafka consumer rebalance protocol
+  * Setting `group_protocol => consumer` opts in to the new consumer group protocol
+
+* Remove duplicated deprecation log entry [#208](https://github.com/logstash-plugins/logstash-integration-kafka/pull/208)
+
+**Snmp Integration - 4.3.1**
+
+* Generate error events with `_snmpfailure` tag when all SNMP operations fail and the response data is empty (timeout for example) [#92](https://github.com/logstash-plugins/logstash-integration-snmp/pull/92)
+
+* Handle partial responses and errors gracefully: add `tag_on_failure` (default: `["_snmpfailure"]`) to tag events when SNMP operations fail, and `allow_partial_response` (default: `false`) to preserve partial data from failed `walk`/`table` operations [#91](https://github.com/logstash-plugins/logstash-integration-snmp/pull/91)
+
+**Udp Output - 3.3.0**
+
+* Added support for IPv6 addresses [#16](https://github.com/logstash-plugins/logstash-output-udp/pull/16)
+
+
 ## 9.4.4 [logstash-9.4.4-release-notes]
 
 ### Updates to dependencies [logstash-9.4.4-dependencies]
