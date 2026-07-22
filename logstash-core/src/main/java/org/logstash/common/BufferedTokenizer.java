@@ -140,15 +140,11 @@ public class BufferedTokenizer {
         }
 
         public String flush() {
-            
-            final int existingLastFragmentSize = lastFragmentSize;
-            final long existingDroppedBytesCount = droppedBytesCount;
-            
             if (isSizeLimitSet()) {
-                if (existingDroppedBytesCount > 0) {
-                    logger.warn("Input buffer exceeded the sizeLimit of {} and dropped {} bytes from an oversized token", sizeLimit,  existingDroppedBytesCount);
+                if (droppedBytesCount > 0) {
+                    logger.warn("Input buffer exceeded the sizeLimit of {} and dropped {} bytes from an oversized token", sizeLimit,  droppedBytesCount);
                 }
-                if (existingLastFragmentSize > sizeLimit) {
+                if (lastFragmentSize > sizeLimit) {
                     cleanAccumulatorState();
                     throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + sizeLimit);
                 }
