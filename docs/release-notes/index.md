@@ -27,7 +27,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 #### OTLP metrics export [logstash-9.5.0-otlp-metrics]
 
-Logstash can now export its internal metrics to any OpenTelemetry-compatible endpoint via OTLP. Enable it with `otel.metrics.enabled: true` in `logstash.yml` and configure the target endpoint, protocol (gRPC or HTTP), export interval, and TLS settings. Nearly all existing Logstash metrics are exported; FlowRate metrics are excluded but can be derived from the reported values.
+Logstash can now export its internal metrics to any OpenTelemetry-compatible endpoint via OTLP. Enable it with `otel.metrics.enabled: true` in `logstash.yml` and configure the target endpoint, protocol (gRPC or HTTP), export interval, and TLS settings. Nearly all existing Logstash metrics are exported. FlowRate metrics are excluded but can be derived from the reported values.
 
 Related:
 * Send Logstash Metrics via OTLP [#18857](https://github.com/elastic/logstash/pull/18857)
@@ -61,7 +61,7 @@ Related:
 
 * Failures in plugin `do_close` no longer halt the pipeline shutdown sequence [#19035](https://github.com/elastic/logstash/pull/19035)
 
-* Fixed forced-shutdown (double SIGINT) behaviour for JRuby 10 [#19017](https://github.com/elastic/logstash/pull/19017)
+* Fixed forced-shutdown (double SIGINT) behavior for JRuby 10 [#19017](https://github.com/elastic/logstash/pull/19017)
 
 * Added missed standard types during batch size estimation [#19158](https://github.com/elastic/logstash/pull/19158)
 
@@ -116,7 +116,7 @@ This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The 
 
 **Snmp Integration - 4.3.1**
 
-* Generate error events with `_snmpfailure` tag when all SNMP operations fail and the response data is empty (e.g., timeout) [#92](https://github.com/logstash-plugins/logstash-integration-snmp/pull/92)
+* Generate error events with `_snmpfailure` tag when all SNMP operations fail and the response data is empty (timeout for example) [#92](https://github.com/logstash-plugins/logstash-integration-snmp/pull/92)
 
 * Handle partial responses and errors gracefully: add `tag_on_failure` (default: `["_snmpfailure"]`) to tag events when SNMP operations fail, and `allow_partial_response` (default: `false`) to preserve partial data from failed `walk`/`table` operations [#91](https://github.com/logstash-plugins/logstash-integration-snmp/pull/91)
 
