@@ -60,7 +60,7 @@ public final class ConvertedList extends ArrayList<Object> {
     public static ConvertedList newFromRubyArray(@SuppressWarnings("rawtypes") RubyArray a) {
         final ConvertedList result = new ConvertedList(a.size());
 
-        for (IRubyObject o : a.toJavaArray()) {
+        for (IRubyObject o : a.toJavaArrayMaybeUnsafe()) {
             result.add(convert(o));
         }
         return result;

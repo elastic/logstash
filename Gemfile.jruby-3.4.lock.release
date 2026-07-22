@@ -10,6 +10,7 @@ PATH
     logstash-core (8.19.20-java)
       clamp (~> 1, >= 1.3.3)
       concurrent-ruby (~> 1, < 1.1.10)
+      csv (~> 3.0)
       down (~> 5.2.0)
       elasticsearch (~> 8)
       filesize (~> 0.2)
@@ -18,6 +19,8 @@ PATH
       jrjackson (= 0.5.2)
       manticore (~> 0.6)
       minitar (~> 1)
+      multi_json (~> 1.19.1)
+      observer (~> 0.1)
       pry (~> 0.12)
       puma (~> 8.0)
       rack (~> 3)
@@ -87,7 +90,6 @@ GEM
     buftok (0.2.0)
     builder (3.3.0)
     cabin (0.9.1)
-    cgi (0.3.7-java)
     childprocess (4.1.0)
     ci_reporter (2.1.0)
       builder (>= 2.1.2)
@@ -101,6 +103,7 @@ GEM
     crack (1.0.1)
       bigdecimal
       rexml
+    csv (3.3.5)
     dalli (3.2.8)
     date (3.3.3-java)
     diff-lcs (1.6.2)
@@ -124,8 +127,6 @@ GEM
     elasticsearch-api (8.19.3)
       multi_json
     equalizer (0.0.11)
-    erb (4.0.4.1-java)
-      cgi (>= 0.3.3)
     et-orbi (1.2.11)
       tzinfo
     faraday (2.14.3)
@@ -708,7 +709,7 @@ GEM
     mini_mime (1.1.5)
     minitar (1.0.2)
     msgpack (1.8.3-java)
-    multi_json (1.15.0)
+    multi_json (1.19.1)
     multipart-post (2.4.1)
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
@@ -729,6 +730,7 @@ GEM
     nio4r (2.7.5-java)
     nokogiri (1.18.10-java)
       racc (~> 1.4)
+    observer (0.1.2)
     octokit (4.25.1)
       faraday (>= 1, < 3)
       sawyer (~> 0.9)
@@ -857,7 +859,7 @@ GEM
     tzinfo-data (1.2025.3)
       tzinfo (>= 1.0.0)
     unicode-display_width (2.6.0)
-    uri (0.12.5)
+    uri (1.0.4)
     webhdfs (0.11.0)
       addressable
     webmock (3.25.2)
@@ -876,11 +878,9 @@ DEPENDENCIES
   belzebuth
   benchmark-ips
   bigdecimal (~> 3.1)
-  cgi (~> 0.3.7)
   childprocess (~> 4)
   ci_reporter_rspec (~> 1)
   date (= 3.3.3)
-  erb (~> 4.0.3)
   fileutils (~> 1.7)
   flores (~> 0.0.8)
   fpm (~> 1, >= 1.14.1)
@@ -1004,8 +1004,8 @@ DEPENDENCIES
   stud (~> 0.0.22)
   thwait
   treetop
-  uri (~> 0.12.3)
+  uri (~> 1.0.3)
   webmock (~> 3)
 
 BUNDLED WITH
-   2.6.3
+   2.7.2
