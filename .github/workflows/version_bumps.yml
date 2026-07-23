@@ -2,11 +2,6 @@ name: Bump dependencies
 on:
   workflow_dispatch:
    inputs:
-      branch:
-        description: 'Release Branch'     
-        required: true
-        default: '9.4'
-        type: string
       bump:
         description: 'Bump type'     
         required: true
@@ -36,7 +31,7 @@ jobs:
     name: Bump versions
     runs-on: ubuntu-latest
     env:
-      INPUTS_BRANCH: "${{ inputs.branch }}"
+      INPUTS_BRANCH: "${{ github.ref_name }}"
       INPUTS_BUMP: "${{ inputs.bump }}"
       INPUTS_EXTRA_GEMS_MINOR: "${{ inputs.extra_gems_minor }}"
       INPUTS_EXTRA_GEMS_MAJOR: "${{ inputs.extra_gems_major }}"
