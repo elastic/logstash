@@ -35,7 +35,7 @@ jobs:
       INPUTS_BUMP: "${{ inputs.bump }}"
       INPUTS_EXTRA_GEMS_MINOR: "${{ inputs.extra_gems_minor }}"
       INPUTS_EXTRA_GEMS_MAJOR: "${{ inputs.extra_gems_major }}"
-      BACKPORT_LABEL: "backport-${{ inputs.branch }}"
+      BACKPORT_LABEL: "backport-${{ github.ref_name }}"
     steps:
       - name: Set up JDK 21
         uses: actions/setup-java@v5
