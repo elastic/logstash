@@ -110,7 +110,7 @@ public class BufferedTokenizer {
             currentIdx = 0;
         }
 
-        public void append(String data) {
+        public synchronized void append(String data) {
             if (isSizeLimitSet()) {
                 if (!data.contains(separator) && lastFragmentSize > sizeLimit) {
                     // stop accumulating if last fragments already reached the sizeLimit
@@ -139,7 +139,7 @@ public class BufferedTokenizer {
             return sizeLimit != Integer.MIN_VALUE;
         }
 
-        public String flush() {
+        public synchronized String flush() {
             if (isSizeLimitSet()) {
                 if (droppedBytesCount > 0) {
                     logger.warn("Input buffer exceeded the sizeLimit of {} and dropped {} bytes from an oversized token", sizeLimit,  droppedBytesCount);
