@@ -60,6 +60,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/serverless_integration_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 90
       provider_settings:
         trigger_mode: none # don't trigger jobs from github activity
@@ -105,6 +110,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/snyk_report_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 60
       provider_settings:
         trigger_mode: none # don't trigger jobs
@@ -151,6 +161,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/plugins_snyk_report_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 60
       provider_settings:
         trigger_mode: none # don't trigger jobs
@@ -197,6 +212,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/logstash_artifact_scan_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 60
       provider_settings:
         trigger_mode: none # don't trigger jobs
@@ -287,6 +307,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/snapshot_release_acceptance_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 120
       provider_settings:
         trigger_mode: none
@@ -343,6 +368,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/dra_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 120
       skip_intermediate_builds: true
       provider_settings:
@@ -386,6 +416,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/dra_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 120
       skip_intermediate_builds: true
       provider_settings:
@@ -437,6 +472,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/pull_request_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 120
       provider_settings:
         build_pull_request_forks: false
@@ -495,6 +535,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/aarch64_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 90
       provider_settings:
         trigger_mode: none
@@ -546,6 +591,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/linux_jdk_matrix_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 120
       provider_settings:
         trigger_mode: none
@@ -589,6 +639,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/windows_jdk_matrix_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 120
       provider_settings:
         trigger_mode: none
@@ -640,6 +695,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/exhaustive_tests_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 45
       provider_settings:
         build_branches: true
@@ -698,6 +758,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/smart_exhaustive_tests_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       provider_settings:
         build_pull_request_forks: false
         build_pull_requests: true # requires filter_enabled and filter_condition settings as below when used with buildkite-pr-bot
@@ -748,6 +813,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/supported_plugins_test_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 90
       skip_intermediate_builds: true
       provider_settings:
@@ -790,6 +860,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/trigger_pipelines.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 240
       schedules:
         Daily Snapshot DRA:
@@ -864,6 +939,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/benchmark_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 90
       provider_settings:
         trigger_mode: none # don't trigger jobs from github activity
@@ -917,6 +997,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/benchmark_marathon_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 480
       provider_settings:
         trigger_mode: none # don't trigger jobs from github activity
@@ -965,6 +1050,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/health_report_tests_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       maximum_timeout_in_minutes: 30 # usually tests last max ~17mins
       provider_settings:
         trigger_mode: none # don't trigger jobs from github activity
@@ -1014,6 +1104,11 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/version_bump_pipeline.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+            cleanup_sparse_state: true
       provider_settings:
         trigger_mode: none
       cancel_intermediate_builds: false
