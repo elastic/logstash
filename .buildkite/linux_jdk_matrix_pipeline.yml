@@ -5,7 +5,7 @@
 
 env:
   DEFAULT_MATRIX_OS: "ubuntu-2204"
-  DEFAULT_MATRIX_JDK: "adoptiumjdk_17"
+  DEFAULT_MATRIX_JDK: "adoptiumjdk_21"
 
 steps:
   - input: "Test Parameters"
@@ -62,10 +62,6 @@ steps:
         options:
           - label: "Adoptium JDK 21 (Eclipse Temurin)"
             value: "adoptiumjdk_21"
-          - label: "Adoptium JDK 17 (Eclipse Temurin)"
-            value: "adoptiumjdk_17"
-          - label: "Adoptium JDK 11 (Eclipse Temurin)"
-            value: "adoptiumjdk_11"
           - label: "OpenJDK 21"
             value: "openjdk_21"
           - label: "Zulu 21"
