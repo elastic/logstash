@@ -20,22 +20,20 @@
 package org.logstash.common;
 
 
+import org.apache.commons.lang3.stream.Streams;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.logstash.common.BufferedTokenizerTest.toList;
 
 public final class BufferedTokenizerWithSizeLimitTest {
@@ -188,5 +186,63 @@ public final class BufferedTokenizerWithSizeLimitTest {
 
     private static String generate(int length, String fillChar) {
         return fillChar.repeat(length);
+    }
+    
+    @Test
+    public void givenOneProducerAndOneConsumerWhenExecutedConcurrentlyThenNoRaceHappens() throws InterruptedException {
+        initSUTWithSizeLimit(50); // must contain the string "Token with index 1_000_000"
+        
+        AtomicInteger tokenCounter = new AtomicInteger(0);
+
+        int tokensToUse = 10_000;
+        Thread producer1 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread producer2 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread producer3 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread producer4 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread consumer = new Thread(() -> consumerBufferedTokenizer(sut, tokensToUse, tokenCounter));
+
+        Streams.of(producer1, producer2, producer3, producer4).forEach(Thread::start);
+        consumer.start();
+        
+        Streams.of(producer1, producer2, producer3, producer4).forEach(t -> {
+            try {
+                t.join(5_000);
+            } catch (InterruptedException e) {
+                fail("Can't join " + t.getName() + " in 5 seconds");
+                Thread.currentThread().interrupt();
+            }
+        });
+        consumer.join(5_000);
+        
+        // verify consumer status
+        assertEquals(tokensToUse, tokenCounter.get());
+    }
+
+    private static void consumerBufferedTokenizer(BufferedTokenizer tokenizer, int maxTokensToExpect, AtomicInteger counter) {
+        long startWait = Long.MAX_VALUE;
+        // invoke extract just to obtain the iterator
+        Iterator<String> tokens = tokenizer.extract("Pill data\n").iterator();
+        while (counter.get() < maxTokensToExpect) {
+            if (tokens.hasNext()) {
+                tokens.next();
+                counter.incrementAndGet();
+            } else {
+                if (startWait == Long.MAX_VALUE) {
+                    // start spinning
+                    startWait = System.currentTimeMillis();
+                } else {
+                    // spinning max for 5 seconds, then break the loop
+                    if (System.currentTimeMillis() - startWait > 5_000) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static void fulfillBufferedTokenizer(BufferedTokenizer tokenizer, int maxTokensToFill) {
+        for (int i = 0; i < maxTokensToFill; i++) {
+            tokenizer.extract("Token with index " + i + "\n");
+        }
     }
 }
