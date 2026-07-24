@@ -20,6 +20,7 @@
 package org.logstash.common;
 
 
+import org.apache.commons.lang3.stream.Streams;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,10 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.logstash.common.BufferedTokenizerTest.toList;
 
 public final class BufferedTokenizerWithSizeLimitTest {
@@ -196,14 +194,24 @@ public final class BufferedTokenizerWithSizeLimitTest {
         
         AtomicInteger tokenCounter = new AtomicInteger(0);
 
-        int tokensToUse = 1_000_000;
-        Thread producer = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse));
+        int tokensToUse = 10_000;
+        Thread producer1 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread producer2 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread producer3 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread producer4 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
         Thread consumer = new Thread(() -> consumerBufferedTokenizer(sut, tokensToUse, tokenCounter));
-        
-        producer.start();
+
+        Streams.of(producer1, producer2, producer3, producer4).forEach(Thread::start);
         consumer.start();
         
-        producer.join(5_000);
+        Streams.of(producer1, producer2, producer3, producer4).forEach(t -> {
+            try {
+                t.join(5_000);
+            } catch (InterruptedException e) {
+                fail("Can't join " + t.getName() + " in 5 seconds");
+                Thread.currentThread().interrupt();
+            }
+        });
         consumer.join(5_000);
         
         // verify consumer status
