@@ -18,10 +18,10 @@
 require "spec_helper"
 require "logstash/settings"
 
-describe LogStash::Setting::ArrayCoercible do
+describe LogStash::Setting::ArrayCoercibleSetting do
   subject { described_class.new("option", element_class, value) }
   let(:value) { [] }
-  let(:element_class) { Object }
+  let(:element_class) { java.lang.Object.java_class }
 
   context "when given a non array value" do
     let(:value) { "test" }
@@ -43,16 +43,16 @@ describe LogStash::Setting::ArrayCoercible do
 
   describe "initialization" do
     subject { described_class }
-    let(:element_class) { Integer }
+    let(:element_class) { java.lang.Integer.java_class }
     context "when given values of incorrect element class" do
       let(:value) { "test" }
 
       it "will raise an exception" do
-        expect { described_class.new("option", element_class, value) }.to raise_error(ArgumentError)
+        expect { described_class.new("option", element_class, value) }.to raise_error(java.lang.IllegalArgumentException)
       end
     end
     context "when given values of correct element class" do
-      let(:value) { 1 }
+      let(:value) { java.lang.Integer.new(1) }
 
       it "will not raise an exception" do
         expect { described_class.new("option", element_class, value) }.not_to raise_error
@@ -63,9 +63,9 @@ describe LogStash::Setting::ArrayCoercible do
   describe "#==" do
     context "when comparing two settings" do
       let(:setting_1) { described_class.new("option_1", element_class_1, value_1) }
-      let(:element_class_1) { String }
+      let(:element_class_1) { java.lang.String.java_class }
       let(:setting_2) { described_class.new("option_1", element_class_2, value_2) }
-      let(:element_class_2) { String }
+      let(:element_class_2) { java.lang.String.java_class }
 
       context "where one was given a non array value" do
         let(:value_1) { "a string" }
