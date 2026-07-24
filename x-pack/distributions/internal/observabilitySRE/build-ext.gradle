@@ -20,7 +20,7 @@ allprojects {
                 environment("ORG_GRADLE_PROJECT_fedrampHighMode", "true")
             }
         }
-        tasks.withType(Test) {
+        tasks.withType(Test).configureEach {
             if (rootProject.fedrampHighMode) {
                 logger.debug("configuring ${it} to run in FIPSMode ")
                 systemProperty "java.security.properties", System.getenv("JAVA_SECURITY_PROPERTIES")

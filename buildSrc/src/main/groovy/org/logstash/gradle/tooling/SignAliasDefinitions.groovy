@@ -1,16 +1,22 @@
 package org.logstash.gradle.tooling
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+
+import javax.inject.Inject
 
 abstract class SignAliasDefinitions extends DefaultTask {
 
     enum Stage {
         main, test;
     }
+
+    @Inject
+    abstract ProjectLayout getLayout()
 
     /**
      * Relative path to the AliasRegistry.yml file to use, relative to project's root
@@ -21,7 +27,7 @@ abstract class SignAliasDefinitions extends DefaultTask {
     @InputFile
     File getRegistryFullPath() {
         String stagedRegistry = "logstash-core/src/${stage}/resources/${registry}"
-        project.file("${project.projectDir}/${stagedRegistry}")
+        layout.projectDirectory.file(stagedRegistry).asFile
     }
 
     /**
