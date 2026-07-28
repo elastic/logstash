@@ -23,6 +23,7 @@ import org.logstash.common.BufferedTokenizer;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Group;
 import org.openjdk.jmh.annotations.GroupThreads;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
@@ -34,35 +35,73 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 
 @Warmup(iterations = 3, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Fork(value = 1, jvmArgsAppend = {"-Xmx8g", "-Xms8g"})
-@BenchmarkMode(Mode.SingleShotTime)
+@Measurement(iterations = 60, time = 3000, timeUnit = TimeUnit.MILLISECONDS)
+@Fork(value = 1, jvmArgsAppend = {"-Xmx4g", "-Xms4g"})
+@BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@State(Scope.Thread)
-public class BufferedTokenizerConsumptionBenchmark {
+@State(Scope.Group)
+public class BufferedTokenizerConcurrentConsumptionBenchmark {
 
+    public static final String SOME_NEW_TOKEN = "Some new token\n";
     private BufferedTokenizer sut;
-    private Iterator<String> iterator;
-    private String singleTokenPerFragment;
 
     @Setup(Level.Iteration)
-    public void setUp() {
-        sut = new BufferedTokenizer();
-        singleTokenPerFragment = "a".repeat(20) + "\n";
-        iterator = sut.extract(singleTokenPerFragment).iterator();
-        for (int i = 0; i < 10_000_000; i++) {
-            sut.extract(singleTokenPerFragment);
-        }
+    public void prepare() {
+        sut = new BufferedTokenizer("\n", 50);
+    }
+    
+    // ---- multiple writers - single reader
+    
+    @Benchmark
+    @Group("multi_writers_single_reader")
+    @GroupThreads(8)
+    public void mwsr_multipleWriters() {
+        sut.extract("Some new token\n");
     }
 
-    @Measurement(iterations = 120, batchSize = 10_000_000)
     @Benchmark
+    @Group("multi_writers_single_reader")
     @GroupThreads(1)
-    public final void repeatedExtractInvocations(Blackhole blackhole) {
-        blackhole.consume(iterator.next());
+    public void mwsr_singleReader(Blackhole blackhole) {
+        String token = sut.extract("\n").iterator().next();
+        blackhole.consume(token);
+    }
+
+    // ---- single writer - single reader
+
+    @Benchmark
+    @Group("single_writer_single_reader")
+    @GroupThreads(1)
+    public void swsr_singleWriter() {
+        sut.extract(SOME_NEW_TOKEN);
+    }
+
+    @Benchmark
+    @Group("single_writer_single_reader")
+    @GroupThreads(1)
+    public void swsr_singleReader(Blackhole blackhole) {
+        String token = sut.extract("\n").iterator().next();
+        blackhole.consume(token);
+    }
+
+    // ---- single writer - multiple reader
+
+    @Benchmark
+    @Group("single_writer_multi_reader")
+    @GroupThreads(1)
+    public void swmr_singleWriter() {
+        sut.extract(SOME_NEW_TOKEN);
+    }
+
+    @Benchmark
+    @Group("single_writer_multi_reader")
+    @GroupThreads(8)
+    public void swmr_multiReader(Blackhole blackhole) {
+        String token = sut.extract("\n").iterator().next();
+        blackhole.consume(token);
     }
 }
