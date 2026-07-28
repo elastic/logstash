@@ -8,7 +8,7 @@ env:
 
 steps:
   - input: "Test Parameters"
-    if: build.source != "schedule" && build.source != "trigger_job"
+    if: build.source != "schedule" && build.source != "trigger_job" && build.env("MATRIX_JDKS") == null
     fields:
       - select: "Operating System"
         key: "matrix-os"
@@ -47,7 +47,7 @@ steps:
             value: "zulu_17"
 
   - wait: ~
-    if: build.source != "schedule" && build.source != "trigger_job"
+    if: build.source != "schedule" && build.source != "trigger_job" && build.env("MATRIX_JDKS") == null
 
   - command: |
       set -euo pipefail
@@ -56,7 +56,11 @@ steps:
       python3 -m pip install ruamel.yaml
 
       echo "--- Printing generated dynamic steps"
-      if [[ "${BUILDKITE_SOURCE}" == "schedule" || "${BUILDKITE_SOURCE}" == "trigger_job" ]]; then
+      if [[ -n "${MATRIX_JDKS:-}" ]]; then
+        # Matrix supplied via build env vars (e.g. the UI "Environment Variables" field); skip the input step.
+        export MATRIX_JDKS
+        export MATRIX_OSES="${MATRIX_OSES:-$DEFAULT_MATRIX_OS}"
+      elif [[ "${BUILDKITE_SOURCE}" == "schedule" || "${BUILDKITE_SOURCE}" == "trigger_job" ]]; then
         export MATRIX_OSES="${DEFAULT_MATRIX_OS}"
         export MATRIX_JDKS="${SCHEDULED_MATRIX_JDKS}"
       else
