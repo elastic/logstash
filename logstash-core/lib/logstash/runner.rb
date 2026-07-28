@@ -267,6 +267,7 @@ class LogStash::Runner < Clamp::StrictCommand
     LogStash::Util::SettingsHelper.post_process
 
     require "logstash/util"
+    require "logstash/util/byte_value"
     require "logstash/util/java_version"
     require "stud/task"
 
@@ -306,6 +307,15 @@ class LogStash::Runner < Clamp::StrictCommand
     logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
     jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
     logger.info "JVM bootstrap flags: #{jvmArgs}"
+
+    begin
+      hotspot_diagnostic_bean = ManagementFactory.getPlatformMXBean(com.sun.management.HotSpotDiagnosticMXBean.java_class)
+      compressed_oops = hotspot_diagnostic_bean.getVMOption("UseCompressedOops").getValue()
+      max_heap_size = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax()
+      logger.info("Compressed ordinary object pointers (oops)", "max_heap_size" => LogStash::Util::ByteValue.human_readable(max_heap_size), "compressed_oops" => compressed_oops)
+    rescue => e
+      logger.warn("Could not determine if JVM uses compressed object pointers representation. This is generally used to save memory, but doesn't impact Logstash functionalities.", "exception" => e.message)
+    end
 
 
     # Verify the Jackson defaults

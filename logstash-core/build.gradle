@@ -46,7 +46,7 @@ String jacksonDatabindVersion = versionMap['jackson-databind']
 String jacksonAnnotationsVersion = versionMap['jackson-annotations']
 String jrubyVersion = versionMap['jruby']['version']
 
-String log4jVersion = '2.25.4'
+String log4jVersion = '2.25.5'
 
 // Specifically call use of PluginProcessor to skip GraalVmProcessor (not needed)
 tasks.named('compileJava') {
