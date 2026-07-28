@@ -21,19 +21,6 @@ notify:
 
 steps:
   # BRANCH is major.minor (e.g. 9.4 for a 9.4.0 minor release, 9.3 for a 9.3.3 patch).
-  - label: "Bump version minor"
-    if: build.env("WORKFLOW") == "minor"
-    plugins:
-      - elastic/vault-github-token#v0.1.0:
-      - elastic/gh-cli#v0.1.1:
-          version: "2.88.1"
-          wait: true
-          workflow-file: "bump-logstash.yml"
-          workflow-ref: "main"
-          workflow-inputs:
-            logstash_version: "${NEW_VERSION}"
-            logstash_branch: "${BRANCH}"
-
   - label: "Bump version patch"
     if: build.env("WORKFLOW") == "patch"
     plugins:
