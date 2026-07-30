@@ -77,7 +77,15 @@ This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The 
 
 ::::
 
-**Elastic_integration Filter - 9.5.1**
+**Beats Input - 7.0.13**
+
+* Update Netty dependency to 4.1.136.Final [#575](https://github.com/logstash-plugins/logstash-input-beats/pull/575)
+
+**Elastic_integration Filter - 9.5.2**
+
+* Set SO_TIMEOUT on IOReactor to ensure NIO connections have a baseline socket timeout, preventing indefinite hangs when connection pool restore fails to apply the request-level timeout [#480](https://github.com/elastic/logstash-filter-elastic_integration/pull/480)
+
+* Sync up with Elasticsearch 9.5 branch to pull latest dependencies [#476](https://github.com/elastic/logstash-filter-elastic_integration/pull/476)
 
 * Fixes an issue where a field set by an integration pipeline to `java.util.Date` value-object representing a timestamp could not be converted to a timestamp [#460](https://github.com/elastic/logstash-filter-elastic_integration/issues/460)
 * Applies Elasticsearch geoip module relocation changes [#445](https://github.com/elastic/logstash-filter-elastic_integration/pull/445)
@@ -95,6 +103,20 @@ This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The 
 * Fix serverless request failure caused by conflicting `compatible-with` and `Elastic-Api-Version` headers when using elasticsearch-ruby v9 [#269](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/269)
 
 * Drop support for Logstash 7.x by requiring `elasticsearch` gem >= 8. Logstash 8+ continues to work as before [#252](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/252)
+
+**Http Input - 4.1.13**
+
+* Fix to use the `Content-type` declared charset to decode the request body [#230](https://github.com/logstash-plugins/logstash-input-http/pull/230)
+
+* Update Netty dependency to 4.1.136.Final [#228](https://github.com/logstash-plugins/logstash-input-http/pull/228)
+
+**Tcp Input - 7.0.12**
+
+* Update Netty dependency to 4.1.136.Final [#281](https://github.com/logstash-plugins/logstash-input-tcp/pull/281)
+
+**Jdbc Integration - 5.6.4**
+
+* Fix connection leak on statement retry by opening JDBC connection once outside retry loop [#201](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/201)
 
 **Kafka Integration - 12.1.5**
 
