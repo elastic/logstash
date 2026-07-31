@@ -717,7 +717,6 @@ describe LogStash::Runner do
     let(:deprecation_logger_stub) { double("DeprecationLogger").as_null_object }
 
     before(:each) do
-      # skip "Test requires JDK 17, found #{JAVA_SPEC_VERSION}" unless JAVA_SPEC_VERSION == "17"
       skip "Test requires JDK 17, found #{JavaVersion::CURRENT}" unless JavaVersion::CURRENT.compare_to(JavaVersion::JAVA_17) == 0
       allow(runner).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
       allow(logger).to receive(:error)
