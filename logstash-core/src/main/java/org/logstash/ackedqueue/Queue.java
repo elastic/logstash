@@ -607,6 +607,22 @@ public final class Queue implements Closeable {
     }
 
     /**
+     * Guarantee persistence of all elements written to this queue so far.
+     * Fsyncs the head page if it contains writes not yet covered by its last
+     * checkpoint; tail pages are already fsynced at page-rotation time.
+     *
+     * @throws IOException if an IO error occurs
+     */
+    public void ensurePersisted() throws IOException {
+        lock.lock();
+        try {
+            this.headPage.ensurePersistedUpto(this.seqNum);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
      * non-blocking queue read
      *
      * @param limit read the next batch of size up to this limit. the returned batch size can be smaller than the requested limit if fewer elements are available
