@@ -29,7 +29,6 @@ require "json"
 require "webmock/rspec"
 require_relative "../support/helpers"
 require_relative "../support/matchers"
-JAVA_SPEC_VERSION = java.lang.System.getProperty("java.specification.version")
 java_import 'org.logstash.util.JavaVersion'
 
 describe LogStash::Runner do
