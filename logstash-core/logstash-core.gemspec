@@ -82,6 +82,9 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "elasticsearch", '>= 8', '< 10'
   gem.add_runtime_dependency "manticore", '~> 0.6'
 
+  # TODO: EVALUTE PIN: Pinned to the 0.16 line to avoid the 0.19 beta which breaks observabilitySRE distro
+  gem.add_runtime_dependency "jruby-openssl", "~> 0.16.2"
+
   # xpack geoip database service
   gem.add_development_dependency 'logstash-filter-geoip', '>= 7.2.1' # breaking change of DatabaseManager
   gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
