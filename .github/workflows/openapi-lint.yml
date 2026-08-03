@@ -1,0 +1,15 @@
+name: openapi-lint
+on:
+  pull_request:
+    paths:
+      - 'docs/static/spec/openapi/logstash-api.yaml'
+permissions:
+  contents: read
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: elastic/docs-actions/openapi/lint@v1
+        with:
+          spec-path: docs/static/spec/openapi/logstash-api.yaml
