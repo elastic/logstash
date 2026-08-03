@@ -28,11 +28,6 @@ $env:BUILD_JAVA_HOME = $JAVA_CUSTOM_DIR
 $env:RUNTIME_JAVA_HOME = $JAVA_CUSTOM_DIR
 $env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
 
-# JDK 17 is below the supported minimum (21); force Logstash to boot so we can still test it
-if ($JDK -like "*_17") {
-    $env:LS_JAVA_OPTS = "-Dlogstash.jdk.force=true $($env:LS_JAVA_OPTS)"
-}
-
 Write-Host "--- Running test: $CIScript"
 try {
     Invoke-Expression $CIScript

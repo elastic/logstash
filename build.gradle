@@ -98,11 +98,6 @@ allprojects {
       "--add-opens=java.base/java.lang=ALL-UNNAMED",
       "--add-opens=java.base/java.util=ALL-UNNAMED"
     ]
-    // On JDK < 21 (below LogStash's supported minimum) let in-process specs that boot
-    // LogStash::Runner start instead of aborting (see runner.rb JDK check).
-    if (JavaVersion.current() < JavaVersion.VERSION_21) {
-      jvmArgs += "-Dlogstash.jdk.force=true"
-    }
     maxHeapSize = "2g"
     //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
     testLogging {
