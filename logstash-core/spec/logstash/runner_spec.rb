@@ -29,7 +29,6 @@ require "json"
 require "webmock/rspec"
 require_relative "../support/helpers"
 require_relative "../support/matchers"
-java_import 'org.logstash.util.JavaVersion'
 
 describe LogStash::Runner do
   subject(:runner) { LogStash::Runner }
@@ -707,36 +706,6 @@ describe LogStash::Runner do
         it "should show help" do
           expect { subject.run(args) }.to raise_error(Clamp::HelpWanted)
         end
-      end
-    end
-  end
-
-  describe "JDK 17 compatibility" do
-    subject { LogStash::Runner.new("") }
-    let(:args) { ["-e", "input {} output {}"] }
-    let(:deprecation_logger_stub) { double("DeprecationLogger").as_null_object }
-
-    before(:each) do
-      skip "Test requires JDK 17, found #{JavaVersion::CURRENT}" unless JavaVersion::CURRENT.compare_to(JavaVersion::JAVA_17) == 0
-      allow(runner).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
-      allow(logger).to receive(:error)
-      allow(subject).to receive(:force_jdk_check).and_return(mock_force_jdk_check)
-    end
-
-    context "without -Dlogstash.jdk.force=true" do
-      let(:mock_force_jdk_check) { false }
-      it "logs an error about minimum required Java version 21 and returns exit code 1" do
-        expect(logger).to receive(:error).with(a_string_including("minimum required version of Java is 21"))
-        expect(subject.run(args)).to eq(1)
-      end
-    end
-
-    context "with -Dlogstash.jdk.force=true" do
-      let(:mock_force_jdk_check) { true }
-
-      it "logs a warning about forced execution with unsupported Java version" do
-        expect(logger).to receive(:warn).with(a_string_including("force the execution with unsupported Java version"))
-        subject.run(args)
       end
     end
   end
