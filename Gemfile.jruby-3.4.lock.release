@@ -46,7 +46,7 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1272.0)
+    aws-partitions (1.1277.0)
     aws-sdk-cloudfront (1.151.0)
       aws-sdk-core (~> 3, >= 3.254.0)
       aws-sigv4 (~> 1.5)
@@ -67,7 +67,7 @@ GEM
     aws-sdk-resourcegroups (1.100.0)
       aws-sdk-core (~> 3, >= 3.254.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.228.0)
+    aws-sdk-s3 (1.228.2)
       aws-sdk-core (~> 3, >= 3.254.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -103,7 +103,7 @@ GEM
     crack (1.0.1)
       bigdecimal
       rexml
-    csv (3.3.5)
+    csv (3.3.6)
     dalli (3.2.8)
     date (3.3.3-java)
     diff-lcs (1.6.2)
@@ -124,7 +124,7 @@ GEM
     elasticsearch-api (8.19.3)
       multi_json
     equalizer (0.0.11)
-    et-orbi (1.4.0)
+    et-orbi (1.4.1)
       tzinfo
     faraday (2.14.3)
       faraday-net_http (>= 2.0, < 3.5)
@@ -369,7 +369,7 @@ GEM
       atomic
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       thread_safe
-    logstash-filter-translate (3.5.0)
+    logstash-filter-translate (3.5.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-deprecation_logger_support (~> 1.0)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -468,7 +468,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (4.1.12-java)
+    logstash-input-http (4.1.13-java)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -698,7 +698,7 @@ GEM
       hitimes (~> 1.1)
     mini_mime (1.1.5)
     minitar (1.1.0)
-    msgpack (1.8.3-java)
+    msgpack (1.8.4-java)
     multi_json (1.19.1)
     multipart-post (2.4.1)
     murmurhash3 (0.1.6-java)
@@ -708,7 +708,7 @@ GEM
     naught (1.1.0)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-imap (0.6.4.1)
+    net-imap (0.6.6)
       date
       net-protocol
     net-pop (0.1.2)
