@@ -2,11 +2,6 @@ name: Bump dependencies
 on:
   workflow_dispatch:
    inputs:
-      branch:
-        description: 'Release Branch'     
-        required: true
-        default: '8.19'
-        type: string
       bump:
         description: 'Bump type'     
         required: true
@@ -36,10 +31,11 @@ jobs:
     name: Bump versions
     runs-on: ubuntu-latest
     env:
-      INPUTS_BRANCH: "${{ inputs.branch }}"
+      INPUTS_BRANCH: "${{ github.ref_name }}"
       INPUTS_BUMP: "${{ inputs.bump }}"
       INPUTS_EXTRA_GEMS_MINOR: "${{ inputs.extra_gems_minor }}"
       INPUTS_EXTRA_GEMS_MAJOR: "${{ inputs.extra_gems_major }}"
+      BACKPORT_LABEL: "backport-${{ github.ref_name }}"
     steps:
       - name: Fetch logstash-core team member list
         uses: tspascoal/get-user-teams-membership@818140d631d5f29f26b151afbe4179f87d9ceb5e #v4.0.1
@@ -55,7 +51,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ env.INPUTS_BRANCH }}
       - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
       - run: git config --global user.name "logstashmachine"
       - run: ./gradlew clean installDefaultGems
@@ -89,4 +85,4 @@ jobs:
           git push origin $BRANCH
       - name: Create Pull Request
         run: |
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -X POST -d "{\"title\": \"bump lock file for ${{ github.event.inputs.branch }}\",\"head\": \"${BRANCH}\",\"base\": \"${{ github.event.inputs.branch }}\"}" https://api.github.com/repos/elastic/logstash/pulls
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -X POST -d "{\"title\": \"bump lock file for ${{ env.INPUTS_BRANCH }}\",\"head\": \"${BRANCH}\",\"base\": \"${{ env.INPUTS_BRANCH }}\"}" https://api.github.com/repos/elastic/logstash/pulls
