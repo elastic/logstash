@@ -3,15 +3,15 @@ name: bump-logstash-version
 on:
   workflow_dispatch:
     inputs:
-      logstash_version:
+      logstash-version:
         description: 'Logstash version to update TO (example: 9.1.4)'
         required: true
         type: string
-      logstash_branch:
+      logstash-branch:
         description: 'Logstash branch (example: 9.1)'
         required: true
         type: string
-      logstash_release_track:
+      logstash-release-track:
         description: 'Release track (example: 9.current, 9.previous, main). Optional; when omitted the release track in versions.yml is left unchanged.'
         required: false
         type: string
@@ -33,6 +33,6 @@ jobs:
           version-file: .updatecli-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LOGSTASH_BRANCH: "${{ github.event.inputs.logstash_branch }}"
-          LOGSTASH_VERSION: "${{ github.event.inputs.logstash_version }}"
-          LOGSTASH_RELEASE_TRACK: "${{ github.event.inputs.logstash_release_track }}"
+          LOGSTASH_BRANCH: "${{ inputs.logstash-branch }}"
+          LOGSTASH_VERSION: "${{ inputs.logstash-version }}"
+          LOGSTASH_RELEASE_TRACK: "${{ inputs.logstash-release-track }}"
