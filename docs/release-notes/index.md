@@ -21,6 +21,68 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.5 [logstash-9.4.5-release-notes]
+
+### Features and enhancements [logstash-9.4.5-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.4.5
+
+=== Logstash Commits between 9.4 and 9.4.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.4..9.4"
+
+ef99f4495 - (HEAD -> 9.4, origin/9.4) Update patch plugin versions in gemfile lock (#19379) (2 days ago) <github-actions[bot]>
+135ef8feb - Update bundled JDK to 21.0.12 build 8 (#19365) (2 days ago) <github-actions[bot]>
+711968322 - dra: trigger bump-logstash workflow from version bump pipeline (#19280) (#19358) (7 days ago) <mergify[bot]>
+a180b108c - Bump log4j to 2.25.5 (#19335) (#19347) (13 days ago) <mergify[bot]>
+da847fc94 - Update patch plugin versions in gemfile lock (#19340) (2 weeks ago) <github-actions[bot]>
+6074e1603 - Bump logstash version 9.4.5 (#19327) (2 weeks ago) <github-actions[bot]>
+74224b0b3 - [9.4] (backport #19313) Release notes for 9.3.8 (#19324) (2 weeks ago) <mergify[bot]>
+0c499d8e6 - Release notes for 9.4.4 (#19314) (2 weeks ago) <github-actions[bot]>
+2749d1d73 - Bump actions/setup-node in the github-actions group across 1 directory (#19316) (#19319) (2 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.4.4..9.4 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 9.4.5 -> 9.4.6
+logstash-filter-translate: 3.5.0 -> 3.5.1
+logstash-input-beats: 7.0.12 -> 7.0.13
+logstash-input-http: 4.1.11 -> 4.1.13
+logstash-input-tcp: 7.0.11 -> 7.0.12
+logstash-integration-jdbc: 5.6.3 -> 5.6.4
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.4.5-changes]
+
+**Elastic_integration Filter - 9.4.6**
+
+* Set SO_TIMEOUT on IOReactor to ensure NIO connections have a baseline socket timeout [#480](https://github.com/elastic/logstash-filter-elastic_integration/pull/480)
+* Prevent indefinite hangs when connection pool restore fails to apply the request-level timeout
+
+**Translate Filter - 3.5.1**
+
+* Fixes an issue where failing to load a dictionary could cause the plugin to continue to run with a missing or partially-updated dictionary; this issue was especially noticeable when configured with `refresh_behaviour => replace`, which clears the dictionary before loading the replacement [#112](https://github.com/logstash-plugins/logstash-filter-translate/issues/112).
+
+**Beats Input - 7.0.13**
+
+* Update Netty dependency to 4.1.136.Final [#575](https://github.com/logstash-plugins/logstash-input-beats/pull/575)
+
+**Http Input - 4.1.13**
+
+* Fix to use the `Content-type` declared charset to decode the request body [#230](https://github.com/logstash-plugins/logstash-input-http/pull/230)
+
+* Update Netty dependency to 4.1.136.Final [#228](https://github.com/logstash-plugins/logstash-input-http/pull/228)
+
+**Tcp Input - 7.0.12**
+
+* Update Netty dependency to 4.1.136.Final [#281](https://github.com/logstash-plugins/logstash-input-tcp/pull/281)
+
+**Jdbc Integration - 5.6.4**
+
+* Fix connection leak on statement retry by opening JDBC connection once outside retry loop [#201](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/201)
+
+
 ## 9.4.4 [logstash-9.4.4-release-notes]
 
 ### Updates to dependencies [logstash-9.4.4-dependencies]
