@@ -23,28 +23,13 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.5.1 [logstash-9.5.1-release-notes]
 
-### Features and enhancements [logstash-9.5.1-features-enhancements]
+### Fixes [logstash-9.5.1-fixes]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.5.1
-
-=== Logstash Commits between 9.5 and 9.5.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.5.0..9.5"
-
-dffd1740f - (HEAD -> 9.5, origin/9.5) Set 9.5 release track to 9.current (#19386) (17 hours ago) <Cas Donoghue>
-29c973751 - [BAckport 9.5]BufferedTokenizer: size limit check in flush and logging when drop data (#19312) (#19336) (26 hours ago) <mergify[bot]>
-5a9681b9e - Bump logstash version 9.5.1 (#19380) (2 days ago) <github-actions[bot]>
-7d2a91324 - Release notes for 9.5.0 (#19356) (2 days ago) <github-actions[bot]>
-3af63f83d - Update bundled JDK to 21.0.12 build 8 (#19366) (3 days ago) <github-actions[bot]>
-bbac8c992 - dra: trigger bump-logstash workflow from version bump pipeline (#19280) (#19357) (7 days ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.5.0..9.5 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
+* Updates common functionality used to dice data used in some codec plugins to log validate oversized segments also on last part and logging when data is dropped because passed the size limit [#19312](https://github.com/elastic/logstash/pull/19312)
 
 ### Plugins [logstash-plugin-9.5.1-changes]
+
+No change to the plugins in this release.
 
 ## 9.5.0 [logstash-9.5.0-release-notes]
 
