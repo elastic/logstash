@@ -31,7 +31,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Elastic_integration Filter - 9.4.6**
 
-* Set a 30-second idle socket timeout on the HTTP client's low-level connection layer, so connections time out consistently even before a request is in flight — matching the default behavior of the Elasticsearch REST client. [#480](https://github.com/elastic/logstash-filter-elastic_integration/pull/480)
+* Apply the default 30-second socket timeout to low-level HTTP connections so stalled connections time out consistently. [#480](https://github.com/elastic/logstash-filter-elastic_integration/pull/480)
 
 **Translate Filter - 3.5.1**
 
