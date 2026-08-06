@@ -616,6 +616,10 @@ public final class Queue implements Closeable {
     public void ensurePersisted() throws IOException {
         lock.lock();
         try {
+            // close() fsyncs everything before nulling headPage; return safely if already closed.
+            if (isClosed()) {
+                return;
+            }
             this.headPage.ensurePersistedUpto(this.seqNum);
         } finally {
             lock.unlock();
