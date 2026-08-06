@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-20,Logstash 8.19.20>>
 * <<logstash-8-19-19,Logstash 8.19.19>>
 * <<logstash-8-19-18,Logstash 8.19.18>>
 * <<logstash-8-19-17,Logstash 8.19.17>>
@@ -110,6 +111,87 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-20]]
+=== Logstash 8.19.20 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.20
+
+=== Logstash Commits between 8.19 and 8.19.19
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.19..8.19"
+
+1a9596d55 - (HEAD -> 8.19, origin/8.19) [8.19] (backport #19343) Aligns dependency bump workflow on run branch. (#19382) (2 days ago) <mergify[bot]>
+19c0e4162 - Update patch plugin versions in gemfile lock (#19378) (2 days ago) <github-actions[bot]>
+5ec0e02e9 - Revert addition of `logstash.jdk.force` setting (#19375) (2 days ago) <Cas Donoghue>
+18216c9c6 - Update bundled JDK to 21.0.12 build 8 (#19367) (2 days ago) <github-actions[bot]>
+7ab78e2a2 - Add test to verify that force jdk works when running with JDK 17 (#19361) (6 days ago) <Andrea Selva>
+6a551c2b9 - dra: trigger bump-logstash workflow from version bump pipeline (#19280) (#19360) (7 days ago) <mergify[bot]>
+4c5b01e95 - Continue to test against jdk 17 for 8.19 (#19352) (8 days ago) <Cas Donoghue>
+9c184c987 - Fix 8.19 jdk matrix (#19350) (13 days ago) <Cas Donoghue>
+abf1f8af3 - Bump log4j to 2.25.5 (#19335) (#19349) (13 days ago) <mergify[bot]>
+b7e6b600e - Update patch plugin versions in gemfile lock (#19338) (2 weeks ago) <github-actions[bot]>
+1b9db5393 - Avoid to run on JDK < 21 (#19311) (2 weeks ago) <Andrea Selva>
+9984eae62 - Bump logstash version 8.19.20 (#19329) (2 weeks ago) <github-actions[bot]>
+33505f730 - Release notes for 8.19.19 (#19315) (2 weeks ago) <github-actions[bot]>
+493b0125e - [8.19] (backport #19316) Bump actions/setup-node from 6 to 7 in the github-actions group across 1 directory (#19321) (2 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.19.19..8.19 *.release"
+Changed plugin versions:
+logstash-filter-csv: 3.1.1 -> 3.1.2
+logstash-filter-elastic_integration: 8.19.8 -> 8.19.9
+logstash-filter-elasticsearch: 3.19.0 -> 3.19.1
+logstash-input-beats: 6.9.10 -> 6.9.11
+logstash-input-elasticsearch: 4.23.0 -> 4.23.1
+logstash-input-http: 3.10.9 -> 3.10.11
+logstash-input-tcp: 6.4.13 -> 6.4.14
+logstash-integration-jdbc: 5.6.3 -> 5.6.4
+logstash-output-elasticsearch: 11.22.16 -> 11.22.17
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Csv Filter - 3.1.2*
+
+* Pin `csv` dependency to `< 3.2.6` to avoid a JRuby CSV.parse_line performance regression introduced in csv 3.2.6 https://github.com/logstash-plugins/logstash-filter-csv/pull/94[#94]
+
+*Elastic_integration Filter - 8.19.9*
+
+* Set SO_TIMEOUT on IOReactor to ensure NIO connections have a baseline socket timeout https://github.com/elastic/logstash-filter-elastic_integration/pull/480[#480]
+* Prevent indefinite hangs when connection pool restore fails to apply the request-level timeout
+
+*Elasticsearch Filter - 3.19.1*
+
+* Support base64-encoded and Elastic Cloud (`essu_`-prefixed) API keys in the `api_key` option; reject unrecognized formats at startup. https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/229[#229]
+
+*Beats Input - 6.9.11*
+
+* Update Netty dependency to 4.1.136.Final https://github.com/logstash-plugins/logstash-input-beats/pull/574[#574]
+
+*Elasticsearch Input - 4.23.1*
+
+* Support base64-encoded and Elastic Cloud (`essu_`-prefixed) API keys in the `api_key` option; reject unrecognized formats at startup. https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/276[#276]
+
+*Http Input - 3.10.11*
+
+* Fix to use the `Content-type` declared charset to decode the request body https://github.com/logstash-plugins/logstash-input-http/pull/232[#232]
+
+* Update Netty dependency to 4.1.136.Final https://github.com/logstash-plugins/logstash-input-http/pull/229[#229]
+
+*Tcp Input - 6.4.14*
+
+* Update Netty dependency to 4.1.136.Final https://github.com/logstash-plugins/logstash-input-tcp/pull/282[#282]
+
+*Jdbc Integration - 5.6.4*
+
+* Fix connection leak on statement retry by opening JDBC connection once outside retry loop https://github.com/logstash-plugins/logstash-integration-jdbc/pull/201[#201]
+
+*Elasticsearch Output - 11.22.17*
+
+* Support base64-encoded and Elastic Cloud (`essu_`-prefixed) API keys in the `api_key` option; reject unrecognized formats at startup. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1278[#1278]
+
 
 [[logstash-8-19-19]]
 === Logstash 8.19.19 Release Notes
