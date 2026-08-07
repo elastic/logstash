@@ -44,7 +44,7 @@ Logstash user base and our own goals for the project. Through this process, we t
 ## Found a Security Issue?
 
 If you've found a security issue, before submitting anything via a PR, please
-get in touch with our security team [here](https://www.elastic.co/product-security).
+get in touch with our security team [here](https://github.com/elastic/.github/blob/main/SECURITY.md).
 
 # Contributing Documentation and Code Changes
 
@@ -163,7 +163,7 @@ Labels (optional):
 - **`[DOC]`** for a change that affects only documentation, and not code.
 - **`[SECURITY]`** for a security fix. If you're working on a security issue, 
 please make sure to follow the process outlined by our security team. 
-If you haven't done so already, please [get in touch with them](https://www.elastic.co/product-security) first.
+If you haven't done so already, please [get in touch with them](https://github.com/elastic/.github/blob/main/SECURITY.md) first.
 
 Keywords (copied from [keepachangelog.com](https://keepachangelog.com/en/1.0.0/#how)):
 
@@ -176,7 +176,7 @@ Keywords (copied from [keepachangelog.com](https://keepachangelog.com/en/1.0.0/#
   - **Important reminder**: If you're working on a security issue, please make sure
   you're following the process outlined by our security team. If you haven't
   done so already, please get in touch with them
-  [here](https://www.elastic.co/product-security) first.
+  [here](https://github.com/elastic/.github/blob/main/SECURITY.md) first.
 
 Example:
 
