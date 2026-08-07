@@ -127,8 +127,7 @@ This section summarizes the changes in the following releases:
 
 *Elastic_integration Filter - 8.19.9*
 
-* Set SO_TIMEOUT on IOReactor to ensure NIO connections have a baseline socket timeout https://github.com/elastic/logstash-filter-elastic_integration/pull/480[#480]
-* Prevent indefinite hangs when connection pool restore fails to apply the request-level timeout
+* Apply the default 30-second socket timeout to low-level HTTP connections so stalled connections time out consistently https://github.com/elastic/logstash-filter-elastic_integration/pull/480[#480]
 
 *Elasticsearch Filter - 3.19.1*
 
