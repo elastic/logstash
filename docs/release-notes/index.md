@@ -25,7 +25,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Fixes [logstash-9.5.1-fixes]
 
-* Updates common functionality used to dice data used in some codec plugins to log validate oversized segments also on last part and logging when data is dropped because passed the size limit [#19312](https://github.com/elastic/logstash/pull/19312)
+* Updates common functionality used to dice data used in some codec plugins to validate oversized segments also on last part. Added logging when data is dropped because passed the size limit [#19312](https://github.com/elastic/logstash/pull/19312)
 
 ### Plugins [logstash-plugin-9.5.1-changes]
 
