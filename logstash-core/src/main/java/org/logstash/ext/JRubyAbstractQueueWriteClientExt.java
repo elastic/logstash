@@ -55,6 +55,21 @@ public abstract class JRubyAbstractQueueWriteClientExt extends RubyBasicObject i
         return this;
     }
 
+    @JRubyMethod(name = "persistent?")
+    public final IRubyObject rubyPersistent(final ThreadContext context) {
+        return context.runtime.newBoolean(isPersistent());
+    }
+
+    @JRubyMethod(name = "checkpoint!")
+    public final JRubyAbstractQueueWriteClientExt rubyCheckpoint(final ThreadContext context) {
+        doCheckpoint(context);
+        return this;
+    }
+
+    protected abstract boolean isPersistent();
+
+    protected abstract void doCheckpoint(ThreadContext context);
+
     protected abstract JRubyAbstractQueueWriteClientExt doPush(ThreadContext context,
                                                                JrubyEventExtLibrary.RubyEvent event) throws InterruptedException;
 
