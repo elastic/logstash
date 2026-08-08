@@ -13,7 +13,7 @@ EnvironmentFile=-/etc/sysconfig/logstash
 ExecStart=/usr/share/logstash/bin/logstash "--path.settings" "/etc/logstash"
 Restart=always
 WorkingDirectory=/
-Nice=19
+Nice=0
 LimitNOFILE=16384
 
 # When stopping, how long to wait before giving up and sending SIGKILL?
