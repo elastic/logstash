@@ -38,7 +38,7 @@ jobs:
       BACKPORT_LABEL: "backport-${{ github.ref_name }}"
     steps:
       - name: Set up JDK 21
-        uses: actions/setup-java@v5.6.0
+        uses: actions/setup-java@v5.7.0
         with:
           distribution: 'temurin'
           java-version: '21'
