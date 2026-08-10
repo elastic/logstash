@@ -21,6 +21,41 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.5 [logstash-9.4.5-release-notes]
+
+### Updates to dependencies [logstash-9.4.5-dependencies]
+
+* Updated JDK to 21.0.12 build 8 [#19365](https://github.com/elastic/logstash/pull/19365)
+
+### Plugins [logstash-plugin-9.4.5-changes]
+
+**Elastic_integration Filter - 9.4.6**
+
+* Apply the default 30-second socket timeout to low-level HTTP connections so stalled connections time out consistently. [#480](https://github.com/elastic/logstash-filter-elastic_integration/pull/480)
+
+**Translate Filter - 3.5.1**
+
+* Fixes an issue where failing to load a dictionary could cause the plugin to continue to run with a missing or partially-updated dictionary; this issue was especially noticeable when configured with `refresh_behaviour => replace`, which clears the dictionary before loading the replacement [#112](https://github.com/logstash-plugins/logstash-filter-translate/issues/112).
+
+**Beats Input - 7.0.13**
+
+* Update Netty dependency to 4.1.136.Final [#575](https://github.com/logstash-plugins/logstash-input-beats/pull/575)
+
+**Http Input - 4.1.13**
+
+* Fix to use the `Content-type` declared charset to decode the request body [#230](https://github.com/logstash-plugins/logstash-input-http/pull/230)
+
+* Update Netty dependency to 4.1.136.Final [#228](https://github.com/logstash-plugins/logstash-input-http/pull/228)
+
+**Tcp Input - 7.0.12**
+
+* Update Netty dependency to 4.1.136.Final [#281](https://github.com/logstash-plugins/logstash-input-tcp/pull/281)
+
+**Jdbc Integration - 5.6.4**
+
+* Fix connection leak on statement retry by opening JDBC connection once outside retry loop [#201](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/201)
+
+
 ## 9.4.4 [logstash-9.4.4-release-notes]
 
 ### Updates to dependencies [logstash-9.4.4-dependencies]
