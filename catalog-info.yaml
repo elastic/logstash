@@ -114,7 +114,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -160,7 +160,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -206,7 +206,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -252,7 +252,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -354,7 +354,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -397,7 +397,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'        
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -455,7 +455,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -506,7 +506,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -557,7 +557,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -600,7 +600,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'        
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -658,7 +658,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'        
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -709,7 +709,7 @@ spec:
       cancel_intermediate_builds: true
       skip_intermediate_builds: true
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -753,7 +753,7 @@ spec:
       provider_settings:
         trigger_mode: none
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -825,7 +825,7 @@ spec:
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -873,7 +873,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -926,7 +926,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -974,7 +974,7 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
@@ -1019,7 +1019,7 @@ spec:
       cancel_intermediate_builds: false
       skip_intermediate_builds: false
       teams:
-        ingest-fp:
+        streams:
           access_level: MANAGE_BUILD_AND_READ
         logstash:
           access_level: MANAGE_BUILD_AND_READ
