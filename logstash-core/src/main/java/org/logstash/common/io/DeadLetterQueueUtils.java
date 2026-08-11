@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
@@ -84,8 +85,17 @@ Finds the max segment ID between the `.log` file segments using OS-level glob fi
             for (Path p : stream) {
                 int id = extractSegmentId(p);
                 if (id < oldestId) {
-                    if (minFileSize > 0 && Files.size(p) <= minFileSize) {
-                        continue;
+                    if (minFileSize > 0) {
+                        long size;
+                        try {
+                            size = Files.size(p);
+                        } catch (NoSuchFileException e) {
+                            logger.debug("Segment file {} was removed concurrently, skipping", p);
+                            continue;
+                        }
+                        if (size <= minFileSize) {
+                            continue;
+                        }
                     }
                     oldestId = id;
                     oldest = p;
