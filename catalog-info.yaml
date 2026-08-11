@@ -220,8 +220,6 @@ spec:
           message: "Run the Logstash Artifacts Snyk report every day."
 
 # ***********************************
-<<<<<<< HEAD
-=======
 # Declare artifacts-snyk-cleanup pipeline
 # ***********************************
 ---
@@ -268,7 +266,6 @@ spec:
           message: "Cleanup stale Snyk artifact-scan projects weekly."
 
 # ***********************************
->>>>>>> d950dbe8 (Rename ingest-fp team reference to Streams (#19415))
 # Declare artifacts acceptance test pipeline
 # ***********************************
 ---
