@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require 'time'
+
 module LogStash
   module Api
     module Modules
@@ -28,6 +30,7 @@ module LogStash
               status:     health_report_pojo.status,
               symptom:    health_report_pojo.symptom,
               indicators: health_report_pojo.indicators,
+              timestamp:  Time.now.iso8601(3),
             })
           end
 
