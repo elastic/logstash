@@ -35,7 +35,7 @@ describe LogStash::Api::Modules::HealthReport do
     it "includes a timestamp in ISO 8601 format with millisecond precision" do
       body = JSON.parse(last_response.body)
       expect(body).to include("timestamp")
-      expect(body["timestamp"]).to match(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}\z/)
+      expect(body["timestamp"]).to match(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}(Z|[+-]\d{2}:\d{2})\z/)
     end
   end
 end
