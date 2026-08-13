@@ -78,11 +78,14 @@ describe LogStash::TimerTask do
   end
 
   context "when the task exceeds the timeout" do
+    let(:release) { Concurrent::CountDownLatch.new }
+
     subject do
-      described_class.new(:execution_interval => 0.1, :timeout_interval => 0.1) { sleep(30) }
+      latch = release
+      described_class.new(:execution_interval => 0.1, :timeout_interval => 0.1) { latch.wait }
     end
 
-    after { subject.shutdown }
+    after { release.count_down; subject.shutdown }
 
     it "notifies observers with a Concurrent::TimeoutError" do
       subject.add_observer(observer)
@@ -91,6 +94,19 @@ describe LogStash::TimerTask do
       _time, result, exception = wait_for_notification
       expect(result).to be_nil
       expect(exception).to be_a(Concurrent::TimeoutError)
+    end
+
+    it "does not start a second run while one is still in flight" do
+      runs = Concurrent::AtomicFixnum.new(0)
+      latch = release
+      task = described_class.new(:execution_interval => 0.1, :timeout_interval => 0.1) do
+        runs.increment
+        latch.wait
+      end
+      task.execute
+      sleep(0.6)
+      task.shutdown
+      expect(runs.value).to eq(1)
     end
   end
 

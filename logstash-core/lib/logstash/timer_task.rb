@@ -20,7 +20,9 @@ require "concurrent"
 module LogStash
   # Runs a block every `execution_interval` seconds, notifying observers via
   # `update(time, result, exception)`. If a run exceeds `timeout_interval` the
-  # observer receives a `Concurrent::TimeoutError` and scheduling continues.
+  # observer receives a `Concurrent::TimeoutError`. A timed-out run is abandoned
+  # rather than killed; while it is still executing no new run is started, so at
+  # most one run is ever in flight.
   #
   # Replaces `Concurrent::TimerTask`, whose per-run timeout was removed in
   # concurrent-ruby 1.1.10.
@@ -36,6 +38,7 @@ module LogStash
       @observers = []
       @observers_mutex = Mutex.new
       @running = Concurrent::AtomicBoolean.new(false)
+      @in_flight = nil
     end
 
     def add_observer(observer)
@@ -61,7 +64,15 @@ module LogStash
     private
 
     def run_once
+      # A prior run timed out and is still executing: keep signalling the timeout
+      # but don't pile up a second concurrent run.
+      if @in_flight && !@in_flight.complete?
+        notify_observers(Time.now, nil, Concurrent::TimeoutError.new)
+        return
+      end
+
       future = Concurrent::Future.execute(&@task)
+      @in_flight = future
       future.wait(@timeout_interval)
 
       if !future.complete?
