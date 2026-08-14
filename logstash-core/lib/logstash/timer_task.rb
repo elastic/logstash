@@ -38,7 +38,7 @@ module LogStash
       @observers = []
       @observers_mutex = Mutex.new
       @running = Concurrent::AtomicBoolean.new(false)
-      @in_flight = nil
+      @in_flight = nil # Future reference to executing block
     end
 
     def add_observer(observer)
