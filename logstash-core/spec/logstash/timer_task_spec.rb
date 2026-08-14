@@ -106,6 +106,7 @@ describe LogStash::TimerTask do
       task.execute
       sleep(0.6)
       task.shutdown
+      release.count_down
       expect(runs.value).to eq(1)
     end
   end
