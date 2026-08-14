@@ -16,6 +16,7 @@
 # under the License.
 
 require "logstash/util"
+require "logstash/timer_task"
 require "concurrent"
 
 module LogStash module Instrument module PeriodicPoller
@@ -80,7 +81,7 @@ module LogStash module Instrument module PeriodicPoller
 
     protected
     def configure_task
-      @task = Concurrent::TimerTask.new { collect }
+      @task = LogStash::TimerTask.new { collect }
       @task.execution_interval = @options[:polling_interval]
       @task.timeout_interval = @options[:polling_timeout]
       @task.add_observer(self)
