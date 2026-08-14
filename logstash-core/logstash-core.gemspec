@@ -76,12 +76,8 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "jrjackson", "= #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
 
-<<<<<<< HEAD
-  gem.add_runtime_dependency "elasticsearch", '~> 8'
-=======
   gem.add_runtime_dependency "multi_json", "~> 1.20"
   gem.add_runtime_dependency "elasticsearch", '>= 8', '< 10'
->>>>>>> d01d88238 (Update concurrent-ruby gem (#19428))
   gem.add_runtime_dependency "manticore", '~> 0.6'
   # xpack geoip database service
   gem.add_development_dependency 'logstash-filter-geoip', '>= 7.2.1' # breaking change of DatabaseManager
