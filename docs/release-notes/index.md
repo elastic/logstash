@@ -86,6 +86,21 @@ Related:
 This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The upgrade includes Apache Kafka client 4.x with breaking changes — see the [9.5.0 breaking changes](/release-notes/breaking-changes.md#logstash-950-breaking-changes) for details and required actions.
 
 ::::
+## 9.4.5 [logstash-9.4.5-release-notes]
+
+### Updates to dependencies [logstash-9.4.5-dependencies]
+
+* Updated JDK to 21.0.12 build 8 [#19365](https://github.com/elastic/logstash/pull/19365)
+
+### Plugins [logstash-plugin-9.4.5-changes]
+
+**Elastic_integration Filter - 9.4.6**
+
+* Apply the default 30-second socket timeout to low-level HTTP connections so stalled connections time out consistently. [#480](https://github.com/elastic/logstash-filter-elastic_integration/pull/480)
+
+**Translate Filter - 3.5.1**
+
+* Fixes an issue where failing to load a dictionary could cause the plugin to continue to run with a missing or partially-updated dictionary; this issue was especially noticeable when configured with `refresh_behaviour => replace`, which clears the dictionary before loading the replacement [#112](https://github.com/logstash-plugins/logstash-filter-translate/issues/112).
 
 **Beats Input - 7.0.13**
 
