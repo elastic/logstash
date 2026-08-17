@@ -27,10 +27,16 @@ Set the value to port :443 instead.
 ## Communication between {{ls}} and {{es-serverless}} [connecting-to-elasticsearch-serverless]
 
 [{{es-serverless}}](docs-content://solutions/search/serverless-elasticsearch-get-started.md) simplifies safe, secure communication between {{ls}} and {{es}}.
-To send data to a {{serverless-short}} project, configure the {{ls}} {{es}} output plugin to connect using the project's **{{es}} endpoint URL** and an **API key**.
+To send data to a {{serverless-short}} project, configure the {{ls}} {{es}} output plugin to connect using the project's **{{es}} endpoint URL** OR [´cloud_id´](https://www.elastic.co/docs/solutions/elasticsearch-solution-project/search-connection-details#_serverless_deployments) and an **API key**.
 
 ```ruby
 output {elasticsearch { hosts => "ELASTICSEARCH_ENDPOINT_URL" api_key => "<api key>" } }
+```
+
+or
+
+```ruby
+output {elasticsearch { cloud_id => "SERVERLESS_CLOUD_ID" api_key => "<api key>" } }
 ```
 
 The value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) is in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key).
