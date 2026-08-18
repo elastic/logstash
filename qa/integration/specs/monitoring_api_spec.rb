@@ -216,6 +216,8 @@ describe "Test Monitoring API" do
       expect(result).to be_a(Hash)
       expect(result).to include("status")
       expect(result["status"]).to match(/^(green|yellow|red)$/)
+      expect(result).to include("timestamp")
+      expect(result["timestamp"]).to match(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}/)
     end
   end
 
