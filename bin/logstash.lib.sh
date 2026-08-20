@@ -113,11 +113,26 @@ setup_java() {
     elif [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
       echo "Using bundled JDK: ${LOGSTASH_HOME}/${BUNDLED_JDK_PART}"
       JAVACMD="${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java"
-    elif [ -n "$JAVACMD_TEST" ]; then
-      set +e
-      JAVACMD=`command -v java`
-      set -e
-      echo "Using system java: $JAVACMD"
+    elif [ -n "${JAVACMD_TEST}" ]; then
+      JAVACMD="${JAVACMD_TEST}"
+      # Resolve JAVACMD to the real JDK binary so that jruby.sh can correctly
+      # derive JAVA_HOME (it walks two dirname levels up from JAVACMD).
+      # A real JDK home always contains a release file; if that's missing,
+      # JAVACMD is a wrapper (symlink, version manager shim, etc.) and we
+      # interrogate the JVM to locate the underlying binary.
+      _candidate_home="$(dirname "$(dirname "${JAVACMD}")")"
+      if [ ! -f "${_candidate_home}/release" ]; then
+        _java_home="$(${JAVACMD} -XshowSettings:property -version 2>&1 \
+          | awk -F' = ' '/java\.home/{print $2; exit}')"
+        [ -x "${_java_home}/bin/java" ] && JAVACMD="${_java_home}/bin/java"
+        unset _java_home
+      fi
+      unset _candidate_home
+      if [ "${JAVACMD}" = "${JAVACMD_TEST}" ]; then
+        echo "Using system java: ${JAVACMD}"
+      else
+        echo "Using system java: ${JAVACMD_TEST} -> ${JAVACMD}"
+      fi
     fi
   fi
 
