@@ -21,6 +21,44 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.2 [logstash-9.5.2-release-notes]
+
+### Fixes [logstash-9.5.2-fixes]
+
+* Made `BufferedTokenizer` thread safe and usable in multithreaded contexts; its `flush` operation now returns an error when the remainder token overruns the size limit, and logs when data is dropped [#19345](https://github.com/elastic/logstash/pull/19345) [#19312](https://github.com/elastic/logstash/pull/19312)
+
+* Handle a `NoSuchFileException` that could occur while resolving the oldest dead letter queue segment file [#19409](https://github.com/elastic/logstash/pull/19409)
+
+### Updates to dependencies [logstash-9.5.2-dependencies]
+
+* Update `concurrent-ruby` to 1.3.8 [#19428](https://github.com/elastic/logstash/pull/19428)
+
+### Plugins [logstash-plugin-9.5.2-changes]
+
+**Edn Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Edn_lines Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn_lines/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn_lines` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Anonymize Filter - 3.0.8**
+
+* Fix `NameError: uninitialized constant Fixnum` when using the `MURMUR3` algorithm on Logstash 9.4+ (Ruby 3.2+, which removed `Fixnum` in favor of `Integer`) [#19](https://github.com/logstash-plugins/logstash-filter-anonymize/pull/19)
+
+**Translate Filter - 3.5.1**
+
+* Fixes an issue where failing to load a dictionary could cause the plugin to continue to run with a missing or partially-updated dictionary; this issue was especially noticeable when configured with `refresh_behaviour => replace`, which clears the dictionary before loading the replacement [#112](https://github.com/logstash-plugins/logstash-filter-translate/issues/112).
+
+**Jms Input - 3.3.2**
+
+* Fix `NameError: uninitialized constant Fixnum` when reading a JMS MapMessage on Logstash 9.4+ [#63](https://github.com/logstash-plugins/logstash-input-jms/pull/63)
+* The `jruby-jms` gem references the `Fixnum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` while decoding a JMS MapMessage. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `jms`.
+
+
 ## 9.5.1 [logstash-9.5.1-release-notes]
 
 ### Fixes [logstash-9.5.1-fixes]
