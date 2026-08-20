@@ -390,12 +390,12 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri (>= 1.18.9)
       xml-simple
-    logstash-input-azure_event_hubs (1.5.8)
+    logstash-input-azure_event_hubs (1.5.9)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (7.0.13-java)
+    logstash-input-beats (7.0.14-java)
       concurrent-ruby (~> 1.0)
       logstash-codec-multiline (>= 2.0.5)
       logstash-codec-plain
@@ -468,7 +468,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (4.1.13-java)
+    logstash-input-http (4.2.1-java)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -512,7 +512,7 @@ GEM
       logstash-filter-grok (>= 4.4.1)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (7.0.12-java)
+    logstash-input-tcp (7.0.13-java)
       jruby-openssl (>= 0.12.2)
       logstash-codec-json
       logstash-codec-json_lines
@@ -567,7 +567,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (12.1.5-java)
+    logstash-integration-kafka (12.1.6-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
