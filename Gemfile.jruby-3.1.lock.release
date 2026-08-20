@@ -393,12 +393,12 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri (>= 1.18.9)
       xml-simple
-    logstash-input-azure_event_hubs (1.5.8)
+    logstash-input-azure_event_hubs (1.5.9)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.9.11-java)
+    logstash-input-beats (6.9.12-java)
       concurrent-ruby (~> 1.0)
       logstash-codec-multiline (>= 2.0.5)
       logstash-codec-plain
@@ -472,7 +472,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (3.10.11-java)
+    logstash-input-http (3.11.1-java)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -516,7 +516,7 @@ GEM
       logstash-filter-grok (>= 4.4.1)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (6.4.14-java)
+    logstash-input-tcp (6.4.15-java)
       jruby-openssl (>= 0.12.2)
       logstash-codec-json
       logstash-codec-json_lines
