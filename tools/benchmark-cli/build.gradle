@@ -34,7 +34,7 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
+    classpath "com.gradleup.shadow:shadow-gradle-plugin:${shadowGradlePluginVersion}"
   }
 }
 
@@ -45,17 +45,17 @@ ext {
 
 dependencies {
   implementation 'net.sf.jopt-simple:jopt-simple:5.0.4'
-  implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
-  implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.26.1'
-  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.18.0'
-  implementation group: 'commons-codec', name: 'commons-codec', version: '1.17.0' // transitively required by httpclient
+  implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+  implementation 'org.apache.commons:commons-compress:1.26.1'
+  implementation 'org.apache.commons:commons-lang3:3.18.0'
+  implementation 'commons-codec:commons-codec:1.17.0' // transitively required by httpclient
 
-  implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'
+  implementation 'commons-io:commons-io:2.16.1'
   implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
   api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
-  implementation group: 'org.elasticsearch.client', name: 'elasticsearch-rest-client', version: elasticsearch
+  implementation "org.elasticsearch.client:elasticsearch-rest-client:${elasticsearch}"
   implementation "org.openjdk.jmh:jmh-core:$jmh"
-  testImplementation group: 'org.wiremock', name: 'wiremock-standalone', version: '3.0.4'
+  testImplementation 'org.wiremock:wiremock-standalone:3.0.4'
 
   testImplementation "junit:junit:4.13.2"
 }
@@ -72,7 +72,7 @@ test {
   exclude '**/org/logstash/benchmark/cli/MainEsStorageTest*'
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'com.gradleup.shadow'
 apply plugin: 'java'
 
 shadowJar {
