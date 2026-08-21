@@ -20,19 +20,24 @@
 package org.logstash.common;
 
 
+import org.apache.commons.lang3.stream.Streams;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.logstash.common.BufferedTokenizerTest.toList;
 
 public final class BufferedTokenizerWithSizeLimitTest {
@@ -47,7 +52,32 @@ public final class BufferedTokenizerWithSizeLimitTest {
     private void initSUTWithSizeLimit(int sizeLimit) {
         sut = new BufferedTokenizer("\n", sizeLimit);
     }
+    
+    @Test
+    public void givenOversizedFragmentWithoutSeparatorWhenFlushIsInvokedThenThrows() {
+        // Provide an overrun fragment without delimiter, from this point on 
+        // the BufferedTokenizer start dropping data because already passed the 
+        // sizeLimit.
+        Iterable<String> it = sut.extract("01234567890");
+        Iterator<String> ite = it.iterator();
+        verifyNoTokensAvailableOnReadSide(ite);
 
+        // Provide another fragment which is inside the sizeLimit and DO NOT contain a delimiter.
+        // Reuse the previous iterator, it's the same returned by this call.
+        sut.extract("AAAAA");
+        verifyNoTokensAvailableOnReadSide(ite);
+        
+        // Exercise flush and expect it throws an exception for the overrun partial token
+        Exception thrownException = assertThrows(IllegalStateException.class, () -> sut.flush());
+        assertThat(thrownException.getMessage(), containsString("input buffer full"));
+    }
+    
+    private void verifyNoTokensAvailableOnReadSide(Iterator<String> ite) {
+        assertFalse(ite.hasNext());
+        Exception thrownException = assertThrows(NoSuchElementException.class, ite::next);
+        assertThat(thrownException.getMessage(), is(emptyOrNullString()));
+    }
+ 
     @Test
     public void givenTokenWithinSizeLimitWhenExtractedThenReturnTokens() {
         List<String> tokens = toList(sut.extract("foo\nbar\n"));
@@ -146,7 +176,8 @@ public final class BufferedTokenizerWithSizeLimitTest {
 
         // with the second fragment passed to extract it overrun the sizeLimit, the tokenizer
         // drop starting from the third fragment
-        assertThat("Accumulator include only a part of an exploding payload", sut.flush().length(), is(lessThan(neverEndingData.length() * 3)));
+        Exception thrownException = assertThrows(IllegalStateException.class, () -> sut.flush());
+        assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
         Iterable<String> tokensIterable = sut.extract("\nbbb\n");
         Iterator<String> tokensIterator = tokensIterable.iterator();
@@ -159,5 +190,63 @@ public final class BufferedTokenizerWithSizeLimitTest {
 
     private static String generate(int length, String fillChar) {
         return fillChar.repeat(length);
+    }
+    
+    @Test
+    public void givenOneProducerAndOneConsumerWhenExecutedConcurrentlyThenNoRaceHappens() throws InterruptedException {
+        initSUTWithSizeLimit(50); // must contain the string "Token with index 1_000_000"
+        
+        AtomicInteger tokenCounter = new AtomicInteger(0);
+
+        int tokensToUse = 10_000;
+        Thread producer1 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread producer2 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread producer3 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread producer4 = new Thread(() -> fulfillBufferedTokenizer(sut, tokensToUse / 4));
+        Thread consumer = new Thread(() -> consumerBufferedTokenizer(sut, tokensToUse, tokenCounter));
+
+        Streams.of(producer1, producer2, producer3, producer4).forEach(Thread::start);
+        consumer.start();
+        
+        Streams.of(producer1, producer2, producer3, producer4).forEach(t -> {
+            try {
+                t.join(5_000);
+            } catch (InterruptedException e) {
+                fail("Can't join " + t.getName() + " in 5 seconds");
+                Thread.currentThread().interrupt();
+            }
+        });
+        consumer.join(5_000);
+        
+        // verify consumer status
+        assertEquals(tokensToUse, tokenCounter.get());
+    }
+
+    private static void consumerBufferedTokenizer(BufferedTokenizer tokenizer, int maxTokensToExpect, AtomicInteger counter) {
+        long startWait = Long.MAX_VALUE;
+        // invoke extract just to obtain the iterator
+        Iterator<String> tokens = tokenizer.extract("Pill data\n").iterator();
+        while (counter.get() < maxTokensToExpect) {
+            if (tokens.hasNext()) {
+                tokens.next();
+                counter.incrementAndGet();
+            } else {
+                if (startWait == Long.MAX_VALUE) {
+                    // start spinning
+                    startWait = System.currentTimeMillis();
+                } else {
+                    // spinning max for 5 seconds, then break the loop
+                    if (System.currentTimeMillis() - startWait > 5_000) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static void fulfillBufferedTokenizer(BufferedTokenizer tokenizer, int maxTokensToFill) {
+        for (int i = 0; i < maxTokensToFill; i++) {
+            tokenizer.extract("Token with index " + i + "\n");
+        }
     }
 }

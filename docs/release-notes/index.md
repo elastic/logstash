@@ -21,6 +21,238 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.2 [logstash-9.5.2-release-notes]
+
+### Fixes [logstash-9.5.2-fixes]
+
+* Made `BufferedTokenizer` thread safe and usable in multithreaded contexts; its `flush` operation now returns an error when the remainder token overruns the size limit, and logs when data is dropped [#19345](https://github.com/elastic/logstash/pull/19345) [#19312](https://github.com/elastic/logstash/pull/19312)
+
+* Handle a `NoSuchFileException` that could occur while resolving the oldest dead letter queue segment file [#19409](https://github.com/elastic/logstash/pull/19409)
+
+### Updates to dependencies [logstash-9.5.2-dependencies]
+
+* Update `concurrent-ruby` to 1.3.8 [#19428](https://github.com/elastic/logstash/pull/19428)
+
+### Plugins [logstash-plugin-9.5.2-changes]
+
+**Edn Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Edn_lines Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn_lines/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn_lines` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Anonymize Filter - 3.0.8**
+
+* Fix `NameError: uninitialized constant Fixnum` when using the `MURMUR3` algorithm on Logstash 9.4+ (Ruby 3.2+, which removed `Fixnum` in favor of `Integer`) [#19](https://github.com/logstash-plugins/logstash-filter-anonymize/pull/19)
+
+**Translate Filter - 3.5.1**
+
+* Fixes an issue where failing to load a dictionary could cause the plugin to continue to run with a missing or partially-updated dictionary; this issue was especially noticeable when configured with `refresh_behaviour => replace`, which clears the dictionary before loading the replacement [#112](https://github.com/logstash-plugins/logstash-filter-translate/issues/112).
+
+**Jms Input - 3.3.2**
+
+* Fix `NameError: uninitialized constant Fixnum` when reading a JMS MapMessage on Logstash 9.4+ [#63](https://github.com/logstash-plugins/logstash-input-jms/pull/63)
+* The `jruby-jms` gem references the `Fixnum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` while decoding a JMS MapMessage. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `jms`.
+
+
+## 9.5.1 [logstash-9.5.1-release-notes]
+
+### Fixes [logstash-9.5.1-fixes]
+
+* Updates common functionality used to dice data used in some codec plugins to validate oversized segments also on last part. Added logging when data is dropped because passed the size limit [#19312](https://github.com/elastic/logstash/pull/19312)
+
+### Plugins [logstash-plugin-9.5.1-changes]
+
+No change to the plugins in this release.
+
+## 9.5.0 [logstash-9.5.0-release-notes]
+
+### Features and enhancements [logstash-9.5.0-features-enhancements]
+
+#### OTLP metrics export [logstash-9.5.0-otlp-metrics]
+
+Logstash can now export its internal metrics to any OpenTelemetry-compatible endpoint via OTLP. Enable it with `otel.metrics.enabled: true` in `logstash.yml` and configure the target endpoint, protocol (gRPC or HTTP), export interval, and TLS settings. Nearly all existing Logstash metrics are exported. FlowRate metrics are excluded but can be derived from the reported values.
+
+Related:
+* Send Logstash Metrics via OTLP [#18857](https://github.com/elastic/logstash/pull/18857)
+
+#### TLS certificate auto-reload [logstash-9.5.0-tls-auto-reload]
+
+Pipelines now automatically reload when their TLS certificates are rotated on disk, without requiring a full pipeline restart. This capability also extends to Central Pipeline Management and monitoring service clients.
+
+Related:
+* Auto-reload pipelines on TLS certificate rotation [#18978](https://github.com/elastic/logstash/pull/18978)
+* Extend TLS auto-reload to CPM and monitoring service clients [#19045](https://github.com/elastic/logstash/pull/19045)
+
+#### cgroupv2 support [logstash-9.5.0-cgroupv2]
+
+Logstash now reads resource limits from cgroupv2 in addition to cgroupv1, improving container-awareness on modern Linux hosts and Kubernetes environments.
+
+Related:
+* Add support for cgroupv2 [#18708](https://github.com/elastic/logstash/pull/18708)
+
+#### Additional features and enhancements [logstash-9.5.0-more-features]
+
+* New `dead_letter_queue.flush_check_interval` setting to control how frequently stale DLQ segment files are flushed [#19036](https://github.com/elastic/logstash/pull/19036)
+
+* Removed legacy output concurrency mode. The deprecated `concurrency :legacy` option is no longer supported; outputs should use `concurrency :single` or `concurrency :shared` [#19003](https://github.com/elastic/logstash/pull/19003)
+
+* Removed the `pipe` output plugin from the default plugin bundle [#19159](https://github.com/elastic/logstash/pull/19159)
+
+### Fixes [logstash-9.5.0-fixes]
+
+* Pipeline metrics are now cleared when a pipeline fails to start, preventing stale metrics from being reported by the monitoring API [#19091](https://github.com/elastic/logstash/pull/19091)
+
+* Failures in plugin `do_close` no longer halt the pipeline shutdown sequence [#19035](https://github.com/elastic/logstash/pull/19035)
+
+* Fixed forced-shutdown (double SIGINT) behavior for JRuby 10 [#19017](https://github.com/elastic/logstash/pull/19017)
+
+* Added missed standard types during batch size estimation [#19158](https://github.com/elastic/logstash/pull/19158)
+
+### Updates to dependencies [logstash-9.5.0-dependencies]
+
+* Bump OpenTelemetry to 1.62.0 [#19209](https://github.com/elastic/logstash/pull/19209)
+
+### Plugins [logstash-plugin-9.5.0-changes]
+
+::::{important}
+
+This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The upgrade includes Apache Kafka client 4.x with breaking changes — see the [9.5.0 breaking changes](/release-notes/breaking-changes.md#logstash-950-breaking-changes) for details and required actions.
+
+::::
+
+**Beats Input - 7.0.13**
+
+* Update Netty dependency to 4.1.136.Final [#575](https://github.com/logstash-plugins/logstash-input-beats/pull/575)
+
+**Elastic_integration Filter - 9.5.2**
+
+* Set SO_TIMEOUT on IOReactor to ensure NIO connections have a baseline socket timeout, preventing indefinite hangs when connection pool restore fails to apply the request-level timeout [#480](https://github.com/elastic/logstash-filter-elastic_integration/pull/480)
+
+* Sync up with Elasticsearch 9.5 branch to pull latest dependencies [#476](https://github.com/elastic/logstash-filter-elastic_integration/pull/476)
+
+* Fixes an issue where a field set by an integration pipeline to `java.util.Date` value-object representing a timestamp could not be converted to a timestamp [#460](https://github.com/elastic/logstash-filter-elastic_integration/issues/460)
+* Applies Elasticsearch geoip module relocation changes [#445](https://github.com/elastic/logstash-filter-elastic_integration/pull/445)
+
+**Elasticsearch Filter - 4.4.1**
+
+* Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#215](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/215)
+
+* Drop support for Logstash 7.x by requiring `elasticsearch` gem >= 8. Logstash 8+ continues to work as before [#213](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/213)
+
+**Elasticsearch Input - 5.3.2**
+
+* Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#274](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/274)
+
+* Fix serverless request failure caused by conflicting `compatible-with` and `Elastic-Api-Version` headers when using elasticsearch-ruby v9 [#269](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/269)
+
+* Drop support for Logstash 7.x by requiring `elasticsearch` gem >= 8. Logstash 8+ continues to work as before [#252](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/252)
+
+**Http Input - 4.1.13**
+
+* Fix to use the `Content-type` declared charset to decode the request body [#230](https://github.com/logstash-plugins/logstash-input-http/pull/230)
+
+* Update Netty dependency to 4.1.136.Final [#228](https://github.com/logstash-plugins/logstash-input-http/pull/228)
+
+**Tcp Input - 7.0.12**
+
+* Update Netty dependency to 4.1.136.Final [#281](https://github.com/logstash-plugins/logstash-input-tcp/pull/281)
+
+**Jdbc Integration - 5.6.4**
+
+* Fix connection leak on statement retry by opening JDBC connection once outside retry loop [#201](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/201)
+
+**Kafka Integration - 12.1.5**
+
+* Fix `sasl_jaas_config` output configuration [#245](https://github.com/logstash-plugins/logstash-integration-kafka/pull/245)
+
+* Update Kafka client to 4.2.0 [#243](https://github.com/logstash-plugins/logstash-integration-kafka/pull/243)
+  * Remove explicit `lz4-java` dependency (now transitive from Kafka client)
+  * Document `by_duration` offset reset strategy (available since Apache Kafka 4.0.0)
+
+* Mask sensitive `sasl_jaas_config` values in debug logs to prevent credential exposure [#232](https://github.com/logstash-plugins/logstash-integration-kafka/pull/232)
+
+* Update Kafka client to 4.1.0 and transitive dependencies [#205](https://github.com/logstash-plugins/logstash-integration-kafka/pull/205)
+  * **Breaking:** partitioner options `default` and `uniform_sticky` are removed
+  * `linger_ms` default value changed from `0` to `5`
+  * Add `group_protocols` option for configuring Kafka consumer rebalance protocol
+  * Setting `group_protocol => consumer` opts in to the new consumer group protocol
+
+* Remove duplicated deprecation log entry [#208](https://github.com/logstash-plugins/logstash-integration-kafka/pull/208)
+
+**Snmp Integration - 4.3.1**
+
+* Generate error events with `_snmpfailure` tag when all SNMP operations fail and the response data is empty (timeout for example) [#92](https://github.com/logstash-plugins/logstash-integration-snmp/pull/92)
+
+* Handle partial responses and errors gracefully: add `tag_on_failure` (default: `["_snmpfailure"]`) to tag events when SNMP operations fail, and `allow_partial_response` (default: `false`) to preserve partial data from failed `walk`/`table` operations [#91](https://github.com/logstash-plugins/logstash-integration-snmp/pull/91)
+
+**Udp Output - 3.3.0**
+
+* Added support for IPv6 addresses [#16](https://github.com/logstash-plugins/logstash-output-udp/pull/16)
+
+## 9.4.5 [logstash-9.4.5-release-notes]
+
+### Updates to dependencies [logstash-9.4.5-dependencies]
+
+* Updated JDK to 21.0.12 build 8 [#19365](https://github.com/elastic/logstash/pull/19365)
+
+### Plugins [logstash-plugin-9.4.5-changes]
+
+**Elastic_integration Filter - 9.4.6**
+
+* Apply the default 30-second socket timeout to low-level HTTP connections so stalled connections time out consistently. [#480](https://github.com/elastic/logstash-filter-elastic_integration/pull/480)
+
+**Translate Filter - 3.5.1**
+
+* Fixes an issue where failing to load a dictionary could cause the plugin to continue to run with a missing or partially-updated dictionary; this issue was especially noticeable when configured with `refresh_behaviour => replace`, which clears the dictionary before loading the replacement [#112](https://github.com/logstash-plugins/logstash-filter-translate/issues/112).
+
+## 9.4.4 [logstash-9.4.4-release-notes]
+
+### Updates to dependencies [logstash-9.4.4-dependencies]
+
+* Updated JRuby to 10.0.6.0 [#19279](https://github.com/elastic/logstash/pull/19279)
+* Updated Jackson and jrjackson dependencies [#19286](https://github.com/elastic/logstash/pull/19286)
+* Upgraded Puma to 8.x [#19234](https://github.com/elastic/logstash/pull/19234)
+
+### Plugins [logstash-plugin-9.4.4-changes]
+
+**Elastic_integration Filter - 9.4.5**
+
+* Sync up with Elasticsearch 9.4 branch to pull latest dependencies [#477](https://github.com/elastic/logstash-filter-elastic_integration/pull/477)
+
+* Update jackson dependency to 3.1.4 [#467](https://github.com/elastic/logstash-filter-elastic_integration/pull/467)
+
+**Azure_event_hubs Input - 1.5.8**
+
+* Update jackson dependency to 2.21.4 [#118](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/118)
+
+**Beats Input - 7.0.12**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#537](https://github.com/logstash-plugins/logstash-input-beats/pull/537)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Http Input - 4.1.11**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#221](https://github.com/logstash-plugins/logstash-input-http/pull/221)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Kafka Integration - 11.8.10**
+
+* Update jackson dependency to 2.21.4 [#269](https://github.com/logstash-plugins/logstash-integration-kafka/pull/269)
+
+**Elasticsearch Output - 12.1.6**
+
+* Fix serverless compatibility: nil params in pool requests and unsupported template settings [#1276](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1276)
+
+* Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#1274](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1274)
+
+* [Doc] Add note for index option [#1269](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1269)
+
+
 ## 9.4.3 [logstash-9.4.3-release-notes]
 
 ### Features and enhancements [logstash-9.4.3-features-enhancements]
@@ -230,6 +462,47 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 **Gelf Input - 3.4.0**
 
 * Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
+
+## 9.3.8 [logstash-9.3.8-release-notes]
+
+### Updates to dependencies [logstash-9.3.8-dependencies]
+
+* Updated JRuby to 9.4.15.0 [#19290](https://github.com/elastic/logstash/pull/19290)
+* Updated Jackson and jrjackson dependencies [#19289](https://github.com/elastic/logstash/pull/19289)
+
+### Plugins [logstash-plugin-9.3.8-changes]
+
+**Elastic_integration Filter - 9.3.7**
+
+* Sync up with Elasticsearch 9.3 branch to pull latest dependencies [#478](https://github.com/elastic/logstash-filter-elastic_integration/pull/478)
+
+* Update jackson dependency to 3.1.4 [#470](https://github.com/elastic/logstash-filter-elastic_integration/pull/470)
+
+**Azure_event_hubs Input - 1.5.8**
+
+* Update jackson dependency to 2.21.4 [#118](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/118)
+
+**Beats Input - 7.0.12**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#537](https://github.com/logstash-plugins/logstash-input-beats/pull/537)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Http Input - 4.1.11**
+
+* When configured to use a port that is already in use, the failure is now propagated to the pipeline [#221](https://github.com/logstash-plugins/logstash-input-http/pull/221)
+    This fixes an issue where a misconfigured input could retry indefinitely while Logstash's health report continued to report the pipeline as healthy.
+
+**Kafka Integration - 11.8.10**
+
+* Update jackson dependency to 2.21.4 [#269](https://github.com/logstash-plugins/logstash-integration-kafka/pull/269)
+
+**Elasticsearch Output - 12.1.6**
+
+* Fix serverless compatibility: nil params in pool requests and unsupported template settings [#1276](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1276)
+
+* Support Elastic Cloud API keys in the `api_key` option, which now accepts an `id:api_key` pair, its base64-encoded form, or an `essu_` Cloud API key, and rejects an unrecognized format at startup [#1274](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1274)
+
+* [Doc] Add note for index option [#1269](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1269)
 
 ## 9.3.7 [logstash-9.3.7-release-notes]
 

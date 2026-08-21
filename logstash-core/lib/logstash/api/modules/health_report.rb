@@ -28,6 +28,7 @@ module LogStash
               status:     health_report_pojo.status,
               symptom:    health_report_pojo.symptom,
               indicators: health_report_pojo.indicators,
+              timestamp:  LogStash::Timestamp.now.to_iso8601,
             })
           end
 

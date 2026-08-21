@@ -4,6 +4,7 @@
 
 require "logstash/inputs/base"
 require "logstash/instrument/collector"
+require "logstash/timer_task"
 require 'helpers/elasticsearch_options'
 require "concurrent"
 require "thread"
@@ -55,7 +56,7 @@ module LogStash module Inputs
     end
 
     def configure_snapshot_poller
-      @timer_task = Concurrent::TimerTask.new({
+      @timer_task = LogStash::TimerTask.new({
         :execution_interval => @collection_interval,
         :timeout_interval => @collection_timeout_interval
       }) do

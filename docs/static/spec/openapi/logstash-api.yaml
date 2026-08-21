@@ -1699,6 +1699,11 @@ paths:
                       symptom:
                         type: string
                         example: "3 indicators are healthy"
+                      timestamp:
+                        type: string
+                        format: date-time
+                        description: The time at which this health report was generated, in ISO 8601 format with millisecond precision.
+                        example: "2026-08-12T10:30:45.123456789Z"
                       indicators:
                         description: Information about the health of Logstash indicators.
                         type: object
@@ -1798,6 +1803,7 @@ paths:
                 normalTerminatedCase:
                   description: "The pipeline has finished without errors or interruptions."
                   value:
+                    timestamp: "2026-08-12T10:30:45.123456789Z"
                     symptom: "1 indicator is concerning (`pipelines`)"
                     indicators:
                       pipelines:
@@ -1818,6 +1824,7 @@ paths:
                 abnormalTerminatedCase:
                   description: "The pipeline is terminated with errors."
                   value:
+                    timestamp: "2026-08-12T10:30:45.123456789Z"
                     status: "red"
                     symptom: "1 indicator is unhealthy (`pipelines`)"
                     indicators:
@@ -1840,6 +1847,7 @@ paths:
                 backpressureCase:
                   description: "A pipeline is blocked by slow downstream processing."
                   value:
+                    timestamp: "2026-08-12T10:30:45.123456789Z"
                     status: "red"
                     symptom: "1 indicator is unhealthy (`pipelines`)"
                     indicators:
@@ -1869,6 +1877,7 @@ paths:
                 recoveryCase:
                   description: "A pipeline has recently recovered from a crash"
                   value:
+                    timestamp: "2026-08-12T10:30:45.123456789Z"
                     status: "yellow"
                     symptom: "1 indicator is unhealthy (`pipelines`)"
                     indicators:
