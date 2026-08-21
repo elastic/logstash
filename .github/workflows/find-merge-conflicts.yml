@@ -1,0 +1,27 @@
+on: [push]
+
+jobs:
+  merge_conflict_job:
+    runs-on: ubuntu-latest
+    name: Find merge conflicts
+    steps:
+      # Checkout the source code so we have some files to look at.
+      - uses: actions/checkout@v2
+      # Run the actual merge conflict finder
+      - name: Merge Conflict finder
+        uses: olivernybroe/action-conflict-finder@v4.0
+        with:
+          # skip known build-related dirs
+          exclude_dir: >-
+            build
+            vendor
+            logstash-core/build
+            logstash-core/lib/jars
+          # skip known binary files
+          excludes: >-
+            *.jar
+            *.p12
+            *.png
+            *.svg
+            *.tgz
+            *.zip
