@@ -18,20 +18,27 @@
  */
 package org.logstash.health;
 
+import com.google.common.io.Resources;
 import org.logstash.Logstash;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class HelpUrl {
     static final String BASE_URL;
     static {
-        final String versionAnchor;
-        if (Integer.parseInt(Logstash.VERSION_MAJOR) >= 9) {
-            versionAnchor = "master";
-        } else {
-            versionAnchor = String.format("%s.%s", Logstash.VERSION_MAJOR, Logstash.VERSION_MINOR);
+        try {
+            final URL url = HelpUrl.class.getResource("/help.url");
+            if (url == null) {
+                throw new IllegalStateException("Unable to locate 'help.url' resource");
+            }
+            BASE_URL = Resources.toString(url, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load help.url resource", e);
         }
-        BASE_URL = String.format("https://www.elastic.co/guide/en/logstash/%s/", versionAnchor);
     }
 
     public HelpUrl(final String page) {
