@@ -36,7 +36,7 @@ POST /_security/api_key
       "cluster": ["manage_index_templates", "monitor"], 
       "indices": [
         {
-          "names": [ "logstash", "logstash-*", "ecs-logstash", "ecs-logstash-*", "serverless*", "logs-*", "metrics-*", "synthetics-*", "traces-*" ], 
+          "names": [ "logstash", "logstash-*", "ecs-logstash", "ecs-logstash-*", "serverless*", "logs-*", "metrics-*", "synthetics-*", "traces-*", "test-*" ], 
           "privileges": ["manage", "write", "create_index", "read", "view_index_metadata"]  
         }
       ]
