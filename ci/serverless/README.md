@@ -134,5 +134,5 @@ The username, password, API key and hosts are stored in `secret/ci/elastic-logst
 
 
 ```bash
-vault write secret/ci/elastic-logstash/serverless-test es_host="REDACTED" es_superuser="REDACTED" es_superuser_pw="REDACTED" " kb_host="REDACTED" mb_api_key="REDACTED" plugin_api_key="REDACTED" integration_api_key_encoded="REDACTED" tester_api_key_encoded="REDACTED" cpm_api_key="REDACTED"
+vault write secret/ci/elastic-logstash/serverless-test es_host="REDACTED" es_superuser="REDACTED" es_superuser_pw="REDACTED" kb_host="REDACTED" mb_api_key="REDACTED" plugin_api_key="REDACTED" integration_api_key_encoded="REDACTED" tester_api_key_encoded="REDACTED" cpm_api_key="REDACTED"
 ```
