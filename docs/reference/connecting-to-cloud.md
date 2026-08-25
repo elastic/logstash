@@ -28,6 +28,23 @@ Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-out
 
 {{ls}} uses the Cloud ID, found in the Elastic Cloud web console, to build the Elasticsearch and Kibana hosts settings. It is a base64 encoded text value of about 120 characters made up of upper and lower case letters and numbers. If you have several Cloud IDs, you can add a label, which is ignored internally, to help you tell them apart. To add a label, prefix your Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>".
 
+:::{warning}
+If you connect over AWS PrivateLink, don't set `cloud_id`. The Cloud ID uses the public endpoint, which doesn't match the PrivateLink TLS certificate. Use the {{es}} endpoint URL instead.
+:::
+
+Set `hosts` to the private URL for your deployment. Don't also set `cloud_id`.
+
+```ruby
+output {
+  elasticsearch {
+    hosts => ["https://my-deployment-d53192.es.vpce.us-east-1.aws.elastic-cloud.com:443"]
+    user => "elastic"
+    password => "YOUR_PASSWORD"
+  }
+}
+```
+
+For the private URL, refer to [Access the resource over a PrivateLink](docs-content://deploy-manage/security/private-connectivity-aws.md#ec-access-the-deployment-over-private-link).
 
 ## Cloud Auth [cloud-auth]
 
