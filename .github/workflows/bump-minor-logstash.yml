@@ -1,0 +1,233 @@
+name: bump-minor-logstash-version
+
+# Automates the "Before feature freeze" / "After feature freeze" pull-request-opening
+# steps of the minor release checklist, up to (but not including) the
+# "Week before release" section:
+# https://github.com/elastic/ingest-dev/blob/main/.github/ISSUE_TEMPLATE/logstash-release-checklist-minor.md
+#
+# Purely manual steps (QA testing, doc coordination, DRA monitoring, Slack
+# notifications, etc.) are intentionally NOT automated here.
+
+on:
+  workflow_dispatch:
+    inputs:
+      logstash-version:
+        description: 'New release branch initial version (example: 9.1.0)'
+        required: true
+        type: string
+      logstash-branch:
+        description: 'New release branch to create (example: 9.1)'
+        required: true
+        type: string
+      next-minor-version:
+        description: 'Version main should move to after the branch is cut (example: 9.2.0). Optional; when omitted it is computed by bumping the minor of logstash-version.'
+        required: false
+        type: string
+      skip-branch-creation:
+        description: 'Skip creating the new release branch (use when logstash-branch is the last minor version of a major).'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  # "Before feature freeze" - check and unpin any active pins in the gemspec/Gemfile.
+  check-and-unpin-dependencies:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
+      - run: git config --global user.name "logstashmachine"
+      - name: Find and remove undocumented exact-version pins
+        id: unpin
+        run: |
+          # Any gem pinned with an exact "=" version constraint that does not carry
+          # an explanatory inline comment is treated as a candidate for unpinning.
+          FILES="Gemfile.template logstash-core/logstash-core.gemspec"
+          CHANGED=0
+          for f in $FILES; do
+            [ -f "$f" ] || continue
+            while IFS= read -r line; do
+              echo "Candidate pin in $f: $line"
+              CHANGED=1
+            done < <(grep -nE "['\"]= [0-9]" "$f" | grep -v "#")
+          done
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
+      - name: Open PR if any undocumented pins were found
+        if: steps.unpin.outputs.changed == '1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="unpin_check_$(date +%s)"
+          git checkout -b "$BRANCH"
+          git commit --allow-empty -m "Reminder: review active dependency pins before feature freeze"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "Review active dependency pins before feature freeze" \
+            --body "Undocumented exact-version pins were found in Gemfile.template or logstash-core.gemspec. Please review whether they can be unpinned before feature freeze." \
+            --base main \
+            --head "$BRANCH"
+
+  # "Before feature freeze" - create the new release branch on elastic/logstash and elastic/logstash-docs.
+  create-release-branch:
+    if: ${{ inputs.skip-branch-creation != true }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    env:
+      LOGSTASH_DOCS_TOKEN: ${{ secrets.LOGSTASH_DOCS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Create release branch on elastic/logstash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin "HEAD:refs/heads/${{ inputs.logstash-branch }}"
+      - name: Create release branch on elastic/logstash-docs
+        if: ${{ env.LOGSTASH_DOCS_TOKEN != '' }}
+        env:
+          GH_TOKEN: ${{ env.LOGSTASH_DOCS_TOKEN }}
+        run: |
+          MAIN_SHA=$(gh api repos/elastic/logstash-docs/git/ref/heads/main --jq .object.sha)
+          gh api repos/elastic/logstash-docs/git/refs \
+            -f ref="refs/heads/${{ inputs.logstash-branch }}" \
+            -f sha="$MAIN_SHA"
+
+  # "Before feature freeze" - update versions.yml on main to the next minor.
+  bump-versions-yml-main:
+    needs: [create-release-branch]
+    if: always() && (needs.create-release-branch.result == 'success' || needs.create-release-branch.result == 'skipped')
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
+      - run: git config --global user.name "logstashmachine"
+      - name: Compute next minor version
+        id: next
+        run: |
+          if [ -n "${{ inputs.next-minor-version }}" ]; then
+            echo "version=${{ inputs.next-minor-version }}" >> "$GITHUB_OUTPUT"
+          else
+            IFS='.' read -r major minor _patch <<< "${{ inputs.logstash-version }}"
+            echo "version=${major}.$((minor + 1)).0" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Update versions.yml on main
+        run: |
+          NEXT_VERSION="${{ steps.next.outputs.version }}"
+          sed -i "s/^logstash: .*/logstash: ${NEXT_VERSION}/" versions.yml
+          sed -i "s/^logstash-core: .*/logstash-core: ${NEXT_VERSION}/" versions.yml
+      - name: Open PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEXT_VERSION="${{ steps.next.outputs.version }}"
+          BRANCH="bump_versions_yml_main_${NEXT_VERSION}"
+          git add versions.yml
+          if [ -z "$(git status --porcelain)" ]; then echo "No changes. We're done."; exit 0; fi
+          git checkout -b "$BRANCH"
+          git commit -m "Bump versions.yml on main to ${NEXT_VERSION}"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "Bump versions.yml on main to ${NEXT_VERSION}" \
+            --body "Move main forward to the next minor version now that ${{ inputs.logstash-branch }} has been branched off." \
+            --base main \
+            --head "$BRANCH"
+
+  # "Before feature freeze" - add a new bundler lock file to the release branch.
+  add-release-lockfile:
+    needs: [create-release-branch]
+    if: ${{ inputs.skip-branch-creation != true }}
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5.7.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.logstash-branch }}
+          fetch-depth: 0
+      - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
+      - run: git config --global user.name "logstashmachine"
+      - name: Determine previous minor branch
+        id: prev
+        run: |
+          IFS='.' read -r major minor <<< "${{ inputs.logstash-branch }}"
+          echo "branch=${major}.$((minor - 1))" >> "$GITHUB_OUTPUT"
+      - name: Copy lock file from previous minor branch
+        run: |
+          PREV_BRANCH="${{ steps.prev.outputs.branch }}"
+          git fetch origin "$PREV_BRANCH" --depth 1
+          git checkout "origin/${PREV_BRANCH}" -- 'Gemfile.jruby-*.lock.release' || echo "No previous lock file found, will generate a fresh one."
+      - run: ./gradlew clean installDefaultGems
+      - run: ./vendor/jruby/bin/jruby -S bundle update --all --strict
+      - name: Ensure lock file is named for the release
+        run: |
+          if [ -f Gemfile.lock ]; then mv Gemfile.lock Gemfile.jruby-3.4.lock.release; fi
+      - name: Open PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="add_release_lockfile_${{ inputs.logstash-branch }}"
+          git add Gemfile.jruby-*.lock.release
+          if [ -z "$(git status --porcelain)" ]; then echo "No changes. We're done."; exit 0; fi
+          git checkout -b "$BRANCH"
+          git commit -m "Add release bundler lock file for ${{ inputs.logstash-branch }}"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "Add release bundler lock file for ${{ inputs.logstash-branch }}" \
+            --body "Adds the frozen bundler lock file for the ${{ inputs.logstash-branch }} release branch." \
+            --base "${{ inputs.logstash-branch }}" \
+            --head "$BRANCH"
+
+  # "After feature freeze" - update versions.yml on main to the latest minor, if applicable.
+  bump-versions-yml-main-after-freeze:
+    needs: [bump-versions-yml-main]
+    if: ${{ inputs.next-minor-version != '' }}
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
+      - run: git config --global user.name "logstashmachine"
+      - name: Update logstash-release-track on main
+        run: |
+          sed -i "s/^logstash-release-track: .*/logstash-release-track: ${{ inputs.logstash-branch }}/" versions.yml
+      - name: Open PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="bump_release_track_${{ inputs.logstash-branch }}"
+          git add versions.yml
+          if [ -z "$(git status --porcelain)" ]; then echo "No changes. We're done."; exit 0; fi
+          git checkout -b "$BRANCH"
+          git commit -m "Update logstash-release-track on main to ${{ inputs.logstash-branch }}"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "Update logstash-release-track on main to ${{ inputs.logstash-branch }}" \
+            --body "Post feature-freeze update of the release track now that ${{ inputs.logstash-branch }} is the active minor." \
+            --base main \
+            --head "$BRANCH"
