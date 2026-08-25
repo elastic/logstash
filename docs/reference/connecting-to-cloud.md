@@ -25,7 +25,7 @@ Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-out
 {{ess-leadin-short}}
 
 :::{warning}
-If an {{ech}} deployment is protected by an AWS PrivateLink VPC filter, you can't use `cloud_id`. The Cloud ID encodes the public {{es}} endpoint, whose hostname does not match the AWS PrivateLink TLS certificate. Copy the private {{es}} endpoint URL from the deployment overview page, then connect using `hosts` and an API key:
+If an {{ech}} deployment is protected by an AWS PrivateLink VPC filter, you can't use `cloud_id`. The Cloud ID encodes the public {{es}} endpoint, which is not available after the filter is associated. Copy the private {{es}} endpoint from the deployment overview page, then connect using the {{es}} endpoint URL and an API key:
 
 `output {elasticsearch { hosts => ["ELASTICSEARCH_ENDPOINT_URL"] api_key => "<api key>" } }`
 :::
