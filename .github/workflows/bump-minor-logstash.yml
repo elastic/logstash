@@ -76,14 +76,12 @@ jobs:
             --base main \
             --head "$BRANCH"
 
-  # "Before feature freeze" - create the new release branch on elastic/logstash and elastic/logstash-docs.
+  # "Before feature freeze" - create the new release branch on elastic/logstash
   create-release-branch:
     if: ${{ inputs.skip-branch-creation != true }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    env:
-      LOGSTASH_DOCS_TOKEN: ${{ secrets.LOGSTASH_DOCS_TOKEN }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -92,17 +90,9 @@ jobs:
       - name: Create release branch on elastic/logstash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
         run: |
-          git push origin "HEAD:refs/heads/${{ inputs.logstash-branch }}"
-      - name: Create release branch on elastic/logstash-docs
-        if: ${{ env.LOGSTASH_DOCS_TOKEN != '' }}
-        env:
-          GH_TOKEN: ${{ env.LOGSTASH_DOCS_TOKEN }}
-        run: |
-          MAIN_SHA=$(gh api repos/elastic/logstash-docs/git/ref/heads/main --jq .object.sha)
-          gh api repos/elastic/logstash-docs/git/refs \
-            -f ref="refs/heads/${{ inputs.logstash-branch }}" \
-            -f sha="$MAIN_SHA"
+          git push origin "HEAD:refs/heads/${LOGSTASH_BRANCH}"
 
   # "Before feature freeze" - update versions.yml on main to the next minor.
   bump-versions-yml-main:
@@ -121,11 +111,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Compute next minor version
         id: next
+        env:
+          NEXT_MINOR_VERSION: ${{ inputs.next-minor-version }}
+          LOGSTASH_VERSION: ${{ inputs.logstash-version }}
         run: |
-          if [ -n "${{ inputs.next-minor-version }}" ]; then
-            echo "version=${{ inputs.next-minor-version }}" >> "$GITHUB_OUTPUT"
+          if [ -n "$NEXT_MINOR_VERSION" ]; then
+            echo "version=${NEXT_MINOR_VERSION}" >> "$GITHUB_OUTPUT"
           else
-            IFS='.' read -r major minor _patch <<< "${{ inputs.logstash-version }}"
+            IFS='.' read -r major minor _patch <<< "$LOGSTASH_VERSION"
             echo "version=${major}.$((minor + 1)).0" >> "$GITHUB_OUTPUT"
           fi
       - name: Update versions.yml on main
@@ -136,6 +129,7 @@ jobs:
       - name: Open PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
         run: |
           NEXT_VERSION="${{ steps.next.outputs.version }}"
           BRANCH="bump_versions_yml_main_${NEXT_VERSION}"
@@ -146,7 +140,7 @@ jobs:
           git push origin "$BRANCH"
           gh pr create \
             --title "Bump versions.yml on main to ${NEXT_VERSION}" \
-            --body "Move main forward to the next minor version now that ${{ inputs.logstash-branch }} has been branched off." \
+            --body "Move main forward to the next minor version now that ${LOGSTASH_BRANCH} has been branched off." \
             --base main \
             --head "$BRANCH"
 
@@ -173,8 +167,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Determine previous minor branch
         id: prev
+        env:
+          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
         run: |
-          IFS='.' read -r major minor <<< "${{ inputs.logstash-branch }}"
+          IFS='.' read -r major minor <<< "$LOGSTASH_BRANCH"
           echo "branch=${major}.$((minor - 1))" >> "$GITHUB_OUTPUT"
       - name: Copy lock file from previous minor branch
         run: |
@@ -189,17 +185,18 @@ jobs:
       - name: Open PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
         run: |
-          BRANCH="add_release_lockfile_${{ inputs.logstash-branch }}"
+          BRANCH="add_release_lockfile_${LOGSTASH_BRANCH}"
           git add Gemfile.jruby-*.lock.release
           if [ -z "$(git status --porcelain)" ]; then echo "No changes. We're done."; exit 0; fi
           git checkout -b "$BRANCH"
-          git commit -m "Add release bundler lock file for ${{ inputs.logstash-branch }}"
+          git commit -m "Add release bundler lock file for ${LOGSTASH_BRANCH}"
           git push origin "$BRANCH"
           gh pr create \
-            --title "Add release bundler lock file for ${{ inputs.logstash-branch }}" \
-            --body "Adds the frozen bundler lock file for the ${{ inputs.logstash-branch }} release branch." \
-            --base "${{ inputs.logstash-branch }}" \
+            --title "Add release bundler lock file for ${LOGSTASH_BRANCH}" \
+            --body "Adds the frozen bundler lock file for the ${LOGSTASH_BRANCH} release branch." \
+            --base "${LOGSTASH_BRANCH}" \
             --head "$BRANCH"
 
   # "After feature freeze" - update versions.yml on main to the latest minor, if applicable.
@@ -218,20 +215,23 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Update logstash-release-track on main
+        env:
+          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
         run: |
-          sed -i "s/^logstash-release-track: .*/logstash-release-track: ${{ inputs.logstash-branch }}/" versions.yml
+          sed -i "s/^logstash-release-track: .*/logstash-release-track: ${LOGSTASH_BRANCH}/" versions.yml
       - name: Open PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
         run: |
-          BRANCH="bump_release_track_${{ inputs.logstash-branch }}"
+          BRANCH="bump_release_track_${LOGSTASH_BRANCH}"
           git add versions.yml
           if [ -z "$(git status --porcelain)" ]; then echo "No changes. We're done."; exit 0; fi
           git checkout -b "$BRANCH"
-          git commit -m "Update logstash-release-track on main to ${{ inputs.logstash-branch }}"
+          git commit -m "Update logstash-release-track on main to ${LOGSTASH_BRANCH}"
           git push origin "$BRANCH"
           gh pr create \
-            --title "Update logstash-release-track on main to ${{ inputs.logstash-branch }}" \
-            --body "Post feature-freeze update of the release track now that ${{ inputs.logstash-branch }} is the active minor." \
+            --title "Update logstash-release-track on main to ${LOGSTASH_BRANCH}" \
+            --body "Post feature-freeze update of the release track now that ${LOGSTASH_BRANCH} is the active minor." \
             --base main \
             --head "$BRANCH"
