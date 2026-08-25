@@ -24,15 +24,15 @@ Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-out
 
 {{ess-leadin-short}}
 
-## Cloud ID [cloud-id]
-
-{{ls}} uses the Cloud ID, found in the Elastic Cloud web console, to build the Elasticsearch and Kibana hosts settings. It is a base64 encoded text value of about 120 characters made up of upper and lower case letters and numbers. If you have several Cloud IDs, you can add a label, which is ignored internally, to help you tell them apart. To add a label, prefix your Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>".
-
 :::{warning}
-If you connect over AWS PrivateLink, don't set `cloud_id`. The Cloud ID encodes the public {{es}} endpoint, which doesn't match the PrivateLink TLS certificate. Copy the {{es}} endpoint from the deployment overview page, then connect using the {{es}} endpoint URL and an API key:
+If you connect over AWS PrivateLink, you can't use `cloud_id` or `cloud_auth`. The Cloud ID encodes the public {{es}} endpoint, which doesn't match the PrivateLink TLS certificate. Copy the private {{es}} endpoint from the deployment overview page, then connect using the {{es}} endpoint URL and an API key:
 
 `output {elasticsearch { hosts => "ELASTICSEARCH_ENDPOINT_URL" api_key => "<api key>" } }`
 :::
+
+## Cloud ID [cloud-id]
+
+{{ls}} uses the Cloud ID, found in the Elastic Cloud web console, to build the Elasticsearch and Kibana hosts settings. It is a base64 encoded text value of about 120 characters made up of upper and lower case letters and numbers. If you have several Cloud IDs, you can add a label, which is ignored internally, to help you tell them apart. To add a label, prefix your Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>".
 
 ## Cloud Auth [cloud-auth]
 
