@@ -31,9 +31,7 @@ Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-out
 :::{warning}
 If you connect over AWS PrivateLink, don't set `cloud_id`. The Cloud ID encodes the public {{es}} endpoint, which doesn't match the PrivateLink TLS certificate. Copy the {{es}} endpoint from the deployment overview page, then connect using the {{es}} endpoint URL and an API key:
 
-```ruby
-output {elasticsearch { hosts => "ELASTICSEARCH_ENDPOINT_URL" api_key => "<api key>" } }
-```
+`output {elasticsearch { hosts => "ELASTICSEARCH_ENDPOINT_URL" api_key => "<api key>" } }`
 :::
 
 ## Cloud Auth [cloud-auth]
