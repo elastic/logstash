@@ -38,6 +38,7 @@ steps:
     if: build.env("WORKFLOW") == "minor"
     steps:
       - label: "Bump version minor - branch/versions"
+        key: bump-version-minor-branch-versions
         plugins:
           - elastic/vault-github-token#v0.1.0:
           - elastic/gh-cli#v0.1.1:
@@ -50,13 +51,14 @@ steps:
                 logstash-branch: "${BRANCH}"
 
       - label: "Bump version minor - dependencies"
+        depends_on: bump-version-minor-branch-versions
         plugins:
           - elastic/vault-github-token#v0.1.0:
           - elastic/gh-cli#v0.1.1:
               version: "2.88.1"
               wait: true
               workflow-file: "version_bumps.yml"
-              workflow-ref: "main"
+              workflow-ref: "${BRANCH}"
               workflow-inputs:
                 bump: "minor"
 

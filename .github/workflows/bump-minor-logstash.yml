@@ -1,6 +1,6 @@
 name: bump-minor-logstash-version
 
-# Automates the "Before feature freeze" / "After feature freeze" pull-request-opening
+# Automates the "Before feature freeze" pull-request-opening
 # steps of the minor release checklist, up to (but not including) the
 # "Week before release" section:
 # https://github.com/elastic/ingest-dev/blob/main/.github/ISSUE_TEMPLATE/logstash-release-checklist-minor.md
@@ -58,7 +58,7 @@ jobs:
             while IFS= read -r line; do
               echo "Candidate pin in $f: $line"
               CHANGED=1
-            done < <(grep -nE "['\"]= [0-9]" "$f" | grep -v "#")
+            done < <(grep -nE "['\"]= [0-9]" "$f" | grep -v "#" || true)
           done
           echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
       - name: Open PR if any undocumented pins were found
@@ -145,41 +145,5 @@ jobs:
           gh pr create \
             --title "Bump versions.yml on main to ${NEXT_VERSION}" \
             --body "Move main forward to the next minor version now that ${LOGSTASH_BRANCH} has been branched off." \
-            --base main \
-            --head "$BRANCH"
-
-  # "After feature freeze" - update logstash-release-track on main to point at the new minor branch.
-  bump-versions-main:
-    needs: [bump-versions-yml-main]
-    permissions:
-      contents: write
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
-      - uses: elastic/oblt-actions/git/setup@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update logstash-release-track on main
-        env:
-          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
-        run: |
-          sed -i "s/^logstash-release-track: .*/logstash-release-track: ${LOGSTASH_BRANCH}/" versions.yml
-      - name: Open PR
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
-        run: |
-          BRANCH="bump_release_track_${LOGSTASH_BRANCH}"
-          git add versions.yml
-          if [ -z "$(git status --porcelain)" ]; then echo "No changes. We're done."; exit 0; fi
-          git checkout -b "$BRANCH"
-          git commit -m "Update logstash-release-track on main to ${LOGSTASH_BRANCH}"
-          git push origin "$BRANCH"
-          gh pr create \
-            --title "Update logstash-release-track on main to ${LOGSTASH_BRANCH}" \
-            --body "Post feature-freeze update of the release track now that ${LOGSTASH_BRANCH} is the active minor." \
             --base main \
             --head "$BRANCH"
