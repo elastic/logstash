@@ -46,7 +46,7 @@ jobs:
       - uses: elastic/oblt-actions/git/setup@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Find and remove undocumented exact-version pins
+      - name: Find undocumented exact-version pins
         id: unpin
         run: |
           # Any gem pinned with an exact "=" version constraint that does not carry
@@ -92,7 +92,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
         run: |
-          git push origin "HEAD:refs/heads/${LOGSTASH_BRANCH}"
+          if git ls-remote --exit-code --heads origin "${LOGSTASH_BRANCH}" > /dev/null 2>&1; then
+            echo "Branch ${LOGSTASH_BRANCH} already exists, skipping creation."
+          else
+            git push origin "HEAD:refs/heads/${LOGSTASH_BRANCH}"
+          fi
 
   # "Before feature freeze" - update versions.yml on main to the next minor.
   bump-versions-yml-main:
@@ -144,10 +148,9 @@ jobs:
             --base main \
             --head "$BRANCH"
 
-  # "After feature freeze" - update versions.yml on main to the latest minor, if applicable.
-  bump-versions-yml-main-after-freeze:
+  # "After feature freeze" - update logstash-release-track on main to point at the new minor branch.
+  bump-versions-main:
     needs: [bump-versions-yml-main]
-    if: ${{ inputs.next-minor-version != '' }}
     permissions:
       contents: write
       pull-requests: write

@@ -55,7 +55,7 @@ steps:
           - elastic/gh-cli#v0.1.1:
               version: "2.88.1"
               wait: true
-              workflow-file: "bump-logstash.yml"
+              workflow-file: "version_bumps.yml"
               workflow-ref: "main"
               workflow-inputs:
                 bump: "minor"
