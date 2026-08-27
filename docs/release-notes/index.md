@@ -63,7 +63,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Update Netty dependency to 4.1.137.Final [#239](https://github.com/logstash-plugins/logstash-input-http/pull/239)
 
-* Implements a functionality to log HTTP traffic, disabled by default. To enable, switch on debug logs. [#237](https://github.com/logstash-plugins/logstash-input-http/pull/237)
+* Add optional HTTP traffic logging (disabled by default). To enable it, turn on debug logging. [#237](https://github.com/logstash-plugins/logstash-input-http/pull/237)
 
 **Jms Input - 3.3.2**
 
