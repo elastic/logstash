@@ -34,7 +34,7 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath "com.gradleup.shadow:shadow-gradle-plugin:${shadowGradlePluginVersion}"
+    classpath "com.gradleup.shadow:shadow-gradle-plugin:${rootProject.ext.shadowGradlePluginVersion}"
   }
 }
 
