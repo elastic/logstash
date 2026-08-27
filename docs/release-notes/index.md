@@ -21,6 +21,94 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.6 [logstash-9.4.6-release-notes]
+
+### Features and enhancements [logstash-9.4.6-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.4.6
+
+=== Logstash Commits between 9.4 and 9.4.5
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.5..9.4"
+
+09416e8ef - (HEAD -> 9.4, origin/9.4) chore: deps(updatecli): Bump updatecli version to v0.120.1 (#19453) (#19458) (3 days ago) <mergify[bot]>
+bd2153566 - Update patch plugin versions in gemfile lock (#19455) (3 days ago) <github-actions[bot]>
+62db74b6e - Update patch plugin versions in gemfile lock (#19449) (6 days ago) <github-actions[bot]>
+6d46995e5 - [chore] add timestamp in health check API (#19422) (#19438) (8 days ago) <mergify[bot]>
+7c37a6882 - Update patch plugin versions in gemfile lock (#19434) (10 days ago) <github-actions[bot]>
+1590a0d9b - Update concurrent-ruby gem (#19428) (#19430) (13 days ago) <mergify[bot]>
+7934120b4 - Update patch plugin versions in gemfile lock (#19425) (2 weeks ago) <github-actions[bot]>
+344cc14ea - CI: Add OpenAPI spec lint and S3 publish workflows (#19278) (#19308) (2 weeks ago) <mergify[bot]>
+4457cf0c2 - Bump logstash version 9.4.6 (#19413) (2 weeks ago) <github-actions[bot]>
+2f342b124 - fix: correct casing to lowercase streams (matches actual GitHub team slug) (#19419) (#19421) (2 weeks ago) <mergify[bot]>
+43c5640ff - [9.4] (backport #19415) Rename ingest-fp team reference to Streams (#19417) (2 weeks ago) <mergify[bot]>
+13624884c - Handles no such file exception if happens during the oldest segment resolution. (#19409) (#19410) (2 weeks ago) <mergify[bot]>
+8c549714e - chore: deps(updatecli): Bump updatecli version to v0.120.0 (#19399) (#19407) (2 weeks ago) <mergify[bot]>
+af662beab - Bump actions/setup-java in the github-actions group across 1 directory (#19398) (#19404) (2 weeks ago) <mergify[bot]>
+f6e7083ad - [9.4] (backport #19364) Bump the github-actions group across 1 directory with 2 updates (#19372) (2 weeks ago) <mergify[bot]>
+e7d02296c - Release notes for 9.4.5 (#19388) (2 weeks ago) <github-actions[bot]>
+db3c42626 - [9.4] (backport #19354) Update jdk matrix tests with improvements from 8.19 (#19397) (3 weeks ago) <mergify[bot]>
+afa75e33e - fix: use hyphenated input names in bump-logstash workflow (#19384) (#19393) (3 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.4.5..9.4 *.release"
+Changed plugin versions:
+logstash-codec-edn: 3.1.0 -> 3.1.1
+logstash-codec-edn_lines: 3.1.0 -> 3.1.1
+logstash-filter-anonymize: 3.0.7 -> 3.0.8
+logstash-input-azure_event_hubs: 1.5.8 -> 1.5.9
+logstash-input-beats: 7.0.13 -> 7.0.14
+logstash-input-http: 4.1.13 -> 4.2.1
+logstash-input-jms: 3.3.1 -> 3.3.2
+logstash-input-tcp: 7.0.12 -> 7.0.13
+logstash-integration-kafka: 11.8.10 -> 11.8.11
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.4.6-changes]
+
+**Edn Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Edn_lines Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn_lines/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn_lines` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Anonymize Filter - 3.0.8**
+
+* Fix `NameError: uninitialized constant Fixnum` when using the `MURMUR3` algorithm on Logstash 9.4+ (Ruby 3.2+, which removed `Fixnum` in favor of `Integer`) [#19](https://github.com/logstash-plugins/logstash-filter-anonymize/pull/19)
+
+**Azure_event_hubs Input - 1.5.9**
+
+* Update jackson dependency to 2.21.6 [#121](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/121)
+
+**Beats Input - 7.0.14**
+
+* Update Netty dependency to 4.1.137.Final [#576](https://github.com/logstash-plugins/logstash-input-beats/pull/576)
+
+**Http Input - 4.2.1**
+
+* Update Netty dependency to 4.1.137.Final [#239](https://github.com/logstash-plugins/logstash-input-http/pull/239)
+
+* Implements a functionality to log HTTP traffic, disabled by default. To unable switch on debug logs. [#237](https://github.com/logstash-plugins/logstash-input-http/pull/237)
+
+**Jms Input - 3.3.2**
+
+* Fix `NameError: uninitialized constant Fixnum` when reading a JMS MapMessage on Logstash 9.4+ [#63](https://github.com/logstash-plugins/logstash-input-jms/pull/63)
+* The `jruby-jms` gem references the `Fixnum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` while decoding a JMS MapMessage. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `jms`.
+
+**Tcp Input - 7.0.13**
+
+* Update Netty dependency to 4.1.137.Final [#284](https://github.com/logstash-plugins/logstash-input-tcp/pull/284)
+
+**Kafka Integration - 11.8.11**
+
+* Update jackson dependency to 2.21.6 [#275](https://github.com/logstash-plugins/logstash-integration-kafka/pull/275)
+
+
 ## 9.4.5 [logstash-9.4.5-release-notes]
 
 ### Updates to dependencies [logstash-9.4.5-dependencies]
