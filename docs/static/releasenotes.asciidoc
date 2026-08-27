@@ -152,7 +152,7 @@ This section summarizes the changes in the following releases:
 
 * Update Netty dependency to 4.1.137.Final https://github.com/logstash-plugins/logstash-input-http/pull/240[#240]
 
-* Implements a functionality to log HTTP traffic, disabled by default. To enable, switch on debug logs. https://github.com/logstash-plugins/logstash-input-http/pull/237[#237]
+* Adds HTTP traffic logging, disabled by default. To enable it, turn on debug logs. https://github.com/logstash-plugins/logstash-input-http/pull/237[#237]
 
 *Jms Input - 3.3.2*
 
