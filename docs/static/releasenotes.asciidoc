@@ -116,40 +116,13 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-21]]
 === Logstash 8.19.21 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.21
+==== New features and enhancements
 
-=== Logstash Commits between 8.19 and 8.19.20
+* Include timestamp in health report snapshot API response https://github.com/elastic/logstash/pull/19422[#19422]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.20..8.19"
+==== Updates to dependencies
 
-d9123fdf6 - (HEAD -> 8.19, origin/8.19) chore: deps(updatecli): Bump updatecli version to v0.120.1 (#19453) (#19459) (3 days ago) <mergify[bot]>
-b4523281b - Update patch plugin versions in gemfile lock (#19456) (3 days ago) <github-actions[bot]>
-b21ca98ef - Update patch plugin versions in gemfile lock (#19450) (6 days ago) <github-actions[bot]>
-be92eb537 - [chore] add timestamp in health check API (#19422) (#19439) (8 days ago) <mergify[bot]>
-cea3bf60d - Update patch plugin versions in gemfile lock (#19435) (10 days ago) <github-actions[bot]>
-8adface79 - [8.19] (backport #19428) Update concurrent-ruby gem (#19431) (13 days ago) <mergify[bot]>
-102ccce24 - Update patch plugin versions in gemfile lock (#19426) (2 weeks ago) <github-actions[bot]>
-096eab12a - Bump logstash version 8.19.21 (#19412) (2 weeks ago) <github-actions[bot]>
-c52e70e3a - chore: deps(updatecli): Bump updatecli version to v0.120.0 (#19399) (#19408) (2 weeks ago) <mergify[bot]>
-23feaff63 - [8.19] (backport #19364) Bump the github-actions group across 1 directory with 2 updates (#19374) (2 weeks ago) <mergify[bot]>
-a5091b9b8 - Release notes for 8.19.20 (#19387) (2 weeks ago) <github-actions[bot]>
-d7c0db274 - fix: use hyphenated input names in bump-logstash workflow (#19384) (#19394) (3 weeks ago) <mergify[bot]>
-1a9596d55 - [8.19] (backport #19343) Aligns dependency bump workflow on run branch. (#19382) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.20..8.19 *.release"
-Changed plugin versions:
-logstash-codec-edn: 3.1.0 -> 3.1.1
-logstash-codec-edn_lines: 3.1.0 -> 3.1.1
-logstash-filter-anonymize: 3.0.7 -> 3.0.8
-logstash-input-azure_event_hubs: 1.5.8 -> 1.5.9
-logstash-input-beats: 6.9.11 -> 6.9.12
-logstash-input-http: 3.10.11 -> 3.11.1
-logstash-input-jms: 3.3.1 -> 3.3.2
-logstash-input-tcp: 6.4.14 -> 6.4.15
-logstash-integration-kafka: 11.8.10 -> 11.8.11
----------- GENERATED CONTENT ENDS HERE ------------
+* Updated concurrent-ruby gem https://github.com/elastic/logstash/pull/19428[#19428]
 
 ==== Plugins
 
@@ -179,7 +152,7 @@ logstash-integration-kafka: 11.8.10 -> 11.8.11
 
 * Update Netty dependency to 4.1.137.Final https://github.com/logstash-plugins/logstash-input-http/pull/240[#240]
 
-* Implements a functionality to log HTTP traffic, disabled by default. To unable switch on debug logs. https://github.com/logstash-plugins/logstash-input-http/pull/237[#237] 
+* Implements a functionality to log HTTP traffic, disabled by default. To enable, switch on debug logs. https://github.com/logstash-plugins/logstash-input-http/pull/237[#237]
 
 *Jms Input - 3.3.2*
 
