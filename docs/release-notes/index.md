@@ -21,69 +21,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
 ## 9.5.2 [logstash-9.5.2-release-notes]
-=======
-## 9.4.6 [logstash-9.4.6-release-notes]
-
-### Features and enhancements [logstash-9.4.6-features-enhancements]
-
-* Include timestamp in health report snapshot API response [#19422](https://github.com/elastic/logstash/pull/19422)
-
-### Fixes [logstash-9.4.6-fixes]
-
-* Fix a `NoSuchFileException` in the dead letter queue that could occur during oldest segment resolution when a segment file is concurrently removed [#19409](https://github.com/elastic/logstash/pull/19409)
-
-### Updates to dependencies [logstash-9.4.6-dependencies]
-
-* Updated concurrent-ruby gem [#19428](https://github.com/elastic/logstash/pull/19428)
-
-### Plugins [logstash-plugin-9.4.6-changes]
-
-**Edn Codec - 3.1.1**
-
-* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn/pull/8)
-* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
-
-**Edn_lines Codec - 3.1.1**
-
-* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn_lines/pull/8)
-* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn_lines` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
-
-**Anonymize Filter - 3.0.8**
-
-* Fix `NameError: uninitialized constant Fixnum` when using the `MURMUR3` algorithm on Logstash 9.4+ (Ruby 3.2+, which removed `Fixnum` in favor of `Integer`) [#19](https://github.com/logstash-plugins/logstash-filter-anonymize/pull/19)
-
-**Azure_event_hubs Input - 1.5.9**
-
-* Update jackson dependency to 2.21.6 [#121](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/121)
-
-**Beats Input - 7.0.14**
-
-* Update Netty dependency to 4.1.137.Final [#576](https://github.com/logstash-plugins/logstash-input-beats/pull/576)
-
-**Http Input - 4.2.1**
-
-* Update Netty dependency to 4.1.137.Final [#239](https://github.com/logstash-plugins/logstash-input-http/pull/239)
-
-* Add optional HTTP traffic logging (disabled by default). To enable it, turn on debug logging. [#237](https://github.com/logstash-plugins/logstash-input-http/pull/237)
-
-**Jms Input - 3.3.2**
-
-* Fix `NameError: uninitialized constant Fixnum` when reading a JMS MapMessage on Logstash 9.4+ [#63](https://github.com/logstash-plugins/logstash-input-jms/pull/63)
-* The `jruby-jms` gem references the `Fixnum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` while decoding a JMS MapMessage. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `jms`.
-
-**Tcp Input - 7.0.13**
-
-* Update Netty dependency to 4.1.137.Final [#284](https://github.com/logstash-plugins/logstash-input-tcp/pull/284)
-
-**Kafka Integration - 11.8.11**
-
-* Update jackson dependency to 2.21.6 [#275](https://github.com/logstash-plugins/logstash-integration-kafka/pull/275)
-
-
-## 9.4.5 [logstash-9.4.5-release-notes]
->>>>>>> 8c2435e (Release notes for 9.4.6 (#19463))
 
 ### Fixes [logstash-9.5.2-fixes]
 
@@ -255,6 +193,63 @@ This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The 
 **Udp Output - 3.3.0**
 
 * Added support for IPv6 addresses [#16](https://github.com/logstash-plugins/logstash-output-udp/pull/16)
+
+## 9.4.6 [logstash-9.4.6-release-notes]
+
+### Features and enhancements [logstash-9.4.6-features-enhancements]
+
+* Include timestamp in health report snapshot API response [#19422](https://github.com/elastic/logstash/pull/19422)
+
+### Fixes [logstash-9.4.6-fixes]
+
+* Fix a `NoSuchFileException` in the dead letter queue that could occur during oldest segment resolution when a segment file is concurrently removed [#19409](https://github.com/elastic/logstash/pull/19409)
+
+### Updates to dependencies [logstash-9.4.6-dependencies]
+
+* Updated concurrent-ruby gem [#19428](https://github.com/elastic/logstash/pull/19428)
+
+### Plugins [logstash-plugin-9.4.6-changes]
+
+**Edn Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Edn_lines Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn_lines/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn_lines` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Anonymize Filter - 3.0.8**
+
+* Fix `NameError: uninitialized constant Fixnum` when using the `MURMUR3` algorithm on Logstash 9.4+ (Ruby 3.2+, which removed `Fixnum` in favor of `Integer`) [#19](https://github.com/logstash-plugins/logstash-filter-anonymize/pull/19)
+
+**Azure_event_hubs Input - 1.5.9**
+
+* Update jackson dependency to 2.21.6 [#121](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/121)
+
+**Beats Input - 7.0.14**
+
+* Update Netty dependency to 4.1.137.Final [#576](https://github.com/logstash-plugins/logstash-input-beats/pull/576)
+
+**Http Input - 4.2.1**
+
+* Update Netty dependency to 4.1.137.Final [#239](https://github.com/logstash-plugins/logstash-input-http/pull/239)
+
+* Add optional HTTP traffic logging (disabled by default). To enable it, turn on debug logging. [#237](https://github.com/logstash-plugins/logstash-input-http/pull/237)
+
+**Jms Input - 3.3.2**
+
+* Fix `NameError: uninitialized constant Fixnum` when reading a JMS MapMessage on Logstash 9.4+ [#63](https://github.com/logstash-plugins/logstash-input-jms/pull/63)
+* The `jruby-jms` gem references the `Fixnum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` while decoding a JMS MapMessage. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `jms`.
+
+**Tcp Input - 7.0.13**
+
+* Update Netty dependency to 4.1.137.Final [#284](https://github.com/logstash-plugins/logstash-input-tcp/pull/284)
+
+**Kafka Integration - 11.8.11**
+
+* Update jackson dependency to 2.21.6 [#275](https://github.com/logstash-plugins/logstash-integration-kafka/pull/275)
 
 ## 9.4.5 [logstash-9.4.5-release-notes]
 
