@@ -249,8 +249,8 @@ if __name__ == "__main__":
             "steps": build_steps_to_yaml(branch, workflow_type),
         })
 
-        # DRY_RUN env-var contract: when set to "true" (from the Buildkite UI),
-        # the plugin runs but does not upload to GCS, and the annotate +
+        # DRY_RUN env-var: when set to "true",
+        # the plugin runs but does not upload to GCS, annotation and
         # processing-trigger steps are skipped entirely.
         dry_run = os.environ.get("DRY_RUN", "").lower() == "true"
         dra_upload = not dry_run
