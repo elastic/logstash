@@ -249,10 +249,10 @@ if __name__ == "__main__":
             "steps": build_steps_to_yaml(branch, workflow_type),
         })
 
-        # DRY_RUN env-var: when set to "true",
+        # DRA_DRY_RUN env-var: when set to "true",
         # the plugin runs but does not upload to GCS, annotation and
         # processing-trigger steps are skipped entirely.
-        dry_run = os.environ.get("DRY_RUN", "").lower() == "true"
+        dry_run = os.environ.get("DRA_DRY_RUN", "").lower() == "true"
         dra_upload = not dry_run
 
         base_version = get_base_version()
