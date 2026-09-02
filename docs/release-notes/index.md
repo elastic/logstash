@@ -21,6 +21,85 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.3 [logstash-9.5.3-release-notes]
+
+### Features and enhancements [logstash-9.5.3-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.5.3
+
+=== Logstash Commits between 9.5 and 9.5.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.5.2..9.5"
+
+0336d5d6a - (HEAD -> 9.5, origin/9.5) Update patch plugin versions in gemfile lock (#19474) (25 hours ago) <github-actions[bot]>
+cef9e9575 - [9.5] (backport #19472) [main] (backport #19463) Release notes for 9.4.6 (#19473) (2 days ago) <mergify[bot]>
+c55a72d9f - chore: deps(updatecli): Bump updatecli version to v0.120.1 (#19453) (#19457) (9 days ago) <mergify[bot]>
+1f45d584f - Update patch plugin versions in gemfile lock (#19451) (12 days ago) <github-actions[bot]>
+9a951ea89 - Bump logstash version 9.5.3 (#19444) (13 days ago) <github-actions[bot]>
+7e53d5551 - Release notes for 9.5.2 (#19436) (13 days ago) <github-actions[bot]>
+09403a7bc - [chore] add timestamp in health check API (#19422) (#19437) (2 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.5.2..9.5 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 9.5.2 -> 9.5.4
+logstash-input-azure_event_hubs: 1.5.8 -> 1.5.10
+logstash-input-beats: 7.0.13 -> 7.0.14
+logstash-input-http: 4.1.13 -> 4.2.1
+logstash-input-tcp: 7.0.12 -> 7.0.13
+logstash-integration-jdbc: 5.6.4 -> 5.6.6
+logstash-integration-kafka: 12.1.5 -> 12.1.8
+logstash-output-email: 4.1.3 -> 4.1.4
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.5.3-changes]
+
+**Elastic_integration Filter - 9.5.4**
+
+* Require httpclient5 5.6.4 or later version [#501](https://github.com/elastic/logstash-filter-elastic_integration/pull/501)
+
+* Update jackson dependency to 3.1.6 [#499](https://github.com/elastic/logstash-filter-elastic_integration/pull/499)
+
+**Azure_event_hubs Input - 1.5.10**
+
+* Update `proton-j` to 0.35.0 [#122](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/122)
+
+* Update jackson dependency to 2.21.6 [#121](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/121)
+
+**Beats Input - 7.0.14**
+
+* Update Netty dependency to 4.1.137.Final [#576](https://github.com/logstash-plugins/logstash-input-beats/pull/576)
+
+**Http Input - 4.2.1**
+
+* Update Netty dependency to 4.1.137.Final [#239](https://github.com/logstash-plugins/logstash-input-http/pull/239)
+
+* Implements a functionality to log HTTP traffic, disabled by default. To unable switch on debug logs. [#237](https://github.com/logstash-plugins/logstash-input-http/pull/237)
+
+**Tcp Input - 7.0.13**
+
+* Update Netty dependency to 4.1.137.Final [#284](https://github.com/logstash-plugins/logstash-input-tcp/pull/284)
+
+**Jdbc Integration - 5.6.6**
+
+* Fix access method to big tables to avoid materialise the full result set in memory and generate an out-of-memory error. [#204](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204)
+
+* Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time [#203](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203)
+
+**Kafka Integration - 12.1.8**
+
+* Require httpclient5 version 5.6.4 or later  [#277](https://github.com/logstash-plugins/logstash-integration-kafka/pull/277)
+
+* Upgrades `kafka-avro-serializer` dependency to v8.3.1, and constrains transitive dependency on apache `httpclient5` to be at least `v5.6.3` [#273](https://github.com/logstash-plugins/logstash-integration-kafka/pull/273)
+
+* Update jackson dependency to 2.21.6 [#274](https://github.com/logstash-plugins/logstash-integration-kafka/pull/274)
+
+**Email Output - 4.1.4**
+
+* Requiere `mail` dependency 2.9 or later  [#72](https://github.com/logstash-plugins/logstash-output-email/pull/72)
+
+
 ## 9.5.2 [logstash-9.5.2-release-notes]
 
 ### Fixes [logstash-9.5.2-fixes]
