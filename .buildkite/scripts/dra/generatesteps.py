@@ -276,11 +276,9 @@ if __name__ == "__main__":
                 yaml.safe_load(dra_trigger_step(workflow_type, stack_version, depends_on="logstash_dra_prep")),
             )
 
-        # TEMPORARILY DISABLED for dry-run testing of the dra-prep migration (PR #19477) —
-        # this step does an unconditional docker push unrelated to DRA prep and is not
-        # gated by DRA_DRY_RUN. Must be reverted before this branch is pushed/merged for real.
-        # structure["steps"].extend(
-        #     yaml.safe_load(ship_observability_sre_image_steps(branch, workflow_type)),
-        # )
+        # Once published, do the same for observabilitySRE image
+        structure["steps"].extend(
+            yaml.safe_load(ship_observability_sre_image_steps(branch, workflow_type)),
+        )
 
     print(YAML_HEADER + yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))
