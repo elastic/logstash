@@ -31,7 +31,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Elastic_integration Filter - 9.5.4**
 
-* Require httpclient5 5.6.4 or later version [#501](https://github.com/elastic/logstash-filter-elastic_integration/pull/501)
+* Require httpclient5 version 5.6.4 or later [#501](https://github.com/elastic/logstash-filter-elastic_integration/pull/501)
 
 * Update jackson dependency to 3.1.6 [#499](https://github.com/elastic/logstash-filter-elastic_integration/pull/499)
 
@@ -57,21 +57,21 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Jdbc Integration - 5.6.6**
 
-* Fix access method to big tables to avoid materialise the full result set in memory and generate an out-of-memory error. [#204](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204)
+* Fix access method for large tables to avoid materializing the full result set in memory and triggering an out-of-memory error. [#204](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204)
 
 * Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time [#203](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203)
 
 **Kafka Integration - 12.1.8**
 
-* Require httpclient5 version 5.6.4 or later  [#277](https://github.com/logstash-plugins/logstash-integration-kafka/pull/277)
+* Require httpclient5 version 5.6.4 or later [#277](https://github.com/logstash-plugins/logstash-integration-kafka/pull/277)
 
-* Upgrades `kafka-avro-serializer` dependency to v8.3.1, and constrains transitive dependency on apache `httpclient5` to be at least `v5.6.3` [#273](https://github.com/logstash-plugins/logstash-integration-kafka/pull/273)
+* Upgrades `kafka-avro-serializer` dependency to v8.3.1, and constrains transitive dependency on Apache `httpclient5` to be at least `v5.6.3` [#273](https://github.com/logstash-plugins/logstash-integration-kafka/pull/273)
 
 * Update jackson dependency to 2.21.6 [#274](https://github.com/logstash-plugins/logstash-integration-kafka/pull/274)
 
 **Email Output - 4.1.4**
 
-* Requiere `mail` dependency 2.9 or later  [#72](https://github.com/logstash-plugins/logstash-output-email/pull/72)
+* Require `mail` dependency 2.9 or later [#72](https://github.com/logstash-plugins/logstash-output-email/pull/72)
 
 ## 9.5.2 [logstash-9.5.2-release-notes]
 
