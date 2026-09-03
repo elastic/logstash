@@ -21,6 +21,58 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.3 [logstash-9.5.3-release-notes]
+
+### Features and enhancements [logstash-9.5.3-features-enhancements]
+
+* Include timestamp in health report snapshot API response [#19422](https://github.com/elastic/logstash/pull/19422)
+
+### Plugins [logstash-plugin-9.5.3-changes]
+
+**Elastic_integration Filter - 9.5.4**
+
+* Require httpclient5 version 5.6.4 or later [#501](https://github.com/elastic/logstash-filter-elastic_integration/pull/501)
+
+* Update jackson dependency to 3.1.6 [#499](https://github.com/elastic/logstash-filter-elastic_integration/pull/499)
+
+**Azure_event_hubs Input - 1.5.10**
+
+* Update `proton-j` to 0.35.0 [#122](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/122)
+
+* Update jackson dependency to 2.21.6 [#121](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/121)
+
+**Beats Input - 7.0.14**
+
+* Update Netty dependency to 4.1.137.Final [#576](https://github.com/logstash-plugins/logstash-input-beats/pull/576)
+
+**Http Input - 4.2.1**
+
+* Update Netty dependency to 4.1.137.Final [#239](https://github.com/logstash-plugins/logstash-input-http/pull/239)
+
+* Add optional HTTP traffic logging (disabled by default). To enable it, turn on debug logging. [#237](https://github.com/logstash-plugins/logstash-input-http/pull/237)
+
+**Tcp Input - 7.0.13**
+
+* Update Netty dependency to 4.1.137.Final [#284](https://github.com/logstash-plugins/logstash-input-tcp/pull/284)
+
+**Jdbc Integration - 5.6.6**
+
+* Fix access method for large tables to avoid materializing the full result set in memory and triggering an out-of-memory error. [#204](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204)
+
+* Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time [#203](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203)
+
+**Kafka Integration - 12.1.8**
+
+* Require httpclient5 version 5.6.4 or later [#277](https://github.com/logstash-plugins/logstash-integration-kafka/pull/277)
+
+* Upgrades `kafka-avro-serializer` dependency to v8.3.1, and constrains transitive dependency on Apache `httpclient5` to be at least `v5.6.3` [#273](https://github.com/logstash-plugins/logstash-integration-kafka/pull/273)
+
+* Update jackson dependency to 2.21.6 [#274](https://github.com/logstash-plugins/logstash-integration-kafka/pull/274)
+
+**Email Output - 4.1.4**
+
+* Require `mail` dependency 2.9 or later [#72](https://github.com/logstash-plugins/logstash-output-email/pull/72)
+
 ## 9.5.2 [logstash-9.5.2-release-notes]
 
 ### Fixes [logstash-9.5.2-fixes]
