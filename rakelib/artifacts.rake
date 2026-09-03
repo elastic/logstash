@@ -111,6 +111,11 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/*/test/**/*'
     @exclude_paths << 'vendor/**/gems/*/spec/**/*'
 
+    # JRuby auto-generates a per-JDK AppCDS archive on launch; it is a build-environment
+    # cache (regenerated at runtime) and must not be shipped, otherwise a stale archive
+    # can trigger a "sealing violation" at startup.
+    @exclude_paths << 'vendor/jruby/lib/jruby-*.jsa'
+
     # vulnerability scanners shouldn't pick dependency Gemfile(s)
     @exclude_paths << 'vendor/**/gems/**/Gemfile.lock'
     @exclude_paths << 'vendor/**/gems/**/Gemfile'

@@ -48,7 +48,6 @@ ext {
     gem = this.&gem
     buildGem = this.&buildGem
     rake = this.&rake
-    setupJruby = this.&setupJruby
     generateRubySupportFilesForPlugin = this.&generateRubySupportFilesForPlugin
     validatePluginJar = this.&validatePluginJar
     versionMap = new HashMap()
@@ -167,15 +166,6 @@ void rake(File projectDir, File buildDir, String task, String... args) {
                 end
                 """
         )
-    }
-}
-
-void setupJruby(File projectDir, File buildDir) {
-    executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
-        jruby.currentDirectory = projectDir
-        jruby.runScriptlet("require '${projectDir}/lib/bootstrap/environment'")
-        jruby.runScriptlet("LogStash::Bundler.invoke!")
-        jruby.runScriptlet("LogStash::Bundler.genericize_platform")
     }
 }
 

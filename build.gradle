@@ -311,11 +311,17 @@ def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
   it.tasks.findByName("assemble")
 }
 
-tasks.register("bootstrap") {
+tasks.register("bootstrap", Exec) {
     dependsOn assemblyDeps
-    doLast {
-      setupJruby(projectDir, buildDir)
-  }
+    workingDir projectDir
+    if (project.hasProperty('fedrampHighMode') && project.property('fedrampHighMode').toBoolean()) {
+        environment 'ORG_GRADLE_PROJECT_fedrampHighMode', 'true'
+    }
+    // Install gems in a forked JRuby, not an embedded ScriptingContainer: building a gem's
+    // native extension spawns /bin/sh, which fails with Errno::EBADF under the Gradle daemon.
+    // Bundler.invoke! derives GEM_HOME/GEM_PATH from the running Ruby, so no ABI path is hardcoded.
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-e",
+        "require '${projectDir}/lib/bootstrap/environment'; LogStash::Bundler.invoke!; LogStash::Bundler.genericize_platform"
 }
 
 tasks.register("dockerBootstrap") {
