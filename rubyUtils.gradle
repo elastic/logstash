@@ -48,6 +48,7 @@ ext {
     gem = this.&gem
     buildGem = this.&buildGem
     rake = this.&rake
+    setupJruby = this.&setupJruby
     generateRubySupportFilesForPlugin = this.&generateRubySupportFilesForPlugin
     validatePluginJar = this.&validatePluginJar
     versionMap = new HashMap()
@@ -166,6 +167,33 @@ void rake(File projectDir, File buildDir, String task, String... args) {
                 end
                 """
         )
+    }
+}
+
+/**
+ * Installs the bundled gems for the current Gemfile in a forked JRuby process.
+ *
+ * Installing a gem that declares a native extension (e.g. resolv) runs its build, which shells
+ * out to /bin/sh and fails with Errno::EBADF when executed by an embedded ScriptingContainer
+ * inside the Gradle daemon (disabling native support instead breaks waitpid). Forking a real
+ * JRuby process gives the child valid file descriptors. Uses the OS-appropriate launcher:
+ * bin/jruby on POSIX, bin/jruby.bat on Windows.
+ */
+void setupJruby(File projectDir, File buildDir) {
+    def isWindows = System.properties['os.name'].toLowerCase().startsWith('windows')
+    def jrubyBin = new File(projectDir, isWindows ? 'vendor/jruby/bin/jruby.bat' : 'vendor/jruby/bin/jruby')
+    // Relative require resolves against the working directory (set below), avoiding
+    // platform-specific absolute path separators inside the -e script.
+    def rubyScript = "require './lib/bootstrap/environment'; LogStash::Bundler.invoke!; LogStash::Bundler.genericize_platform"
+    def pb = new ProcessBuilder(jrubyBin.toString(), "-e", rubyScript.toString())
+    pb.directory(projectDir)
+    pb.inheritIO()
+    if (project.hasProperty('fedrampHighMode') && project.property('fedrampHighMode').toBoolean()) {
+        pb.environment().put('ORG_GRADLE_PROJECT_fedrampHighMode', 'true')
+    }
+    int exitCode = pb.start().waitFor()
+    if (exitCode != 0) {
+        throw new GradleException("JRuby bootstrap failed (exit ${exitCode})")
     }
 }
 
