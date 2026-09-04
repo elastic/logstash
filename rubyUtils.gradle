@@ -181,7 +181,9 @@ void rake(File projectDir, File buildDir, String task, String... args) {
  */
 void setupJruby(File projectDir, File buildDir) {
     def isWindows = System.properties['os.name'].toLowerCase().startsWith('windows')
-    def jrubyBin = new File(projectDir, isWindows ? 'vendor/jruby/bin/jruby.bat' : 'vendor/jruby/bin/jruby')
+    // jruby.exe is a native launcher (run directly by ProcessBuilder), avoiding cmd.exe
+    // mangling the -e argument as it would with jruby.bat.
+    def jrubyBin = new File(projectDir, isWindows ? 'vendor/jruby/bin/jruby.exe' : 'vendor/jruby/bin/jruby')
     // Relative require resolves against the working directory (set below), avoiding
     // platform-specific absolute path separators inside the -e script.
     def rubyScript = "require './lib/bootstrap/environment'; LogStash::Bundler.invoke!; LogStash::Bundler.genericize_platform"
