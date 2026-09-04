@@ -155,10 +155,11 @@ def ship_observability_sre_image_steps(branch, workflow_type):
 '''
     return step
 
-def publish_dra_step(branch, workflow_type, depends_on):
+def dra_prep_step(branch, workflow_type, depends_on, stack_version, dra_upload):
+    upload_str = "true" if dra_upload else "false"
     step = f'''
-- label: ":elastic-stack: Publish  / {branch}-{workflow_type.upper()} DRA artifacts"
-  key: "logstash_publish_dra"
+- label: ":package: DRA Prep / {branch}-{workflow_type.upper()}"
+  key: "logstash_dra_prep"
   depends_on: "{depends_on}"
   agents:
     provider: gcp
@@ -166,18 +167,51 @@ def publish_dra_step(branch, workflow_type, depends_on):
     image: family/platform-ingest-logstash-ubuntu-2204
     machineType: "n2-standard-16"
     diskSizeGb: 200
-  command: |
-    echo "+++ Restoring Artifacts"
-    buildkite-agent artifact download "build/logstash*" .
-    buildkite-agent artifact download "build/distributions/**/*" .
-    echo "+++ Changing permissions for the release manager"
-    sudo chown -R :1000 build
-    echo "+++ Running DRA publish step"
-    export WORKFLOW_TYPE="{workflow_type}"
-    .buildkite/scripts/dra/publish.sh
-    '''
-
+  command: ".buildkite/scripts/dra/stage-dra-artifacts.sh"
+  artifact_paths:
+    - "artifacts/dra/logstash/*/manifest-*.json"
+  plugins:
+    - elastic/dra-prep#v0.1.6:
+        product_id: "logstash"
+        stack_version: "{stack_version}"
+        workflow: "{workflow_type}"
+        upload: {upload_str}
+'''
     return step
+
+def dra_annotate_step(workflow_type, depends_on):
+    step = f'''
+- label: ":memo: Annotate DRA summary / {workflow_type.upper()}"
+  depends_on: "{depends_on}"
+  command: ".buildkite/scripts/dra/dra-annotate.sh {workflow_type}"
+  agents:
+    provider: gcp
+    imageProject: elastic-images-prod
+    image: family/platform-ingest-logstash-ubuntu-2204
+  timeout_in_minutes: 5
+'''
+    return step
+
+def dra_trigger_step(workflow_type, stack_version, depends_on):
+    step = f'''
+- label: ":pipeline: DRA processing for logstash ({workflow_type})"
+  key: "logstash_dra_trigger"
+  trigger: "unified-release-dra-processing"
+  depends_on: "{depends_on}"
+  build:
+    env:
+      DRA_PRODUCT_ID: "logstash"
+      DRA_STACK_VERSION: "{stack_version}"
+      DRA_WORKFLOW: "{workflow_type}"
+'''
+    return step
+
+def get_base_version():
+    with open("versions.yml") as f:
+        for line in f:
+            if line.startswith("logstash:"):
+                return line.split(":", 1)[1].strip()
+    raise RuntimeError("logstash version not found in versions.yml")
 
 def build_steps_to_yaml(branch, workflow_type):
     steps = []
@@ -216,10 +250,32 @@ if __name__ == "__main__":
             "steps": build_steps_to_yaml(branch, workflow_type),
         })
 
-        # Pull artifacts built above and publish them via the release-manager
+        # DRA_DRY_RUN env-var: when set to "true",
+        # the plugin runs but does not upload to GCS, annotation and
+        # processing-trigger steps are skipped entirely.
+        dry_run = os.environ.get("DRA_DRY_RUN", "").lower() == "true"
+        dra_upload = not dry_run
+
+        base_version = get_base_version()
+        stack_version = base_version
+        if workflow_type == "staging" and version_qualifier:
+            stack_version = f"{base_version}-{version_qualifier}"
+
+        # Pull artifacts built above and hand them to elastic/dra-prep
         structure["steps"].extend(
-            yaml.safe_load(publish_dra_step(branch, workflow_type, depends_on=group_key)),
+            yaml.safe_load(dra_prep_step(
+                branch, workflow_type, depends_on=group_key,
+                stack_version=stack_version, dra_upload=dra_upload,
+            )),
         )
+
+        if dra_upload:
+            structure["steps"].extend(
+                yaml.safe_load(dra_trigger_step(workflow_type, stack_version, depends_on="logstash_dra_prep")),
+            )
+            structure["steps"].extend(
+                yaml.safe_load(dra_annotate_step(workflow_type, depends_on="logstash_dra_trigger")),
+            )
 
         # Once published, do the same for observabilitySRE image
         structure["steps"].extend(
