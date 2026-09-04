@@ -186,14 +186,25 @@ void setupJruby(File projectDir, File buildDir) {
     def jrubyBin = new File(projectDir, isWindows ? 'vendor/jruby/bin/jruby.exe' : 'vendor/jruby/bin/jruby')
     // Relative require resolves against the working directory (set below), avoiding
     // platform-specific absolute path separators inside the -e script.
-    def rubyScript = "require './lib/bootstrap/environment'; LogStash::Bundler.invoke!; LogStash::Bundler.genericize_platform"
+    // invoke! captures bundler's stdout and returns [output, exception] instead of raising, so
+    // print the captured output (for visibility in the build log) and re-raise on failure.
+    def rubyScript = "require './lib/bootstrap/environment'; " +
+        "out, exc = LogStash::Bundler.invoke!; \$stdout.write(out.to_s); raise(exc) if exc; " +
+        "LogStash::Bundler.genericize_platform"
     def pb = new ProcessBuilder(jrubyBin.toString(), "-e", rubyScript.toString())
     pb.directory(projectDir)
-    pb.inheritIO()
+    // Give the child an empty stdin (NUL/dev-null) rather than inheriting the Gradle daemon's,
+    // which can block on Windows and hang the build. Merge stderr into stdout and stream it to
+    // this build's log so the child's progress is visible (inheritIO would send it to the
+    // daemon's own fds instead).
+    pb.redirectErrorStream(true)
+    pb.redirectInput(new File(isWindows ? 'NUL' : '/dev/null'))
     if (project.hasProperty('fedrampHighMode') && project.property('fedrampHighMode').toBoolean()) {
         pb.environment().put('ORG_GRADLE_PROJECT_fedrampHighMode', 'true')
     }
-    int exitCode = pb.start().waitFor()
+    def proc = pb.start()
+    proc.inputStream.eachLine { println it }
+    int exitCode = proc.waitFor()
     if (exitCode != 0) {
         throw new GradleException("JRuby bootstrap failed (exit ${exitCode})")
     }
