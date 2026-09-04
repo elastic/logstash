@@ -195,6 +195,7 @@ def dra_annotate_step(workflow_type, depends_on):
 def dra_trigger_step(workflow_type, stack_version, depends_on):
     step = f'''
 - label: ":pipeline: DRA processing for logstash ({workflow_type})"
+  key: "logstash_dra_trigger"
   trigger: "unified-release-dra-processing"
   depends_on: "{depends_on}"
   build:
@@ -270,10 +271,10 @@ if __name__ == "__main__":
 
         if dra_upload:
             structure["steps"].extend(
-                yaml.safe_load(dra_annotate_step(workflow_type, depends_on="logstash_dra_prep")),
+                yaml.safe_load(dra_trigger_step(workflow_type, stack_version, depends_on="logstash_dra_prep")),
             )
             structure["steps"].extend(
-                yaml.safe_load(dra_trigger_step(workflow_type, stack_version, depends_on="logstash_dra_prep")),
+                yaml.safe_load(dra_annotate_step(workflow_type, depends_on="logstash_dra_trigger")),
             )
 
         # Once published, do the same for observabilitySRE image
