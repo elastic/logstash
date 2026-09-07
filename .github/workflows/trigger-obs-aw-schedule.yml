@@ -1,0 +1,20 @@
+name: Observability Agentic Workflow — Schedule
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run-obs-aw-schedule:
+    permissions:
+      actions: read
+      contents: write
+      copilot-requests: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    uses: elastic/oblt-aw/.github/workflows/obs-aw-event-schedule.yml@main # ratchet:exclude
