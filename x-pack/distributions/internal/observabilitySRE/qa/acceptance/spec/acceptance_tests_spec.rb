@@ -64,6 +64,66 @@ describe "ObservabilitySRE FIPS container" do
       end
   end
 
+  context "when running LS to the HTTP output with FIPS-compliant configuration" do
+    before(:all) do
+      work_dir = File.expand_path("../docker", __dir__)
+      docker_compose_up({"LOGSTASH_PIPELINE" => "logstash-to-http.conf"}, work_dir)
+      wait_for_elasticsearch
+    end
+
+    after(:all) do
+      work_dir = File.expand_path("../docker", __dir__)
+      docker_compose_down({}, work_dir)
+    end
+
+    it "data flows from Logstash to Elasticsearch via the HTTP output using FIPS-approved SSL" do
+      # Wait for index to appear, indicating data is flowing over the HTTP output
+      wait_until(timeout: 30, message: "Index logstash-http-fips-test not found") do
+        response = es_request("/_cat/indices?v")
+        response.code == "200" && response.body.include?("logstash-http-fips-test")
+      end
+      # Wait until specific data added by the mutate filter is observed
+      query = { query: { match_all: {} } }.to_json
+      result = nil
+      wait_until(timeout: 30, message: "No documents in logstash-http-fips-test") do
+          response = es_request("/logstash-http-fips-test/_search", query)
+          result = JSON.parse(response.body)
+          response.code == "200" && result["hits"]["total"]["value"] > 0
+        end
+      expect(result["hits"]["hits"].first["_source"]).to include("fips_test")
+    end
+  end
+
+  context "when running LS to the HTTP output with non-FIPS compliant configuration" do
+    before(:all) do
+      work_dir = File.expand_path("../docker", __dir__)
+      docker_compose_up({"LOGSTASH_PIPELINE" => "logstash-to-http-weak.conf"}, work_dir)
+      wait_for_elasticsearch
+    end
+
+    after(:all) do
+      work_dir = File.expand_path("../docker", __dir__)
+      docker_compose_down({}, work_dir)
+    end
+
+    it "prevents data flow when using TLSv1.1 which is not FIPS-compliant" do
+        # Allow time for Logstash to attempt connections (and fail)
+        sleep 15
+
+        # Verify that no index has been created that would indicate successful data flow
+        response = es_request("/_cat/indices?v")
+        expect(response.body).not_to include("logstash-http-weak-ssl-test")
+
+        # Check logs for the specific BouncyCastle FIPS error we expect
+        logs = `docker logs fips_test_logstash 2>&1`
+
+        # Verify the logs contain the FIPS-mode TLS protocol error
+        expect(logs).to include("No usable protocols enabled")
+        expect(logs).to include("IllegalStateException")
+        expect(logs).to include("org.bouncycastle")
+      end
+  end
+
   context "When running Filebeat through LS to ES in a FIPS compliant configuration" do
     before(:all) do
       work_dir = File.expand_path("../docker", __dir__)
