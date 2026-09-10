@@ -1,0 +1,149 @@
+name: bump-minor-logstash-version
+
+# Automates the "Before feature freeze" pull-request-opening
+# steps of the minor release checklist, up to (but not including) the
+# "Week before release" section:
+# https://github.com/elastic/ingest-dev/blob/main/.github/ISSUE_TEMPLATE/logstash-release-checklist-minor.md
+#
+# Purely manual steps (QA testing, doc coordination, DRA monitoring, Slack
+# notifications, etc.) are intentionally NOT automated here.
+
+on:
+  workflow_dispatch:
+    inputs:
+      logstash-version:
+        description: 'New release branch initial version (example: 9.1.0)'
+        required: true
+        type: string
+      logstash-branch:
+        description: 'New release branch to create (example: 9.1)'
+        required: true
+        type: string
+      next-minor-version:
+        description: 'Version main should move to after the branch is cut (example: 9.2.0). Optional; when omitted it is computed by bumping the minor of logstash-version.'
+        required: false
+        type: string
+      skip-branch-creation:
+        description: 'Skip creating the new release branch (use when logstash-branch is the last minor version of a major).'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  # "Before feature freeze" - check and unpin any active pins in the gemspec/Gemfile.
+  check-and-unpin-dependencies:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: elastic/oblt-actions/git/setup@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Find undocumented exact-version pins
+        id: unpin
+        run: |
+          # Any gem pinned with an exact "=" version constraint that does not carry
+          # an explanatory inline comment is treated as a candidate for unpinning.
+          FILES="Gemfile.template logstash-core/logstash-core.gemspec"
+          CHANGED=0
+          for f in $FILES; do
+            [ -f "$f" ] || continue
+            while IFS= read -r line; do
+              echo "Candidate pin in $f: $line"
+              CHANGED=1
+            done < <(grep -nE "['\"]= [0-9]" "$f" | grep -v "#" || true)
+          done
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
+      - name: Open PR if any undocumented pins were found
+        if: steps.unpin.outputs.changed == '1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="unpin_check_$(date +%s)"
+          git checkout -b "$BRANCH"
+          git commit --allow-empty -m "Reminder: review active dependency pins before feature freeze"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "Review active dependency pins before feature freeze" \
+            --body "Undocumented exact-version pins were found in Gemfile.template or logstash-core.gemspec. Please review whether they can be unpinned before feature freeze." \
+            --base main \
+            --head "$BRANCH"
+
+  # "Before feature freeze" - create the new release branch on elastic/logstash
+  create-release-branch:
+    if: ${{ inputs.skip-branch-creation != true }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Create release branch on elastic/logstash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
+        run: |
+          if git ls-remote --exit-code --heads origin "${LOGSTASH_BRANCH}" > /dev/null 2>&1; then
+            echo "Branch ${LOGSTASH_BRANCH} already exists, skipping creation."
+          else
+            git push origin "HEAD:refs/heads/${LOGSTASH_BRANCH}"
+          fi
+
+  # "Before feature freeze" - update versions.yml on main to the next minor.
+  bump-versions-yml-main:
+    needs: [create-release-branch]
+    if: always() && (needs.create-release-branch.result == 'success' || needs.create-release-branch.result == 'skipped')
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: elastic/oblt-actions/git/setup@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compute next minor version
+        id: next
+        env:
+          NEXT_MINOR_VERSION: ${{ inputs.next-minor-version }}
+          LOGSTASH_VERSION: ${{ inputs.logstash-version }}
+        run: |
+          if [ -n "$NEXT_MINOR_VERSION" ]; then
+            echo "version=${NEXT_MINOR_VERSION}" >> "$GITHUB_OUTPUT"
+          else
+            IFS='.' read -r major minor _patch <<< "$LOGSTASH_VERSION"
+            echo "version=${major}.$((minor + 1)).0" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Update versions.yml on main
+        run: |
+          NEXT_VERSION="${{ steps.next.outputs.version }}"
+          sed -i "s/^logstash: .*/logstash: ${NEXT_VERSION}/" versions.yml
+          sed -i "s/^logstash-core: .*/logstash-core: ${NEXT_VERSION}/" versions.yml
+      - name: Open PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOGSTASH_BRANCH: ${{ inputs.logstash-branch }}
+        run: |
+          NEXT_VERSION="${{ steps.next.outputs.version }}"
+          BRANCH="bump_versions_yml_main_${NEXT_VERSION}"
+          git add versions.yml
+          if [ -z "$(git status --porcelain)" ]; then echo "No changes. We're done."; exit 0; fi
+          git checkout -b "$BRANCH"
+          git commit -m "Bump versions.yml on main to ${NEXT_VERSION}"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "Bump versions.yml on main to ${NEXT_VERSION}" \
+            --body "Move main forward to the next minor version now that ${LOGSTASH_BRANCH} has been branched off." \
+            --base main \
+            --head "$BRANCH"
