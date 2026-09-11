@@ -21,6 +21,23 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.4 [logstash-9.5.4-release-notes]
+
+### Plugins [logstash-plugin-9.5.4-changes]
+
+**Tcp Input - 7.0.14**
+
+* Fix for processing the HA Proxy protocol, considering the line can be split in multiple buffers. [#286](https://github.com/logstash-plugins/logstash-input-tcp/pull/286)
+
+**Kafka Integration - 12.1.9**
+
+* Upgrade zstd-jni dependency [#279](https://github.com/logstash-plugins/logstash-integration-kafka/pull/279)
+
+**Scheduler Mixin - 1.0.2**
+
+* Fix: terminate idle scheduler work threads on plugin close, which leaked one thread per pipeline reload [#7](https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/7)
+
+
 ## 9.5.3 [logstash-9.5.3-release-notes]
 
 ### Features and enhancements [logstash-9.5.3-features-enhancements]
