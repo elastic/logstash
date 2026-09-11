@@ -23,35 +23,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.4.7 [logstash-9.4.7-release-notes]
 
-### Features and enhancements [logstash-9.4.7-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.4.7
-
-=== Logstash Commits between 9.4 and 9.4.6
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.6..9.4"
-
-96f955a25 - (HEAD -> 9.4, origin/9.4) add missing test files (#19495) (#19499) (2 days ago) <mergify[bot]>
-737ac8f73 - Update patch plugin versions in gemfile lock (#19497) (2 days ago) <github-actions[bot]>
-d0336d914 - Add the logstash-output-http plugin to observabilitySRE container (#19465) (#19493) (3 days ago) <mergify[bot]>
-7f2920ad2 - Migrate DRA GCS publishing from Release manager to dra-prep-plugin (#19477) (#19486) (7 days ago) <mergify[bot]>
-14cf3ea9a - Bump logstash version 9.4.7 (#19475) (10 days ago) <github-actions[bot]>
-8c2435e84 - Release notes for 9.4.6 (#19463) (11 days ago) <github-actions[bot]>
-09416e8ef - chore: deps(updatecli): Bump updatecli version to v0.120.1 (#19453) (#19458) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.4.6..9.4 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 9.4.6 -> 9.4.8
-logstash-input-azure_event_hubs: 1.5.9 -> 1.5.10
-logstash-input-tcp: 7.0.13 -> 7.0.14
-logstash-integration-jdbc: 5.6.4 -> 5.6.6
-logstash-integration-kafka: 11.8.11 -> 11.8.12
-logstash-mixin-scheduler: 1.0.1 -> 1.0.2
-logstash-output-email: 4.1.3 -> 4.1.4
----------- GENERATED CONTENT ENDS HERE ------------
-
 ### Plugins [logstash-plugin-9.4.7-changes]
 
 **Elastic_integration Filter - 9.4.8**
