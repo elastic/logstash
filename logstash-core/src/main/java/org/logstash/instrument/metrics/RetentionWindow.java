@@ -43,6 +43,9 @@ import java.util.function.BiFunction;
 abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
     static final Logger LOGGER = LogManager.getLogger(RetentionWindow.class);
 
+    protected static final int NODE_OVERHEAD = 2 * Long.BYTES;
+    protected static final int WINDOW_OVERHEAD = 3 * Long.BYTES;
+
     private final AtomicReference<NodeStagingPair<CAPTURE>> tail;
     private final AtomicReference<Node<CAPTURE>> head;
     final FlowMetricRetentionPolicy policy;
@@ -147,7 +150,7 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
     /**
      * @return the youngest capture, which might be uncommitted.
      */
-    private CAPTURE youngestCapture() {
+    protected CAPTURE youngestCapture() {
         NodeStagingPair<CAPTURE> captureNodeStagingPair = this.tail.get();
         if (Objects.nonNull(captureNodeStagingPair.staged)) {
             return captureNodeStagingPair.staged;
