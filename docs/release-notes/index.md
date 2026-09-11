@@ -21,6 +21,47 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.4 [logstash-9.5.4-release-notes]
+
+### Features and enhancements [logstash-9.5.4-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.5.4
+
+=== Logstash Commits between 9.5 and 9.5.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.5.3..9.5"
+
+33743ff3b - (HEAD -> 9.5, origin/9.5) add missing test files (#19495) (#19498) (2 days ago) <mergify[bot]>
+0e2e28e70 - Update patch plugin versions in gemfile lock (#19496) (2 days ago) <github-actions[bot]>
+6ada04188 - Add the logstash-output-http plugin to observabilitySRE container (#19465) (#19492) (3 days ago) <mergify[bot]>
+8ba5db4ba - Migrate DRA GCS publishing from Release manager to dra-prep-plugin (#19477) (#19485) (7 days ago) <mergify[bot]>
+663771a54 - Bump logstash version 9.5.4 (#19482) (8 days ago) <github-actions[bot]>
+83bc70e6f - Release notes for 9.5.3 (#19479) (9 days ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.5.3..9.5 *.release"
+Changed plugin versions:
+logstash-input-tcp: 7.0.13 -> 7.0.14
+logstash-integration-kafka: 12.1.8 -> 12.1.9
+logstash-mixin-scheduler: 1.0.1 -> 1.0.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.5.4-changes]
+
+**Tcp Input - 7.0.14**
+
+* Fix for processing the HA Proxy protocol, considering the line can be split in multiple buffers. [#286](https://github.com/logstash-plugins/logstash-input-tcp/pull/286)
+
+**Kafka Integration - 12.1.9**
+
+* Upgrade zstd-jni dependency [#279](https://github.com/logstash-plugins/logstash-integration-kafka/pull/279)
+
+**Scheduler Mixin - 1.0.2**
+
+* Fix: terminate idle scheduler work threads on plugin close, which leaked one thread per pipeline reload [#7](https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/7)
+
+
 ## 9.5.3 [logstash-9.5.3-release-notes]
 
 ### Features and enhancements [logstash-9.5.3-features-enhancements]
