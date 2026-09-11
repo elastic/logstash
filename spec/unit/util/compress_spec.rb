@@ -184,7 +184,7 @@ describe LogStash::Util::Zip do
     let(:zip_file) { Class.new }
 
     it "add a dir to a zip file" do
-      allow(Zip::File).to receive(:open).with(target, ::Zip::File::CREATE).and_yield(zip_file)
+      allow(Zip::File).to receive(:open).with(target, create: true).and_yield(zip_file)
       allow(Dir).to receive(:glob).and_return(dir_files)
       expect(zip_file).to receive(:add).exactly(3).times
       subject.compress(source, target)

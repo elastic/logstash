@@ -216,7 +216,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "ruby-progressbar:",https://github.com/jfelchner/ruby-progressbar,MIT
 "ruby2_keywords",https://github.com/ruby/ruby2_keywords,BSD-2-Clause
 "rubygems-update:",https://guides.rubygems.org,MIT
-"rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause-FreeBSD
+"rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause
 "rufus-scheduler:",http://github.com/jmettraux/rufus-scheduler,MIT
 "securerandom:",https://github.com/ruby/securerandom,BSD-2-Clause
 "semantic_logger:",https://github.com/rocketjob/semantic_logger,Apache-2.0
