@@ -39,9 +39,10 @@ module LogStash
           zip_file.each do |file|
             LogStash::Util.verify_name_safe!(file.name)
             safe_name = Pathname.new(file.name).cleanpath.to_s
+            next unless pattern.nil? || pattern =~ safe_name
             path = ::File.join(target, safe_name)
             FileUtils.mkdir_p(::File.dirname(path))
-            zip_file.extract(file, path) if pattern.nil? || pattern =~ safe_name
+            zip_file.extract(file, safe_name, destination_directory: target)
           end
         end
       end

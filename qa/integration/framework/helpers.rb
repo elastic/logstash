@@ -111,9 +111,10 @@ def extract(source, target, pattern = nil)
   raise "Directory #{target} exist" if ::File.exist?(target)
   Zip::File.open(source) do |zip_file|
     zip_file.each do |file|
+      next unless pattern.nil? || pattern =~ file.name
       path = ::File.join(target, file.name)
       FileUtils.mkdir_p(::File.dirname(path))
-      zip_file.extract(file, path) if pattern.nil? || pattern =~ file.name
+      zip_file.extract(file, file.name, destination_directory: target)
     end
   end
 end
