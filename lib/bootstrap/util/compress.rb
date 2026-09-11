@@ -52,7 +52,7 @@ module LogStash
       # @raise [IOError] If the target file already exist
       def compress(dir, target)
         raise CompressError.new("File #{target} exist") if ::File.exist?(target)
-        ::Zip::File.open(target, ::Zip::File::CREATE) do |zipfile|
+        ::Zip::File.open(target, create: true) do |zipfile|
           Dir.glob("#{dir}/**/*").each do |file|
             path_in_zip = file.gsub("#{dir}/", "")
             zipfile.add(path_in_zip, file)
