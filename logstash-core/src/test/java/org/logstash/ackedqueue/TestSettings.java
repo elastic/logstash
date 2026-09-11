@@ -31,4 +31,8 @@ public class TestSettings {
         return SettingsImpl.fileSettingsBuilder(folder).capacity(capacity)
             .queueMaxBytes(size).elementClass(StringElement.class).build();
     }
+
+    public static Settings.Builder fileSettingsBuilder(String folder) {
+        return SettingsImpl.fileSettingsBuilder(folder).elementClass(StringElement.class);
+    }
 }

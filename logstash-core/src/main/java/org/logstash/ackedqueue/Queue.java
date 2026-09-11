@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.ToLongFunction;
 
 import co.elastic.logstash.api.Metric;
 import org.apache.logging.log4j.LogManager;
@@ -96,7 +97,7 @@ public final class Queue implements Closeable {
     private FileLock dirLock;
     private final static String LOCK_NAME = ".lock";
 
-    private static final Logger logger = LogManager.getLogger(Queue.class);
+    static final Logger LOGGER = LogManager.getLogger(Queue.class);
 
     private final Metric metric;
 
@@ -161,8 +162,7 @@ public final class Queue implements Closeable {
             if (headPage == null) {
                 size = 0L;
             } else {
-                size = headPage.getPageIO().getHead()
-                    + tailPages.stream().mapToLong(p -> p.getPageIO().getHead()).sum();
+                size = sumPages((page) -> page.getPageIO().getHead());
             }
             return size;
         } finally {
@@ -221,7 +221,7 @@ public final class Queue implements Closeable {
         } catch (NoSuchFileException e) {
             // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
 
-            logger.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
+            LOGGER.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
 
             this.ensureDiskAvailable(this.maxBytes, 0);
 
@@ -247,7 +247,7 @@ public final class Queue implements Closeable {
             }
             final Checkpoint cp = this.checkpointIO.read(cpFileName);
 
-            logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp);
+            LOGGER.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp);
 
             PageIO pageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
             // important to NOT pageIO.open() just yet, we must first verify if it is fully acked in which case
@@ -272,7 +272,7 @@ public final class Queue implements Closeable {
         // transform the head page into a tail page only if the headpage is non-empty
         // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
 
-        logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint);
+        LOGGER.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint);
 
         PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
         pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
@@ -283,12 +283,12 @@ public final class Queue implements Closeable {
         if (pageIO.getMinSeqNum() != headCheckpoint.getMinSeqNum() || pageIO.getElementCount() != headCheckpoint.getElementCount()) {
             // the recovered page IO shows different minSeqNum or elementCount than the checkpoint, use the page IO attributes
 
-            logger.warn("recovered head data page {} is different than checkpoint, using recovered page information", headCheckpoint.getPageNum());
-            logger.debug("head checkpoint minSeqNum={} or elementCount={} is different than head pageIO minSeqNum={} or elementCount={}", headCheckpoint.getMinSeqNum(), headCheckpoint.getElementCount(), pageIO.getMinSeqNum(), pageIO.getElementCount());
+            LOGGER.warn("recovered head data page {} is different than checkpoint, using recovered page information", headCheckpoint.getPageNum());
+            LOGGER.debug("head checkpoint minSeqNum={} or elementCount={} is different than head pageIO minSeqNum={} or elementCount={}", headCheckpoint.getMinSeqNum(), headCheckpoint.getElementCount(), pageIO.getMinSeqNum(), pageIO.getElementCount());
 
             long firstUnackedSeqNum = headCheckpoint.getFirstUnackedSeqNum();
             if (firstUnackedSeqNum < pageIO.getMinSeqNum()) {
-                logger.debug("head checkpoint firstUnackedSeqNum={} is < head pageIO minSeqNum={}, using pageIO minSeqNum", firstUnackedSeqNum, pageIO.getMinSeqNum());
+                LOGGER.debug("head checkpoint firstUnackedSeqNum={} is < head pageIO minSeqNum={}, using pageIO minSeqNum", firstUnackedSeqNum, pageIO.getMinSeqNum());
                 firstUnackedSeqNum = pageIO.getMinSeqNum();
             }
             headCheckpoint = new Checkpoint(headCheckpoint.getPageNum(), headCheckpoint.getFirstUnackedPageNum(), firstUnackedSeqNum, pageIO.getMinSeqNum(), pageIO.getElementCount());
@@ -338,7 +338,7 @@ public final class Queue implements Closeable {
         if (headCheckpoint.isFullyAcked()) {
             PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             if (pageIO.isCorruptedPage()) {
-                logger.debug("Queue is fully acked. Found zero byte page.{}. Recreate checkpoint.head and delete corrupted page", headCheckpoint.getPageNum());
+                LOGGER.debug("Queue is fully acked. Found zero byte page.{}. Recreate checkpoint.head and delete corrupted page", headCheckpoint.getPageNum());
 
                 this.checkpointIO.purge(checkpointIO.headFileName());
                 pageIO.purge();
@@ -368,7 +368,7 @@ public final class Queue implements Closeable {
         try {
             pageIO.purge();
         } catch (NoSuchFileException e) { /* ignore */
-            logger.debug("tail page does not exist: {}", pageIO);
+            LOGGER.debug("tail page does not exist: {}", pageIO);
         }
 
         // we want to keep all the "middle" checkpoints between the first unacked tail page and the head page
@@ -406,7 +406,7 @@ public final class Queue implements Closeable {
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
         headPageIO.create();
-        logger.debug("created new head page: {}", headPageIO);
+        LOGGER.debug("created new head page: {}", headPageIO);
         this.headPage = PageFactory.newHeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
     }
@@ -484,7 +484,7 @@ public final class Queue implements Closeable {
                 try {
                     notFull.await();
                 } catch (InterruptedException e) {
-                    logger.debug("interrupted waiting for queue to not be full", e);
+                    LOGGER.debug("interrupted waiting for queue to not be full", e);
                     // the thread interrupt() has been called while in the await() blocking call.
                     // at this point the interrupted flag is reset and Thread.interrupted() will return false
                     // to any upstream calls on it. for now our choice is to return normally and set back
@@ -660,58 +660,48 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     private SerializedBatchHolder readPageBatch(Page p, int limit, long timeout) throws IOException {
-        int left = limit;
-        final List<byte[]> elements = new ArrayList<>(limit);
-
-        // NOTE: the tricky thing here is that upon entering this method, if p is initially a head page
-        // it could become a tail page upon returning from the notEmpty.await call.
-        long firstSeqNum = -1L;
-        while (left > 0) {
-            if (isHeadPage(p) && p.isFullyRead()) {
-                boolean elapsed;
-                // a head page is fully read but can be written to so let's wait for more data
-                try {
-                    elapsed = !awaitReadDemand(timeout, left);
-                } catch (InterruptedException e) {
-                    // set back the interrupted flag
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-
-                if ((elapsed && p.isFullyRead()) || isClosed()) {
-                    break;
-                }
+        // if its fully-read and a head page, make a demand and wait
+        if (isHeadPage(p) && p.unreadCount() < limit) {
+            boolean elapsed;
+            try {
+                elapsed = !awaitReadDemand(timeout, limit);
+            } catch (InterruptedException e) {
+                // set back the interrupted flag
+                Thread.currentThread().interrupt();
+                return emptySerializedBatchHolder();
             }
-
-            if (! p.isFullyRead()) {
-                boolean wasFull = isMaxUnreadReached();
-
-                final SequencedList<byte[]> serialized = p.read(left);
-                int n = serialized.getElements().size();
-                assert n > 0 : "page read returned 0 elements";
-                elements.addAll(serialized.getElements());
-                if (firstSeqNum == -1L) {
-                    firstSeqNum = serialized.getSeqNums().get(0);
-                }
-
-                this.unreadCount -= n;
-                left -= n;
-
-                if (wasFull) {
-                    notFull.signalAll();
-                }
+            if ((elapsed && p.isFullyRead()) || isClosed()) {
+                return emptySerializedBatchHolder();
             }
+        }
 
-            if (isTailPage(p) && p.isFullyRead()) {
-                break;
-            }
+        if (p.isFullyRead()) {
+            return emptySerializedBatchHolder();
+        }
+
+        boolean wasFull = isMaxUnreadReached();
+
+        final SequencedList<byte[]> serialized = p.read(limit);
+        int n = serialized.getElements().size();
+        assert n > 0 : "page read returned 0 elements";
+
+        this.unreadCount -= n;
+
+        if (wasFull) {
+            notFull.signalAll();
         }
 
         if (isTailPage(p) && p.isFullyRead()) {
             removeUnreadPage(p);
         }
 
+        final List<byte[]> elements = new ArrayList<>(serialized.getElements());
+        final long firstSeqNum = (n > 0) ? serialized.getSeqNums().get(0) : -1L;
         return new SerializedBatchHolder(elements, firstSeqNum);
+    }
+
+    private SerializedBatchHolder emptySerializedBatchHolder() {
+        return new SerializedBatchHolder(List.of(), -1L);
     }
 
     /**
@@ -763,6 +753,27 @@ public final class Queue implements Closeable {
                 }
                 this.headPage.checkpoint();
             }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void unread(final long firstUnreadSeqNum, final int eventCount) throws IOException {
+        lock.lock();
+        try {
+            if (containsSeq(headPage, firstUnreadSeqNum)) {
+                this.headPage.unread(firstUnreadSeqNum, eventCount);
+            } else {
+                final int resultIndex = binaryFindPageForSeqnum(firstUnreadSeqNum);
+                final Page relevantTailPage = this.tailPages.get(resultIndex);
+                if (relevantTailPage.unread(firstUnreadSeqNum, eventCount)) {
+                    this.unreadTailPages.add(0, relevantTailPage);
+                }
+                notEmpty.signalAll();
+            }
+            // guarded by lock
+            //noinspection NonAtomicOperationOnVolatileField
+            this.unreadCount += eventCount;
         } finally {
             lock.unlock();
         }
@@ -826,7 +837,7 @@ public final class Queue implements Closeable {
             FileLockFactory.releaseLock(this.dirLock);
         } catch (IOException e) {
             // log error and ignore
-            logger.error("Queue close releaseLock failed, error={}", e.getMessage());
+            LOGGER.error("Queue close releaseLock failed, error={}", e.getMessage());
         }
     }
 
@@ -873,23 +884,24 @@ public final class Queue implements Closeable {
     }
 
     public long getAckedCount() {
-        lock.lock();
-        try {
-            return headPage.ackedSeqNums.cardinality() + tailPages.stream()
-                .mapToLong(page -> page.ackedSeqNums.cardinality()).sum();
-        } finally {
-            lock.unlock();
-        }
+        return sumPages(Page::getAckedCount);
     }
 
     public long getUnackedCount() {
+        return sumPages(Page::getUnackedCount);
+    }
+
+    long getPageCount() {
+        return sumPages((page) -> 1L);
+    }
+
+    private long sumPages(final ToLongFunction<Page> valueGetter) {
         lock.lock();
         try {
-            long headPageCount = (headPage.getElementCount() - headPage.ackedSeqNums.cardinality());
-            long tailPagesCount = tailPages.stream()
-                .mapToLong(page -> (page.getElementCount() - page.ackedSeqNums.cardinality()))
-                .sum();
-            return headPageCount + tailPagesCount;
+            final long headPageValue = valueGetter.applyAsLong(this.headPage);
+            final long tailPagesValue = this.tailPages.stream().mapToLong(valueGetter).sum();
+
+            return Long.sum(headPageValue, tailPagesValue);
         } finally {
             lock.unlock();
         }
