@@ -26,7 +26,7 @@ user="logstash"
 group="logstash"
 chroot="/"
 chdir="/"
-nice="19"
+nice="0"
 limit_open_files="16384"
 
 
