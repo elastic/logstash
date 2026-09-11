@@ -23,8 +23,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.5.4 [logstash-9.5.4-release-notes]
 
-### Features and enhancements [logstash-9.5.4-features-enhancements]
-
 ### Plugins [logstash-plugin-9.5.4-changes]
 
 **Tcp Input - 7.0.14**
