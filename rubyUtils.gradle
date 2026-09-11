@@ -170,12 +170,43 @@ void rake(File projectDir, File buildDir, String task, String... args) {
     }
 }
 
+/**
+ * Installs the bundled gems for the current Gemfile in a forked JRuby process.
+ *
+ * Installing a gem that declares a native extension (e.g. resolv) runs its build, which shells
+ * out to /bin/sh and fails with Errno::EBADF when executed by an embedded ScriptingContainer
+ * inside the Gradle daemon (disabling native support instead breaks waitpid). Forking a real
+ * JRuby process gives the child valid file descriptors. Uses the OS-appropriate launcher:
+ * bin/jruby on POSIX, bin/jruby.bat on Windows.
+ */
 void setupJruby(File projectDir, File buildDir) {
-    executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
-        jruby.currentDirectory = projectDir
-        jruby.runScriptlet("require '${projectDir}/lib/bootstrap/environment'")
-        jruby.runScriptlet("LogStash::Bundler.invoke!")
-        jruby.runScriptlet("LogStash::Bundler.genericize_platform")
+    def isWindows = System.properties['os.name'].toLowerCase().startsWith('windows')
+    // jruby.exe is a native launcher (run directly by ProcessBuilder), avoiding cmd.exe
+    // mangling the -e argument as it would with jruby.bat.
+    def jrubyBin = new File(projectDir, isWindows ? 'vendor/jruby/bin/jruby.exe' : 'vendor/jruby/bin/jruby')
+    // Relative require resolves against the working directory (set below), avoiding
+    // platform-specific absolute path separators inside the -e script.
+    // invoke! captures bundler's stdout and returns [output, exception] instead of raising, so
+    // print the captured output (for visibility in the build log) and re-raise on failure.
+    def rubyScript = "require './lib/bootstrap/environment'; " +
+        "out, exc = LogStash::Bundler.invoke!; \$stdout.write(out.to_s); raise(exc) if exc; " +
+        "LogStash::Bundler.genericize_platform"
+    def pb = new ProcessBuilder(jrubyBin.toString(), "-e", rubyScript.toString())
+    pb.directory(projectDir)
+    // Give the child an empty stdin (NUL/dev-null) rather than inheriting the Gradle daemon's,
+    // which can block on Windows and hang the build. Merge stderr into stdout and stream it to
+    // this build's log so the child's progress is visible (inheritIO would send it to the
+    // daemon's own fds instead).
+    pb.redirectErrorStream(true)
+    pb.redirectInput(new File(isWindows ? 'NUL' : '/dev/null'))
+    if (project.hasProperty('fedrampHighMode') && project.property('fedrampHighMode').toBoolean()) {
+        pb.environment().put('ORG_GRADLE_PROJECT_fedrampHighMode', 'true')
+    }
+    def proc = pb.start()
+    proc.inputStream.eachLine { println it }
+    int exitCode = proc.waitFor()
+    if (exitCode != 0) {
+        throw new GradleException("JRuby bootstrap failed (exit ${exitCode})")
     }
 }
 
