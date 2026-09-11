@@ -21,6 +21,43 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.7 [logstash-9.4.7-release-notes]
+
+### Plugins [logstash-plugin-9.4.7-changes]
+
+**Elastic_integration Filter - 9.4.8**
+
+* Require httpclient5 5.6.4 or later version [#502](https://github.com/elastic/logstash-filter-elastic_integration/pull/502)
+
+* Update jackson dependency to 3.1.6 [#498](https://github.com/elastic/logstash-filter-elastic_integration/pull/498)
+
+**Azure_event_hubs Input - 1.5.10**
+
+* Update `proton-j` to 0.35.0 [#122](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/122)
+
+**Tcp Input - 7.0.14**
+
+* Fix for processing the HA Proxy protocol, considering the line can be split in multiple buffers. [#286](https://github.com/logstash-plugins/logstash-input-tcp/pull/286)
+
+**Jdbc Integration - 5.6.6**
+
+* Fix access method to big tables to avoid materialise the full result set in memory and generate an out-of-memory error. [#204](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204)
+
+* Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time [#203](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203)
+
+**Kafka Integration - 11.8.12**
+
+* Upgrade zstd-jni dependency [#280](https://github.com/logstash-plugins/logstash-integration-kafka/pull/280)
+
+**Scheduler Mixin - 1.0.2**
+
+* Fix: terminate idle scheduler work threads on plugin close, which leaked one thread per pipeline reload [#7](https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/7)
+
+**Email Output - 4.1.4**
+
+* Requiere `mail` dependency 2.9 or later  [#72](https://github.com/logstash-plugins/logstash-output-email/pull/72)
+
+
 ## 9.4.6 [logstash-9.4.6-release-notes]
 
 ### Features and enhancements [logstash-9.4.6-features-enhancements]
