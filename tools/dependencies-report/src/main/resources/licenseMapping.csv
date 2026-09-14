@@ -33,8 +33,12 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
 "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
 "com.fasterxml.jackson.module:jackson-module-afterburner:",https://github.com/FasterXML/jackson-modules-base,Apache-2.0
+<<<<<<< HEAD
 "com.google.code.findbugs:jsr305:",http://findbugs.sourceforge.net,Apache-2.0
 "com.google.errorprone:error_prone_annotations:",https://github.com/google/error-prone,Apache-2.0
+=======
+"com.github.luben:zstd-jni:1.5.7-14",https://github.com/luben/zstd-jni,BSD-2-Clause
+>>>>>>> 3bafe7f (Upgrades zstd-jni (#19512))
 "com.google.googlejavaformat:google-java-format:",https://github.com/google/google-java-format,Apache-2.0
 "com.google.guava:guava:",https://github.com/google/guava,Apache-2.0
 "com.google.j2objc:j2objc-annotations:",https://github.com/google/j2objc/,Apache-2.0
