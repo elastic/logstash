@@ -23,6 +23,8 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.4.7 [logstash-9.4.7-release-notes]
 
+No user-facing changes in Logstash core.
+
 ### Plugins [logstash-plugin-9.4.7-changes]
 
 **Elastic_integration Filter - 9.4.8**
