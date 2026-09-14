@@ -1647,10 +1647,10 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.github.luben:zstd-jni-1.5.7-4
+Notice for: com.github.luben:zstd-jni-1.5.7-14
 ----------
 
-source: https://github.com/luben/zstd-jni/blob/v1.5.7-4/LICENSE
+source: https://github.com/luben/zstd-jni/blob/v1.5.7-14/LICENSE
 
 Copyright (c) 2015-present, Luben Karavelov/ All rights reserved.
 

@@ -1,4 +1,4 @@
-source: https://github.com/luben/zstd-jni/blob/v1.5.7-4/LICENSE
+source: https://github.com/luben/zstd-jni/blob/v1.5.7-14/LICENSE
 
 Copyright (c) 2015-present, Luben Karavelov/ All rights reserved.
 
