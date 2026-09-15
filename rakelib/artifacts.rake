@@ -659,7 +659,7 @@ namespace "artifact" do
     zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exist?(zippath)
-    Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
+    Zip::File.open(zippath, create: true) do |zipfile|
       files(exclude_paths).each do |path|
         dest_path = transform_jdk_path(path)
         path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{dest_path}"
