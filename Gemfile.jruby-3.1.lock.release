@@ -775,6 +775,7 @@ GEM
     rake (13.3.1)
     redis (4.8.1)
     regexp_parser (2.10.0)
+    resolv (0.7.2)
     rexml (3.4.4)
     rspec (3.13.2)
       rspec-core (~> 3.13.0)
@@ -997,6 +998,7 @@ DEPENDENCIES
   polyglot
   rack-test
   rake (~> 13)
+  resolv (~> 0.7.2)
   rspec (~> 3.5)
   rubocop
   rubocop-ast (= 1.42.0)
