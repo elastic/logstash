@@ -43,3 +43,4 @@ gem "date", "= 3.3.3"
 gem "thwait"
 gem "bigdecimal", "~> 3.1"
 gem "jar-dependencies", "= 0.5.4" # Pin to avoid conflict with default
+gem "resolv", "~> 0.7.2" # Require resolv 0.7.x (>= 0.7.2) until JRuby ships the patched version
