@@ -693,7 +693,8 @@ GEM
     logstash-patterns-core (4.3.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     lru_redux (1.1.0)
-    mail (2.8.1)
+    mail (2.9.1)
+      logger
       mini_mime (>= 0.1.1)
       net-imap
       net-pop
