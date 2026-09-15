@@ -272,7 +272,7 @@ No user-facing changes in Logstash core.
 
 **Elastic_integration Filter - 9.4.8**
 
-* Require httpclient5 5.6.4 or later version [#502](https://github.com/elastic/logstash-filter-elastic_integration/pull/502)
+* Require httpclient5 5.6.4 or later [#502](https://github.com/elastic/logstash-filter-elastic_integration/pull/502)
 
 * Update jackson dependency to 3.1.6 [#498](https://github.com/elastic/logstash-filter-elastic_integration/pull/498)
 
@@ -286,7 +286,7 @@ No user-facing changes in Logstash core.
 
 **Jdbc Integration - 5.6.6**
 
-* Fix access method to big tables to avoid materialise the full result set in memory and generate an out-of-memory error. [#204](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204)
+* Fix access method for large tables to avoid materializing the full result set in memory and triggering an out-of-memory error. [#204](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204)
 
 * Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time [#203](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203)
 
