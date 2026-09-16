@@ -1,4 +1,4 @@
-https://github.com/guyboertje/jrjackson/blob/v0.5.2/README.md
+https://github.com/elastic/jrjackson/blob/v0.5.3/README.md
 
 LICENSE applicable to this library:
 
