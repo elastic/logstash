@@ -189,18 +189,23 @@ class VersionExtractor
       sources[:inferred_from_gem_path] = gem_version if gem_version
     end
 
+    # Coordinates inferred from a Maven-repository-style path, used only for the
+    # main jar when pom.properties did not supply a groupId.
+    path_coords = infer_maven_coords_from_path(jar_path)
+
     # If multiple pom.properties, treat as shaded JAR - report each bundled dep
     if pom_entries.size > 1
       results = []
 
       # Report the main JAR itself
       main_name = filename_info[:name] || File.basename(jar_path, '.jar')
-      main_result = build_result(
-        type: 'jar',
-        name: main_name,
-        sources: sources,
-        filepath: relative_path
-      )
+      main_result = if path_coords
+        build_result(type: 'jar', name: path_coords[:artifact_id],
+                     sources: { maven_repo_layout: path_coords[:version] }, filepath: relative_path,
+                     group_id: path_coords[:group_id], artifact_id: path_coords[:artifact_id])
+      else
+        build_result(type: 'jar', name: main_name, sources: sources, filepath: relative_path)
+      end
       results << main_result
 
       # Report each shaded dependency
@@ -233,7 +238,13 @@ class VersionExtractor
         # pom.properties doesn't match JAR name - treat as shaded dependency
         results = []
         name = filename_info[:name] || File.basename(jar_path, '.jar')
-        results << build_result(type: 'jar', name: name, sources: sources, filepath: relative_path)
+        results << if path_coords
+          build_result(type: 'jar', name: path_coords[:artifact_id],
+                       sources: { maven_repo_layout: path_coords[:version] }, filepath: relative_path,
+                       group_id: path_coords[:group_id], artifact_id: path_coords[:artifact_id])
+        else
+          build_result(type: 'jar', name: name, sources: sources, filepath: relative_path)
+        end
         shaded_sources = {
           "pom.properties[#{pom[:group_id]}:#{pom[:artifact_id]}]" => pom[:version]
         }
@@ -245,6 +256,10 @@ class VersionExtractor
         )
         results
       end
+    elsif path_coords
+      [build_result(type: 'jar', name: path_coords[:artifact_id],
+                    sources: { maven_repo_layout: path_coords[:version] }, filepath: relative_path,
+                    group_id: path_coords[:group_id], artifact_id: path_coords[:artifact_id])]
     else
       name = filename_info[:name] || File.basename(jar_path, '.jar')
       [build_result(type: 'jar', name: name, sources: sources, filepath: relative_path)]
@@ -310,6 +325,35 @@ class VersionExtractor
       end
     end
     nil
+  end
+
+  # Structural directories that terminate the groupId prefix. In a Maven-style
+  # layout the groupId is the run of segments after the last of these.
+  MAVEN_LAYOUT_BOUNDARIES = %w[jar-dependencies jars stdlib jruby lib vendor ext].freeze
+
+  # Infer Maven coordinates from a jar laid out in Maven-repository form:
+  #   .../<boundary>/<group/as/dirs>/<artifactId>/<version>/<artifactId>-<version>.jar
+  # Returns { group_id:, artifact_id:, version: } or nil when the path is not a
+  # Maven layout (e.g. flat jars, gem-native extension jars). Many bundled jars
+  # (BouncyCastle, netty, derby, ...) ship no pom.properties, so this path is the
+  # only reliable source of their real groupId for Snyk matching.
+  def infer_maven_coords_from_path(jar_path)
+    segs = relative(jar_path).sub(%r{^\./}, '').split('/')
+    return nil if segs.size < 4
+
+    artifact_id = segs[-3]
+    version = segs[-2]
+    return nil unless File.basename(jar_path) == "#{artifact_id}-#{version}.jar"
+
+    prefix = segs[0..-4]
+    boundary_idx = prefix.rindex { |s| MAVEN_LAYOUT_BOUNDARIES.include?(s) }
+    return nil unless boundary_idx
+
+    group_segments = prefix[(boundary_idx + 1)..]
+    return nil if group_segments.empty?
+    return nil unless group_segments.all? { |s| s =~ /\A[A-Za-z][A-Za-z0-9_.-]*\z/ }
+
+    { group_id: group_segments.join('.'), artifact_id: artifact_id, version: version }
   end
 
   # --- Gem extraction ---
