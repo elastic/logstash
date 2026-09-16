@@ -107,7 +107,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "jls-grok:",https://github.com/jordansissel/ruby-grok,Apache-2.0
 "jls-lumberjack:",https://github.com/elastic/ruby-lumberjack,Apache-2.0
 "jmespath:",https://github.com/jmespath/jmespath.rb,Apache-2.0
-"jrjackson:",https://github.com/guyboertje/jrjackson,Apache-2.0
+"jrjackson:",https://github.com/elastic/jrjackson,Apache-2.0
 "jruby-jms:",https://github.com/reidmorrison/jruby-jms,Apache-2.0
 "jruby-openssl:","https://github.com/jruby/jruby-openssl/",EPL-1.0
 "jruby-readline:",https://github.com/jruby/jruby,EPL-1.0
