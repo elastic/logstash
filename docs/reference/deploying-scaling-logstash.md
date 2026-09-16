@@ -55,7 +55,7 @@ Enabling persistent queues is strongly recommended, and these architecture chara
 
 Logstash is horizontally scalable and can form groups of nodes running the same pipeline. Logstash’s adaptive buffering capabilities will facilitate smooth streaming even through variable throughput loads. If the Logstash layer becomes an ingestion bottleneck, simply add more nodes to scale out. Here are a few general recommendations:
 
-* Beats should [load balance](beats://reference/filebeat/elasticsearch-output.md#_loadbalance) across a group of Logstash nodes.
+* Beats should [load balance](beats://reference/filebeat/logstash-output.md#loadbalance) across a group of Logstash nodes.
 * A minimum of two Logstash nodes are recommended for high availability.
 * It’s common to deploy just one Beats input per Logstash node, but multiple Beats inputs can also be deployed per Logstash node to expose independent endpoints for different data sources.
 
