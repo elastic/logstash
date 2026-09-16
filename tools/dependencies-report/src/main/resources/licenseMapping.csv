@@ -94,8 +94,12 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "jls-grok:",https://github.com/jordansissel/ruby-grok,Apache-2.0
 "jls-lumberjack:",https://github.com/elastic/ruby-lumberjack,Apache-2.0
 "jmespath:",https://github.com/jmespath/jmespath.rb,Apache-2.0
+<<<<<<< HEAD
 "jrjackson:",https://github.com/guyboertje/jrjackson,Apache-2.0
 "jruby:",https://jruby.org,EPL-2.0
+=======
+"jrjackson:",https://github.com/elastic/jrjackson,Apache-2.0
+>>>>>>> bb950f8 (Update jackson to 2.21.6 (#19442))
 "jruby-jms:",https://github.com/reidmorrison/jruby-jms,Apache-2.0
 "jruby-openssl:","https://github.com/jruby/jruby-openssl/",EPL-1.0
 "jruby-stdin-channel:","https://github.com/colinsurprenant/jruby-stdin-channel",Apache-2.0
