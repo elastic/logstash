@@ -14,6 +14,7 @@ logstash-input-beats
 logstash-input-generator
 logstash-input-pipeline
 logstash-output-elasticsearch
+logstash-output-http
 logstash-output-pipeline
 logstash-output-stdout
 logstash-patterns-core

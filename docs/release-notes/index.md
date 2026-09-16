@@ -21,6 +21,114 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.4 [logstash-9.5.4-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.5.4-changes]
+
+**Tcp Input - 7.0.14**
+
+* Fix for processing the HA Proxy protocol, considering the line can be split in multiple buffers. [#286](https://github.com/logstash-plugins/logstash-input-tcp/pull/286)
+
+**Kafka Integration - 12.1.9**
+
+* Upgrade zstd-jni dependency [#279](https://github.com/logstash-plugins/logstash-integration-kafka/pull/279)
+
+**Scheduler Mixin - 1.0.2**
+
+* Fix: terminate idle scheduler work threads on plugin close, which leaked one thread per pipeline reload [#7](https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/7)
+
+## 9.5.3 [logstash-9.5.3-release-notes]
+
+### Features and enhancements [logstash-9.5.3-features-enhancements]
+
+* Include timestamp in health report snapshot API response [#19422](https://github.com/elastic/logstash/pull/19422)
+
+### Plugins [logstash-plugin-9.5.3-changes]
+
+**Elastic_integration Filter - 9.5.4**
+
+* Require httpclient5 version 5.6.4 or later [#501](https://github.com/elastic/logstash-filter-elastic_integration/pull/501)
+
+* Update jackson dependency to 3.1.6 [#499](https://github.com/elastic/logstash-filter-elastic_integration/pull/499)
+
+**Azure_event_hubs Input - 1.5.10**
+
+* Update `proton-j` to 0.35.0 [#122](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/122)
+
+* Update jackson dependency to 2.21.6 [#121](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/121)
+
+**Beats Input - 7.0.14**
+
+* Update Netty dependency to 4.1.137.Final [#576](https://github.com/logstash-plugins/logstash-input-beats/pull/576)
+
+**Http Input - 4.2.1**
+
+* Update Netty dependency to 4.1.137.Final [#239](https://github.com/logstash-plugins/logstash-input-http/pull/239)
+
+* Add optional HTTP traffic logging (disabled by default). To enable it, turn on debug logging. [#237](https://github.com/logstash-plugins/logstash-input-http/pull/237)
+
+**Tcp Input - 7.0.13**
+
+* Update Netty dependency to 4.1.137.Final [#284](https://github.com/logstash-plugins/logstash-input-tcp/pull/284)
+
+**Jdbc Integration - 5.6.6**
+
+* Fix access method for large tables to avoid materializing the full result set in memory and triggering an out-of-memory error. [#204](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204)
+
+* Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time [#203](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203)
+
+**Kafka Integration - 12.1.8**
+
+* Require httpclient5 version 5.6.4 or later [#277](https://github.com/logstash-plugins/logstash-integration-kafka/pull/277)
+
+* Upgrades `kafka-avro-serializer` dependency to v8.3.1, and constrains transitive dependency on Apache `httpclient5` to be at least `v5.6.3` [#273](https://github.com/logstash-plugins/logstash-integration-kafka/pull/273)
+
+* Update jackson dependency to 2.21.6 [#274](https://github.com/logstash-plugins/logstash-integration-kafka/pull/274)
+
+**Email Output - 4.1.4**
+
+* Require `mail` dependency 2.9 or later [#72](https://github.com/logstash-plugins/logstash-output-email/pull/72)
+
+## 9.5.2 [logstash-9.5.2-release-notes]
+
+### Fixes [logstash-9.5.2-fixes]
+
+* Made `BufferedTokenizer` thread safe and usable in multithreaded contexts; its `flush` operation now returns an error when the remainder token overruns the size limit, and logs when data is dropped [#19345](https://github.com/elastic/logstash/pull/19345) [#19312](https://github.com/elastic/logstash/pull/19312)
+
+* Handle a `NoSuchFileException` that could occur while resolving the oldest dead letter queue segment file [#19409](https://github.com/elastic/logstash/pull/19409)
+
+### Updates to dependencies [logstash-9.5.2-dependencies]
+
+* Update `concurrent-ruby` to 1.3.8 [#19428](https://github.com/elastic/logstash/pull/19428)
+
+### Plugins [logstash-plugin-9.5.2-changes]
+
+**Edn Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Edn_lines Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn_lines/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn_lines` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Anonymize Filter - 3.0.8**
+
+* Fix `NameError: uninitialized constant Fixnum` when using the `MURMUR3` algorithm on Logstash 9.4+ (Ruby 3.2+, which removed `Fixnum` in favor of `Integer`) [#19](https://github.com/logstash-plugins/logstash-filter-anonymize/pull/19)
+
+**Translate Filter - 3.5.1**
+
+* Fixes an issue where failing to load a dictionary could cause the plugin to continue to run with a missing or partially-updated dictionary; this issue was especially noticeable when configured with `refresh_behaviour => replace`, which clears the dictionary before loading the replacement [#112](https://github.com/logstash-plugins/logstash-filter-translate/issues/112).
+
+**Jms Input - 3.3.2**
+
+* Fix `NameError: uninitialized constant Fixnum` when reading a JMS MapMessage on Logstash 9.4+ [#63](https://github.com/logstash-plugins/logstash-input-jms/pull/63)
+* The `jruby-jms` gem references the `Fixnum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` while decoding a JMS MapMessage. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `jms`.
+
+
 ## 9.5.1 [logstash-9.5.1-release-notes]
 
 ### Fixes [logstash-9.5.1-fixes]
@@ -155,6 +263,101 @@ This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The 
 **Udp Output - 3.3.0**
 
 * Added support for IPv6 addresses [#16](https://github.com/logstash-plugins/logstash-output-udp/pull/16)
+
+## 9.4.7 [logstash-9.4.7-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.4.7-changes]
+
+**Elastic_integration Filter - 9.4.8**
+
+* Require httpclient5 5.6.4 or later [#502](https://github.com/elastic/logstash-filter-elastic_integration/pull/502)
+
+* Update jackson dependency to 3.1.6 [#498](https://github.com/elastic/logstash-filter-elastic_integration/pull/498)
+
+**Azure_event_hubs Input - 1.5.10**
+
+* Update `proton-j` to 0.35.0 [#122](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/122)
+
+**Tcp Input - 7.0.14**
+
+* Fix for processing the HA Proxy protocol, considering the line can be split in multiple buffers. [#286](https://github.com/logstash-plugins/logstash-input-tcp/pull/286)
+
+**Jdbc Integration - 5.6.6**
+
+* Fix access method for large tables to avoid materializing the full result set in memory and triggering an out-of-memory error. [#204](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204)
+
+* Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time [#203](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203)
+
+**Kafka Integration - 11.8.12**
+
+* Upgrade zstd-jni dependency [#280](https://github.com/logstash-plugins/logstash-integration-kafka/pull/280)
+
+**Scheduler Mixin - 1.0.2**
+
+* Fix: terminate idle scheduler work threads on plugin close, which leaked one thread per pipeline reload [#7](https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/7)
+
+**Email Output - 4.1.4**
+
+* Requiere `mail` dependency 2.9 or later  [#72](https://github.com/logstash-plugins/logstash-output-email/pull/72)
+
+## 9.4.6 [logstash-9.4.6-release-notes]
+
+### Features and enhancements [logstash-9.4.6-features-enhancements]
+
+* Include timestamp in health report snapshot API response [#19422](https://github.com/elastic/logstash/pull/19422)
+
+### Fixes [logstash-9.4.6-fixes]
+
+* Fix a `NoSuchFileException` in the dead letter queue that could occur during oldest segment resolution when a segment file is concurrently removed [#19409](https://github.com/elastic/logstash/pull/19409)
+
+### Updates to dependencies [logstash-9.4.6-dependencies]
+
+* Updated concurrent-ruby gem [#19428](https://github.com/elastic/logstash/pull/19428)
+
+### Plugins [logstash-plugin-9.4.6-changes]
+
+**Edn Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Edn_lines Codec - 3.1.1**
+
+* Fix `NameError: uninitialized constant Bignum` that prevented the codec from loading on Logstash 9.4+ [#8](https://github.com/logstash-plugins/logstash-codec-edn_lines/pull/8)
+* The `edn` gem references the `Bignum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` when the codec registered, so any pipeline using the `edn_lines` codec failed to start. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `edn`.
+
+**Anonymize Filter - 3.0.8**
+
+* Fix `NameError: uninitialized constant Fixnum` when using the `MURMUR3` algorithm on Logstash 9.4+ (Ruby 3.2+, which removed `Fixnum` in favor of `Integer`) [#19](https://github.com/logstash-plugins/logstash-filter-anonymize/pull/19)
+
+**Azure_event_hubs Input - 1.5.9**
+
+* Update jackson dependency to 2.21.6 [#121](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/121)
+
+**Beats Input - 7.0.14**
+
+* Update Netty dependency to 4.1.137.Final [#576](https://github.com/logstash-plugins/logstash-input-beats/pull/576)
+
+**Http Input - 4.2.1**
+
+* Update Netty dependency to 4.1.137.Final [#239](https://github.com/logstash-plugins/logstash-input-http/pull/239)
+
+* Add optional HTTP traffic logging (disabled by default). To enable it, turn on debug logging. [#237](https://github.com/logstash-plugins/logstash-input-http/pull/237)
+
+**Jms Input - 3.3.2**
+
+* Fix `NameError: uninitialized constant Fixnum` when reading a JMS MapMessage on Logstash 9.4+ [#63](https://github.com/logstash-plugins/logstash-input-jms/pull/63)
+* The `jruby-jms` gem references the `Fixnum` constant, which Ruby removed in 3.2 (shipped by the JRuby in Logstash 9.4+). This raised a `NameError` while decoding a JMS MapMessage. Alias the removed `Fixnum`/`Bignum` constants to `Integer` before requiring `jms`.
+
+**Tcp Input - 7.0.13**
+
+* Update Netty dependency to 4.1.137.Final [#284](https://github.com/logstash-plugins/logstash-input-tcp/pull/284)
+
+**Kafka Integration - 11.8.11**
+
+* Update jackson dependency to 2.21.6 [#275](https://github.com/logstash-plugins/logstash-integration-kafka/pull/275)
 
 ## 9.4.5 [logstash-9.4.5-release-notes]
 

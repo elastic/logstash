@@ -24,10 +24,15 @@ Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-out
 
 {{ess-leadin-short}}
 
+:::{warning}
+If an {{ech}} deployment is protected by an AWS PrivateLink VPC filter, you can't use `cloud_id`. The Cloud ID encodes the public {{es}} endpoint, which is not available after the filter is associated. [Find the private {{es}} URL](docs-content://deploy-manage/security/private-connectivity-aws.md#ec-access-the-deployment-over-private-link), then connect using that URL and an API key:
+
+`output {elasticsearch { hosts => ["ELASTICSEARCH_ENDPOINT_URL"] api_key => "<api key>" } }`
+:::
+
 ## Cloud ID [cloud-id]
 
 {{ls}} uses the Cloud ID, found in the Elastic Cloud web console, to build the Elasticsearch and Kibana hosts settings. It is a base64 encoded text value of about 120 characters made up of upper and lower case letters and numbers. If you have several Cloud IDs, you can add a label, which is ignored internally, to help you tell them apart. To add a label, prefix your Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>".
-
 
 ## Cloud Auth [cloud-auth]
 

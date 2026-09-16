@@ -19,7 +19,7 @@
 
 
 description = """Logstash JVM options parser"""
-version = versionMap['logstash-core']
+version = rootProject.ext.versionMap['logstash-core']
 
 repositories {
   mavenCentral()
