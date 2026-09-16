@@ -1,0 +1,21 @@
+name: Observability Agentic Workflow — Issues
+
+on:
+  issues:
+    types: [opened, labeled, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run-obs-aw-issues:
+    permissions:
+      actions: read
+      contents: write
+      copilot-requests: write
+      discussions: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    uses: elastic/oblt-aw/.github/workflows/obs-aw-event-issues.yml@main # ratchet:exclude
