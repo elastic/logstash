@@ -190,7 +190,12 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "ruby-maven-libs:",https://github.com/jruby/ruby-maven-libs,Apache-2.0
 "ruby-progressbar:",https://github.com/jfelchner/ruby-progressbar,MIT
 "ruby2_keywords",https://github.com/ruby/ruby2_keywords,BSD-2-Clause
+<<<<<<< HEAD
 "rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause-FreeBSD
+=======
+"rubygems-update:",https://guides.rubygems.org,MIT
+"rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause
+>>>>>>> 9c6e585 (Upgrade rubyzip dependency. (#19501))
 "rufus-scheduler:",http://github.com/jmettraux/rufus-scheduler,MIT
 "semantic_logger:",https://github.com/rocketjob/semantic_logger,Apache-2.0
 "sequel:",https://github.com/jeremyevans/sequel,MIT
