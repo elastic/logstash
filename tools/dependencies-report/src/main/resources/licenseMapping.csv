@@ -245,6 +245,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "pstore:",https://github.com/ruby/pstore,BSD-2-Clause
 "rake-ant:",https://github.com/jruby/rake-ant,EPL-2.0
 "rdoc:",https://ruby.github.io/rdoc,Ruby
+"resolv:",https://github.com/ruby/resolv,BSD-2-Clause
 "resolv-replace:",https://github.com/ruby/resolv-replace,BSD-2-Clause
 "rinda:",https://github.com/ruby/rinda,BSD-2-Clause
 "rubygems-update:",https://guides.rubygems.org,MIT
