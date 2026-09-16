@@ -73,7 +73,7 @@ Gem::Specification.new do |gem|
 
   # filetools and rakelib
   gem.add_runtime_dependency "minitar", "~> 1"
-  gem.add_runtime_dependency "rubyzip", "~> 1"
+  gem.add_runtime_dependency "rubyzip", "~> 3"
   gem.add_runtime_dependency "thread_safe", "~> 0.3.6" #(Apache 2.0 license)
 
   gem.add_runtime_dependency "jrjackson", "= #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
