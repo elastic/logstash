@@ -167,7 +167,7 @@ setup_vendored_jruby() {
   fi
 
   if [ -z "$LS_GEM_HOME" ] ; then
-    export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/3.1.0"
+    export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/3.4.0"
   else
     export GEM_HOME=${LS_GEM_HOME}
   fi

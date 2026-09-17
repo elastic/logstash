@@ -64,7 +64,7 @@ public class NamespacedMetricImpl implements NamespacedMetric {
 
     @Override
     public co.elastic.logstash.api.TimerMetric timer(final String metric) {
-        return TimerMetric.fromRubyBase(metrics, threadContext.getRuntime().newString(metric).intern());
+        return TimerMetric.fromRubyBase(metrics, threadContext.getRuntime().newString(metric).intern(threadContext));
     }
 
     @Override
@@ -108,7 +108,7 @@ public class NamespacedMetricImpl implements NamespacedMetric {
 
         for (final Object o : this.metrics.namespaceName(this.threadContext)) {
             if (o instanceof RubyObject) {
-                names.add(((RubyObject) o).to_s().toString());
+                names.add(((RubyObject) o).to_s(this.threadContext).toString());
             }
         }
 
@@ -121,7 +121,7 @@ public class NamespacedMetricImpl implements NamespacedMetric {
     }
 
     private RubySymbol getSymbol(final String s) {
-        return this.threadContext.getRuntime().newString(s).intern();
+        return this.threadContext.getRuntime().newString(s).intern(this.threadContext);
     }
 
     private IRubyObject convert(final Object o) {

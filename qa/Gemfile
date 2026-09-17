@@ -4,3 +4,4 @@ gem "rake"
 gem "stud"
 gem "pry", :group => :test
 gem 'docker-api'
+gem 'base64'

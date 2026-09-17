@@ -30,6 +30,8 @@ describe "LogStash::Util::PluginVersion" do
     end
 
     it 'returns the version of the gem' do
+      spec = double("spec", :version => Gem::Version.new("1.0.0"))
+      expect(Gem::Specification).to receive(:find_by_name).with(gem).and_return(spec)
       expect { subject.find_version!(gem) }.not_to raise_error
     end
 
@@ -37,7 +39,9 @@ describe "LogStash::Util::PluginVersion" do
       it 'return the version of the gem' do
         # Gem::Specification.find_by_name return nil if the gem is not activated, as for
         # example the pre release ones.
+        spec = double("spec", :version => Gem::Version.new("1.0.0.pre"))
         expect(Gem::Specification).to receive(:find_by_name).and_return(nil)
+        expect(Gem::Specification).to receive(:find_all_by_name).with(gem).and_return([spec])
         expect { subject.find_version!(gem) }.not_to raise_error
       end
     end

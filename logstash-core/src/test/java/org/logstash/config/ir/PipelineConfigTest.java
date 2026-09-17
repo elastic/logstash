@@ -22,6 +22,9 @@ package org.logstash.config.ir;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.jruby.*;
+import org.jruby.api.Access;
+import org.jruby.api.Create;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -107,8 +110,8 @@ public class PipelineConfigTest extends RubyEnvTestCase {
     @Before
     public void setUp() throws IncompleteSourceWithMetadataException {
 
-        source = RubyUtil.RUBY.getClass("LogStash::Config::Source::Local");
-        pipelineIdSym = RubyUtil.RUBY.newString(PIPELINE_ID).intern();
+        source = Access.getClass(RubyUtil.RUBY.getCurrentContext(), "LogStash::Config::Source::Local");
+        pipelineIdSym = RubyUtil.RUBY.newString(PIPELINE_ID).intern(RubyUtil.RUBY.getCurrentContext());
 
         final SourceCollector sourceCollector = new SourceCollector();
         sourceCollector.appendSource("file", "/tmp/1", 0, 0, "input { generator1 }\n", "{\"version\": \"1\"}");
@@ -158,7 +161,7 @@ public class PipelineConfigTest extends RubyEnvTestCase {
         PipelineConfig anotherExactPipelineWithClonedSettings = new PipelineConfig(source, pipelineIdSym, toRubyArray(orderedConfigParts), CLONED_SETTINGS);
         assertEquals(anotherExactPipelineWithClonedSettings, sut);
 
-        PipelineConfig notMatchingPipeline = new PipelineConfig(source, pipelineIdSym, RubyArray.newEmptyArray(RubyUtil.RUBY), SETTINGS);
+        PipelineConfig notMatchingPipeline = new PipelineConfig(source, pipelineIdSym, Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext()), SETTINGS);
         assertNotEquals(notMatchingPipeline, sut);
 
         PipelineConfig notSamePipelineId = new PipelineConfig(source, RubySymbol.newSymbol(RubyUtil.RUBY, "another_pipeline"), toRubyArray(unorderedConfigParts), SETTINGS);
