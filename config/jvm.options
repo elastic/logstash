@@ -92,4 +92,4 @@
 # Bypass JDK version check
 #
 # Setting this to true permit to run Logstash with an unsupported JDK version.
-#-Dlogstash.jdk.force=true
+#-Dlogstash.jdk17.allow=true

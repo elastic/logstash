@@ -339,7 +339,7 @@ class LogStash::Runner < Clamp::StrictCommand
       deprecation_logger.deprecated I18n.t("logstash.runner.java.version_17_minimum",
                                            :java_home => java.lang.System.getProperty("java.home"))
     elsif JavaVersion::CURRENT < JavaVersion::JAVA_21
-      if force_jdk_check(jvmArgs)
+      if allow_jdk17_check(jvmArgs)
         logger.warn I18n.t("logstash.runner.java.version_below_21_force",
                            :java_home => java.lang.System.getProperty("java.home"),
                            :java_version => JavaVersion::CURRENT)
@@ -658,8 +658,8 @@ class LogStash::Runner < Clamp::StrictCommand
     end
   end
 
-  def force_jdk_check(jvm_args_list)
-    jvm_args_list.include? "-Dlogstash.jdk.force=true"
+  def allow_jdk17_check(jvm_args_list)
+    jvm_args_list.include? "-Dlogstash.jdk17.allow=true"
   end
-  private :force_jdk_check
+  private :allow_jdk17_check
 end
