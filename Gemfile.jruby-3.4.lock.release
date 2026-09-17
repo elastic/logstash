@@ -10,6 +10,7 @@ PATH
     logstash-core (8.19.23-java)
       clamp (~> 1, >= 1.3.3)
       concurrent-ruby (~> 1.3)
+      csv (~> 3.0)
       down (~> 5.2.0)
       elasticsearch (~> 8)
       filesize (~> 0.2)
@@ -712,7 +713,7 @@ GEM
     mini_mime (1.1.5)
     minitar (1.0.2)
     msgpack (1.8.5-java)
-    multi_json (1.15.0)
+    multi_json (1.19.1)
     multipart-post (2.4.1)
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
@@ -1010,7 +1011,6 @@ DEPENDENCIES
   stud (~> 0.0.22)
   thwait
   treetop
-  uri (~> 1.0.3)
   webmock (~> 3)
 
 BUNDLED WITH
