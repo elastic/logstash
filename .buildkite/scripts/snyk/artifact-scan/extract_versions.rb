@@ -201,7 +201,7 @@ class VersionExtractor
       main_name = filename_info[:name] || File.basename(jar_path, '.jar')
       main_result = if path_coords
         build_result(type: 'jar', name: path_coords[:artifact_id],
-                     sources: { maven_repo_layout: path_coords[:version] }, filepath: relative_path,
+                     sources: sources.merge(maven_repo_layout: path_coords[:version]), filepath: relative_path,
                      group_id: path_coords[:group_id], artifact_id: path_coords[:artifact_id])
       else
         build_result(type: 'jar', name: main_name, sources: sources, filepath: relative_path)
@@ -240,7 +240,7 @@ class VersionExtractor
         name = filename_info[:name] || File.basename(jar_path, '.jar')
         results << if path_coords
           build_result(type: 'jar', name: path_coords[:artifact_id],
-                       sources: { maven_repo_layout: path_coords[:version] }, filepath: relative_path,
+                       sources: sources.merge(maven_repo_layout: path_coords[:version]), filepath: relative_path,
                        group_id: path_coords[:group_id], artifact_id: path_coords[:artifact_id])
         else
           build_result(type: 'jar', name: name, sources: sources, filepath: relative_path)
@@ -258,7 +258,7 @@ class VersionExtractor
       end
     elsif path_coords
       [build_result(type: 'jar', name: path_coords[:artifact_id],
-                    sources: { maven_repo_layout: path_coords[:version] }, filepath: relative_path,
+                    sources: sources.merge(maven_repo_layout: path_coords[:version]), filepath: relative_path,
                     group_id: path_coords[:group_id], artifact_id: path_coords[:artifact_id])]
     else
       name = filename_info[:name] || File.basename(jar_path, '.jar')
@@ -438,10 +438,19 @@ class VersionExtractor
   def build_result(type:, name:, sources:, filepath:, group_id: nil, artifact_id: nil)
     error = sources.delete(:error)
 
+    # A Maven-repository layout encodes the canonical version in its directory
+    # structure (.../artifact/VERSION/artifact-VERSION.jar), which is more
+    # reliable than heuristic filename/gem-path parsing. When present it wins on
+    # conflict, while the other sources are still used to corroborate confidence.
+    authoritative = sources[:maven_repo_layout]
+
     raw_versions = sources.values.compact
     normalized_versions = raw_versions.map { |v| normalize_version(v) }.compact.uniq
 
-    confidence = if normalized_versions.empty?
+    confidence = if authoritative
+      others = normalized_versions.reject { |v| v == normalize_version(authoritative) }
+      others.empty? ? (sources.size >= 2 ? 'high' : 'medium') : 'medium'
+    elsif normalized_versions.empty?
       'none'
     elsif normalized_versions.size == 1
       sources.size >= 2 ? 'high' : 'medium'
@@ -449,16 +458,24 @@ class VersionExtractor
       'conflict'
     end
 
-    version = case confidence
-    when 'high', 'medium'
-      raw_versions.first
-    when 'conflict'
-      raw_versions.uniq.join(' vs ')
+    version = if authoritative
+      authoritative
     else
-      'unknown'
+      case confidence
+      when 'high', 'medium'
+        raw_versions.first
+      when 'conflict'
+        raw_versions.uniq.join(' vs ')
+      else
+        'unknown'
+      end
     end
 
-    normalized = normalized_versions.size == 1 ? normalized_versions.first : nil
+    normalized = if authoritative
+      normalize_version(authoritative)
+    elsif normalized_versions.size == 1
+      normalized_versions.first
+    end
 
     sources_str = sources.map { |k, v| "#{k}:#{v}" }.join(';')
     sources_str += ";error:#{error}" if error
