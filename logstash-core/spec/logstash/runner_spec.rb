@@ -720,19 +720,19 @@ describe LogStash::Runner do
       skip "Test requires JDK 17, found #{JavaVersion::CURRENT}" unless JavaVersion::CURRENT.compare_to(JavaVersion::JAVA_17) == 0
       allow(runner).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
       allow(logger).to receive(:error)
-      allow(subject).to receive(:force_jdk_check).and_return(mock_force_jdk_check)
+      allow(subject).to receive(:allow_jdk17_check).and_return(mock_allow_jdk17_check)
     end
 
-    context "without -Dlogstash.jdk.force=true" do
-      let(:mock_force_jdk_check) { false }
+    context "without -Dlogstash.jdk17.allow=true" do
+      let(:mock_allow_jdk17_check) { false }
       it "logs an error about minimum required Java version 21 and returns exit code 1" do
         expect(logger).to receive(:error).with(a_string_including("minimum required version of Java is 21"))
         expect(subject.run(args)).to eq(1)
       end
     end
 
-    context "with -Dlogstash.jdk.force=true" do
-      let(:mock_force_jdk_check) { true }
+    context "with -Dlogstash.jdk17.allow=true" do
+      let(:mock_allow_jdk17_check) { true }
 
       it "logs a warning about forced execution with unsupported Java version" do
         expect(logger).to receive(:warn).with(a_string_including("force the execution with unsupported Java version"))
