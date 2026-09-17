@@ -10,6 +10,7 @@ PATH
     logstash-core (8.19.22-java)
       clamp (~> 1, >= 1.3.3)
       concurrent-ruby (~> 1.3)
+      csv (~> 3.0)
       down (~> 5.2.0)
       elasticsearch (~> 8)
       filesize (~> 0.2)
@@ -23,7 +24,7 @@ PATH
       pry (~> 0.12)
       puma (~> 8.0)
       rack (~> 3)
-      rubyzip (~> 1)
+      rubyzip (~> 3)
       sinatra (~> 4)
       stud (~> 0.0.19)
       thread_safe (~> 0.3.6)
@@ -711,7 +712,7 @@ GEM
     mini_mime (1.1.5)
     minitar (1.0.2)
     msgpack (1.8.5-java)
-    multi_json (1.15.0)
+    multi_json (1.19.1)
     multipart-post (2.4.1)
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
@@ -809,7 +810,7 @@ GEM
       parser (>= 3.3.7.2)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
-    rubyzip (1.3.0)
+    rubyzip (3.6.0)
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
     sawyer (0.9.3)
@@ -1003,13 +1004,12 @@ DEPENDENCIES
   rubocop
   rubocop-ast (= 1.42.0)
   ruby-progressbar (~> 1)
-  rubyzip (~> 1)
+  rubyzip (~> 3)
   simplecov (~> 0.22.0)
   simplecov-json
   stud (~> 0.0.22)
   thwait
   treetop
-  uri (~> 1.0.3)
   webmock (~> 3)
 
 BUNDLED WITH
