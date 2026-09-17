@@ -190,6 +190,8 @@ class LinuxJobs(Jobs):
 
     def prepare_shell(self) -> str:
         jdk_dir = f"/opt/buildkite-agent/.java/{self.jdk}"
+        # JDK 17 is below the supported minimum (21); force Logstash to boot so we can still test it
+        force_opts = '\nexport LS_JAVA_OPTS="-Dlogstash.jdk.force=true ${LS_JAVA_OPTS:-}"' if self.jdk.endswith("_17") else ""
         return f"""#!/usr/bin/env bash
 set -euo pipefail
 
