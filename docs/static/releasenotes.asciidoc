@@ -159,7 +159,7 @@ This section summarizes the changes in the following releases:
 
 *Jdbc Integration - 5.6.6*
 
-* Fix access method to big tables to avoid materialise the full result set in memory and generate an out-of-memory error. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204[#204]
+* Fix access method to big tables to avoid materialising the full result set in memory and generate an out-of-memory error. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204[#204]
 
 * Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203[#203]
 
