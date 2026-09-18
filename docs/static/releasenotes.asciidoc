@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-22,Logstash 8.19.22>>
 * <<logstash-8-19-21,Logstash 8.19.21>>
 * <<logstash-8-19-20,Logstash 8.19.20>>
 * <<logstash-8-19-19,Logstash 8.19.19>>
@@ -112,6 +113,91 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-22]]
+=== Logstash 8.19.22 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.22
+
+=== Logstash Commits between 8.19 and 8.19.21
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.21..8.19"
+
+dbf5917cc - (HEAD -> 8.19, origin/8.19) bump lock file for 8.19 (#19557) (25 hours ago) <github-actions[bot]>
+26fc4ee8c - [8.19] (backport #19501) Upgrade rubyzip dependency. (#19552) (2 days ago) <mergify[bot]>
+7599c4322 - [8.19] (backport #19442) Update jackson to 2.21.6 (#19549) (2 days ago) <mergify[bot]>
+8f538000f - Add lumberjack plugin deprecation in LS to LS comm. (#19526) (2 days ago) <Mashhur>
+b2fa2ece3 - [8.19] Update dependency tree versions (#19540) (2 days ago) <Mashhur>
+4ec911350 - [8.19] (backport #19483) Pin resolv 0.7.2 and fork JRuby for gem installs (#19536) (2 days ago) <mergify[bot]>
+9eca63c98 - Update patch plugin versions in gemfile lock (#19538) (3 days ago) <github-actions[bot]>
+1fed15fda - Update patch plugin versions in gemfile lock (#19529) (3 days ago) <github-actions[bot]>
+0e89d42d3 - Update bundled JDK to 21.0.12.1 build 1 (#19509) (3 days ago) <github-actions[bot]>
+a0a05e824 - chore: deps(updatecli): Bump updatecli version to v0.121.0 (#19511) (#19518) (4 days ago) <mergify[bot]>
+30646e714 - Update Ironbank image to UBI 10.2 (#19504) (4 days ago) <Rob Bavey>
+7ac517755 - add missing test files (#19495) (#19500) (9 days ago) <mergify[bot]>
+ebd33e0aa - Add the logstash-output-http plugin to observabilitySRE container (#19465) (#19494) (10 days ago) <mergify[bot]>
+d95c0abd9 - Migrate DRA GCS publishing from Release manager to dra-prep-plugin (#19477) (#19487) (2 weeks ago) <mergify[bot]>
+739bf8260 - Bump logstash version 8.19.22 (#19476) (2 weeks ago) <github-actions[bot]>
+79616da19 - Release notes for 8.19.21 (#19464) (3 weeks ago) <github-actions[bot]>
+d9123fdf6 - chore: deps(updatecli): Bump updatecli version to v0.120.1 (#19453) (#19459) (4 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.19.21..8.19 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 8.19.9 -> 8.19.10
+logstash-input-azure_event_hubs: 1.5.9 -> 1.5.10
+logstash-input-beats: 6.9.12 -> 6.9.13
+logstash-input-http: 3.11.1 -> 3.11.2
+logstash-input-tcp: 6.4.15 -> 6.4.17
+logstash-integration-jdbc: 5.6.4 -> 5.6.6
+logstash-integration-kafka: 11.8.11 -> 11.8.12
+logstash-mixin-scheduler: 1.0.1 -> 1.0.2
+logstash-output-email: 4.1.3 -> 4.1.4
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 8.19.10*
+
+* Update jackson dependency to 3.1.6 https://github.com/elastic/logstash-filter-elastic_integration/pull/497[#497]
+
+*Azure_event_hubs Input - 1.5.10*
+
+* Update `proton-j` to 0.35.0 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/122[#122]
+
+*Beats Input - 6.9.13*
+
+* Update Netty dependency to 4.1.138.Final https://github.com/logstash-plugins/logstash-input-beats/pull/580[#580]
+
+*Http Input - 3.11.2*
+
+* Update Netty dependency to 4.1.138.Final https://github.com/logstash-plugins/logstash-input-http/pull/242[#242]
+
+*Tcp Input - 6.4.17*
+
+* Update Netty dependency to 4.1.138.Final https://github.com/logstash-plugins/logstash-input-tcp/pull/289[#289]
+
+* Fix for processing the HA Proxy protocol, considering the line can be split in multiple buffers. https://github.com/logstash-plugins/logstash-input-tcp/pull/287[#287]
+
+*Jdbc Integration - 5.6.6*
+
+* Fix access method to big tables to avoid materialise the full result set in memory and generate an out-of-memory error. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204[#204]
+
+* Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203[#203]
+
+*Kafka Integration - 11.8.12*
+
+* Upgrade zstd-jni dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/280[#280]
+
+*Scheduler Mixin - 1.0.2*
+
+* Fix: terminate idle scheduler work threads on plugin close, which leaked one thread per pipeline reload https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/7[#7]
+
+*Email Output - 4.1.4*
+
+* Requiere `mail` dependency 2.9 or later  https://github.com/logstash-plugins/logstash-output-email/pull/72[#72]
+
 
 [[logstash-8-19-21]]
 === Logstash 8.19.21 Release Notes
