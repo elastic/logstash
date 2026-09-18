@@ -119,7 +119,7 @@ This section summarizes the changes in the following releases:
 
 ==== New features and enhancements
 
-Docs - lumberjack plugin deprecated, recommended not to use in LS to LS communication https://github.com/elastic/logstash/pull/19526[#19526]
+* Docs - lumberjack plugin deprecated, recommended not to use in LS to LS communication https://github.com/elastic/logstash/pull/19526[#19526]
 
 ==== Updates to dependencies
 
