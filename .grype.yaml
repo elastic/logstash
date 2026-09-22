@@ -1,0 +1,6 @@
+ignore:
+  # bcprov-jdk18on GHSA-9pwp-9qqc-pr26 (fixed in 1.85)
+  - vulnerability: GHSA-9pwp-9qqc-pr26
+    package:
+      name: bcprov-jdk18on
+      type: java-archive
