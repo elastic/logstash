@@ -23,7 +23,12 @@ package org.logstash.ackedqueue;
 import com.google.common.primitives.Ints;
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.codehaus.commons.nullanalysis.NotNull;
 import org.logstash.ackedqueue.io.CheckpointIO;
 import org.logstash.ackedqueue.io.PageIO;
@@ -40,6 +45,8 @@ public final class Page implements Closeable {
     protected final Queue queue;
     protected PageIO pageIO;
     private boolean writable;
+
+    private final ElementCache<Queueable> elementCache;
 
     // bit 0 is minSeqNum
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
@@ -59,6 +66,8 @@ public final class Page implements Closeable {
         this.pageIO = pageIO;
         this.writable = writable;
 
+        this.elementCache = writable ? new ElementCache<>() : null;
+
         assert this.pageIO != null : "invalid null pageIO";
     }
 
@@ -71,30 +80,55 @@ public final class Page implements Closeable {
      * @return {@link SequencedList} collection of serialized elements read
      * @throws IOException if an IO error occurs
      */
-    public SequencedList<byte[]> read(int limit) throws IOException {
+    SequencedList<BoxedQueueable> read(int limit) throws IOException {
         // first make sure this page is activated, activating previously activated is harmless
         this.pageIO.activate();
 
-        SequencedList<byte[]> serialized = this.pageIO.read(this.firstUnreadSeqNum, limit);
-        assert serialized.getSeqNums().get(0) == this.firstUnreadSeqNum :
-            String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, serialized.getSeqNums().get(0));
+        // rescope limit
+        limit = Math.max(0, Math.min(limit, elementCount - Math.toIntExact(firstUnreadSeqNum-minSeqNum)));
 
-        this.firstUnreadSeqNum += serialized.getElements().size();
+        final ArrayList<BoxedQueueable> elements = new ArrayList<>(limit);
 
-        return serialized;
+        int pageOffset = Math.toIntExact(this.firstUnreadSeqNum - this.minSeqNum);
+
+        // first attempt to read from the event cache; as soon as we are unable
+        // to read events directly from the cache, fall through to the pageIO
+        if (this.elementCache != null) {
+            for (Queueable cachedElement : elementCache.releaseMany(this.firstUnreadSeqNum, limit)) {
+                elements.add(BoxedQueueable.fromLiveReference(cachedElement));
+            }
+        }
+
+        int limitRemaining = limit - elements.size();
+        if (limitRemaining > 0 && pageOffset < this.elementCount) {
+            SequencedList<byte[]> serialized = this.pageIO.read(this.firstUnreadSeqNum, limitRemaining);
+            assert serialized.getMinSeqNum() == this.firstUnreadSeqNum + elements.size() :
+                    String.format("firstUnreadSeqNum=%d != first result seqNum=%d + cached=%d", this.firstUnreadSeqNum, serialized.getMinSeqNum(), elements.size());
+            for (SequencedList.Entry<byte[]> entry : serialized.entries()) {
+                elements.add(BoxedQueueable.fromSerializedBytes(entry.element, this.queue::deserialize));
+            }
+        }
+
+        final SequencedList<BoxedQueueable> result = new SequencedList<>(elements, this.firstUnreadSeqNum);
+
+        this.firstUnreadSeqNum += elements.size();
+
+        return result;
     }
 
-    public void write(byte[] bytes, long seqNum, int checkpointMaxWrites) throws IOException {
+    public void write(Queueable element, byte[] bytes, long seqNum, int checkpointMaxWrites) throws IOException {
         if (! this.writable) {
             throw new IllegalStateException(String.format("page=%d is not writable", this.pageNum));
         }
 
         this.pageIO.write(bytes, seqNum);
+        this.elementCache.stash(element, seqNum);
 
         if (this.minSeqNum <= 0) {
             this.minSeqNum = seqNum;
             this.firstUnreadSeqNum = seqNum;
         }
+
         this.elementCount++;
 
         // force a checkpoint if we wrote checkpointMaxWrites elements since last checkpoint
@@ -154,7 +188,7 @@ public final class Page implements Closeable {
                 this.minSeqNum, this.elementCount, this.minSeqNum + this.elementCount
             );
         final int offset = Ints.checkedCast(firstSeqNum - this.minSeqNum);
-        ackedSeqNums.flip(offset, offset + count);
+        ackedSeqNums.set(offset, offset + count);
         // checkpoint if totally acked or we acked more than checkpointMaxAcks elements in this page since last checkpoint
         // note that fully acked pages cleanup is done at queue level in Queue.ack()
         final long firstUnackedSeqNum = firstUnackedSeqNum();
@@ -250,6 +284,9 @@ public final class Page implements Closeable {
      */
     public void deactivate() throws IOException {
         this.getPageIO().deactivate();
+        if (this.elementCache != null) {
+            this.elementCache.releaseAll();
+        }
     }
 
     public boolean hasSpace(int byteSize) {
@@ -300,4 +337,68 @@ public final class Page implements Closeable {
         return this.ackedSeqNums.nextClearBit(0) + this.minSeqNum;
     }
 
+    static class ReleaseableSoftReference<T extends Queueable> extends SoftReference<T> {
+        public ReleaseableSoftReference(T referent) {
+            super(referent);
+        }
+        public T getAndReleaseElement() {
+            T element = super.get();
+            super.clear();
+            return element;
+        }
+    }
+
+    static class ElementCache<T extends Queueable> {
+        private long minSeqNum = Long.MIN_VALUE;
+        private int elementCount = 0;
+        private ArrayList<ReleaseableSoftReference<T>> elementCache;
+
+        private static final AtomicLong ID_GENERATOR = new AtomicLong();
+        private final long id = ID_GENERATOR.incrementAndGet();
+
+        public void stash(T element, long seqNum) {
+            final int offset;
+            if (minSeqNum < 0) {
+                minSeqNum = seqNum;
+                elementCache = new ArrayList<>();
+                offset = 0;
+            } else {
+                offset = Math.toIntExact(seqNum - minSeqNum);
+            }
+
+            elementCache.add(offset, new ReleaseableSoftReference<>(element));
+            elementCount++;
+        }
+
+        public T release(long seqNum) {
+            if (elementCount <= 0 || seqNum < minSeqNum) {
+                return null;
+            }
+            final int offset = Math.toIntExact(seqNum - minSeqNum);
+            if (offset >= elementCount) {
+                return null;
+            }
+            final ReleaseableSoftReference<T> releaseableSoftReference = elementCache.get(offset);
+            if (releaseableSoftReference == null) {
+                return null;
+            }
+            return releaseableSoftReference.getAndReleaseElement();
+        }
+
+        public List<T> releaseMany(long seqNum, int limit) {
+            final List<T> elements = new ArrayList<>(limit);
+            for (; elements.size() < limit; seqNum++) {
+                T released = release(seqNum);
+                if (released == null) { break; }
+                elements.add(released);
+            }
+            return elements;
+        }
+
+        public void releaseAll() {
+            this.minSeqNum = Long.MIN_VALUE;
+            this.elementCache = null;
+            this.elementCount = 0;
+        }
+    }
 }

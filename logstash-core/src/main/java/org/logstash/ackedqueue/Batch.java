@@ -38,15 +38,8 @@ public class Batch implements Closeable {
     private final Queue queue;
     private final AtomicBoolean closed;
 
-    public Batch(SequencedList<byte[]> serialized, Queue q) {
-        this(
-            serialized.getElements(),
-            serialized.getSeqNums().size() == 0 ? -1L : serialized.getSeqNums().get(0), q
-        );
-    }
-
-    public Batch(List<byte[]> elements, long firstSeqNum, Queue q) {
-        this.elements = deserializeElements(elements, q);
+    Batch(List<Queueable> elements, long firstSeqNum, Queue q) {
+        this.elements = elements;
         this.firstSeqNum = elements.isEmpty() ? -1L : firstSeqNum;
         this.queue = q;
         this.closed = new AtomicBoolean(false);
@@ -90,4 +83,10 @@ public class Batch implements Closeable {
         }
         return deserialized;
     }
+
+    private static long minSeqNum(SequencedList<?> sequencedList) {
+        return sequencedList.getMinSeqNum();
+    }
+
+
 }
