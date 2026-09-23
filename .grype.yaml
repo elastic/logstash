@@ -1,5 +1,5 @@
 ignore:
-  # bcprov-jdk18on GHSA-9pwp-9qqc-pr26 (fixed in 1.85)
+  # bcprov-jdk18on GHSA-9pwp-9qqc-pr26 (fixed in 1.85) TODO remove once we get a jruby version with a fully patched BC
   - vulnerability: GHSA-9pwp-9qqc-pr26
     package:
       name: bcprov-jdk18on
