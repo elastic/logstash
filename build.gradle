@@ -303,8 +303,24 @@ def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
 tasks.register("bootstrap") {
     dependsOn assemblyDeps
     doLast {
-      setupJruby(projectDir, buildDir)
-  }
+        setupJruby(projectDir, buildDir)
+
+        // TODO: remove once JDK 17 support is dropped.
+        // resolv-0.7.2 extensions are compiled against universal-java-21 (the bundled JDK). When
+        // Logstash is launched with JDK 17 via LS_JAVA_HOME, JRuby uses platform string
+        // "universal-java-17" and Bundler cannot find the gem.build_complete marker, causing a
+        // GemNotFound error. Copying the marker directory is safe because resolv's native extension
+        // is Windows-only; on other platforms the build is a no-op that produces only marker files.
+        def extensionsBase = "${projectDir}/vendor/bundle/jruby/3.1.0/extensions"
+        def java21Dir = file("${extensionsBase}/universal-java-21/3.1.0/resolv-0.7.2")
+        def java17Dir = file("${extensionsBase}/universal-java-17/3.1.0/resolv-0.7.2")
+        if (java21Dir.exists() && !java17Dir.exists()) {
+            copy {
+                from java21Dir
+                into java17Dir
+            }
+        }
+    }
 }
 
 task dockerBootstrap {
