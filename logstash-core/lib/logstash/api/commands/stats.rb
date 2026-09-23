@@ -178,10 +178,22 @@ module LogStash
             current_data_point = stats[:batch][:current]
 # FlowMetric (from stats[:batch][:event_count][:average]) returns a composite object containing lifetime/last_1_minute/etc values. In order to get the map of sub-metrics we must use `.value`.
 # See: https://github.com/elastic/logstash/blob/279171b79c1f3be5fc85e6e2e4092281e504a6f9/logstash-core/src/main/java/org/logstash/instrument/metrics/ExtendedFlowMetric.java#L89
-            event_count_average_flow_metric = stats[:batch][:event_count][:average].value
-            event_count_average_lifetime = event_count_average_flow_metric["lifetime"] ? event_count_average_flow_metric["lifetime"].round : 0
-            byte_size_average_flow_metric = stats[:batch][:byte_size][:average].value
-            byte_size_average_lifetime = byte_size_average_flow_metric["lifetime"] ? byte_size_average_flow_metric["lifetime"].round : 0
+            event_count_data_point = stats[:batch][:event_count]
+            if event_count_data_point
+              event_count_average_flow_metric = event_count_data_point[:average].value
+              event_count_average_lifetime = event_count_average_flow_metric["lifetime"] ? event_count_average_flow_metric["lifetime"].round : 0
+            else
+              event_count_average_flow_metric = {}
+              event_count_average_lifetime = 0
+            end
+            byte_size_data_point = stats[:batch][:byte_size]
+            if byte_size_data_point
+              byte_size_average_flow_metric = byte_size_data_point[:average].value
+              byte_size_average_lifetime = byte_size_average_flow_metric["lifetime"] ? byte_size_average_flow_metric["lifetime"].round : 0
+            else
+              byte_size_average_flow_metric = {}
+              byte_size_average_lifetime = 0
+            end
             result = {
               :event_count => {
                 # current_data_point is an instance of org.logstash.instrument.metrics.gauge.LazyDelegatingGauge so need to invoke getValue() to obtain the actual value

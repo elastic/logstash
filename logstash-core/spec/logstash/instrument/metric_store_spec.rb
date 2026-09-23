@@ -46,7 +46,7 @@ describe LogStash::Instrument::MetricStore do
 
     it "raise an exception" do
       subject.fetch_or_store(namespaces, key, counter)
-      expect { subject.fetch_or_store(conflicting_namespaces, :new_key, counter) }.to raise_error(LogStash::Instrument::MetricStore::NamespacesExpectedError)
+      expect { subject.fetch_or_store(conflicting_namespaces, :new_key, counter) }.to raise_error(org.logstash.instrument.metrics.MetricStore::NamespacesExpectedError)
     end
   end
 
@@ -87,16 +87,19 @@ describe LogStash::Instrument::MetricStore do
         it "retrieves end of of a branch" do
           metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch")
           expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => anything)))))))
+          # expect(metrics).to match(a_hash_including("node" => a_hash_including("sashimi" => a_hash_including("pipelines" => a_hash_including("pipeline01" => a_hash_including("plugins" => a_hash_including("logstash-output-elasticsearch" => anything)))))))
         end
 
         it "retrieves branch" do
           metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01)
           expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines => a_hash_including(:pipeline01 => anything)))))
+          # expect(metrics).to match(a_hash_including("node" => a_hash_including("sashimi" => a_hash_including("pipelines" => a_hash_including("pipeline01" => anything)))))
         end
 
         it "allow to retrieve a specific metrics" do
           metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch", :event_in)
           expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(org.logstash.instrument.metrics.counter.LongCounter)))))))))
+          # expect(metrics).to match(a_hash_including("node" => a_hash_including("sashimi" => a_hash_including("pipelines" => a_hash_including("pipeline01" => a_hash_including("plugins" => a_hash_including("logstash-output-elasticsearch" => a_hash_including("event_in" => be_kind_of(org.logstash.instrument.metrics.counter.LongCounter)))))))))
         end
 
         context "with filtered keys" do
@@ -119,6 +122,7 @@ describe LogStash::Instrument::MetricStore do
         context "when the path doesnt exist" do
           it "raise an exception" do
             expect { subject.get(:node, :sashimi, :dontexist) }.to raise_error(LogStash::Instrument::MetricStore::MetricNotFound, /dontexist/)
+            # expect { subject.get(:node, :sashimi, :dontexist) }.to raise_error(org.logstash.instrument.metrics.MetricStore::MetricNotFound, /dontexist/)
           end
         end
       end
@@ -167,6 +171,7 @@ describe LogStash::Instrument::MetricStore do
       context "when the path doesnt exist" do
         it "raise an exception" do
           expect { subject.get_with_path("node/sashimi/dontexist, pipeline02 /plugins/logstash-output-elasticsearch/event_in") }.to raise_error(LogStash::Instrument::MetricStore::MetricNotFound, /dontexist/)
+          # expect { subject.get_with_path("node/sashimi/dontexist, pipeline02 /plugins/logstash-output-elasticsearch/event_in") }.to raise_error(org.logstash.instrument.metrics.MetricStore::MetricNotFound, /dontexist/)
         end
       end
     end
@@ -195,7 +200,7 @@ describe LogStash::Instrument::MetricStore do
           :processed_events_in,
           [:plugins, :"logstash-output-elasticsearch", :event_in]
         )
-       expect(r[:processed_events_in]).to eql(1)
+        expect(r[:processed_events_in]).to eql(1)
         expect(r[:plugins][:"logstash-output-elasticsearch"][:event_in]).to eql(1)
       end
 
@@ -279,6 +284,7 @@ describe LogStash::Instrument::MetricStore do
       expect(subject.get(:node, :sashimi, :pipelines, :pipeline01)).to be_a(Hash)
       subject.prune("/node/sashimi/pipelines/pipeline01")
       expect { subject.get(:node, :sashimi, :pipelines, :pipeline01) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
+      # expect { subject.get(:node, :sashimi, :pipelines, :pipeline01) }.to raise_error org.logstash.instrument.metrics.MetricStore::MetricNotFound
     end
 
     it "should keep other metrics on different path branches" do
