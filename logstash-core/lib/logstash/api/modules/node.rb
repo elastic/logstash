@@ -52,6 +52,17 @@ module LogStash
           respond_with(:pipelines => { pipeline_id => payload })
         end
 
+        post "/pipelines/:id/_reload" do
+          pipeline_id = params["id"]
+          halt(404) if node.pipeline(pipeline_id).empty?
+          converge_result = node.reload_pipeline(pipeline_id)
+          respond_with({
+            'success' =>  converge_result.success?,
+            'failed_actions' => converge_result.failed_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}, message: #{r.message}" },
+            'successful_actions' => converge_result.successful_actions.collect { |a, r| { 'id' => a.pipeline_id, 'action_type' => a.class } }
+          })
+        end
+
         get "/pipelines" do
           opts = {:graph => as_boolean(params.fetch("graph", false)),
                   :vertices => as_boolean(params.fetch("vertices", false))}
