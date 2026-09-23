@@ -141,6 +141,16 @@ pull_request_rules:
         branches:
           - "9.3"
 
+  - name: backport patches to 9.4 branch
+    conditions:
+      - merged
+      - base=main
+      - label=backport-9.4
+    actions:
+      backport:
+        branches:
+          - "9.4"
+
   - name: forwardport docs changes to main
     conditions:
       - merged
