@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-22,Logstash 8.19.22>>
 * <<logstash-8-19-21,Logstash 8.19.21>>
 * <<logstash-8-19-20,Logstash 8.19.20>>
 * <<logstash-8-19-19,Logstash 8.19.19>>
@@ -112,6 +113,68 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-22]]
+=== Logstash 8.19.22 Release Notes
+
+==== New features and enhancements
+
+* Docs - lumberjack plugin deprecated, recommended not to use in LS to LS communication https://github.com/elastic/logstash/pull/19526[#19526]
+
+==== Updates to dependencies
+
+* Upgrade rubyzip dependency https://github.com/elastic/logstash/pull/19552[#19552]
+
+* Update jackson to 2.21.6 https://github.com/elastic/logstash/pull/19549[#19549]
+
+* Pin resolv 0.7.2 and fork JRuby for gem installs https://github.com/elastic/logstash/pull/19536[#19536]
+
+* Update bundled JDK to 21.0.12.1 https://github.com/elastic/logstash/pull/19509[#19509]
+
+* Update Ironbank image to UBI 10.2 https://github.com/elastic/logstash/pull/19504[#19504]
+
+==== Plugins
+
+*Elastic_integration Filter - 8.19.10*
+
+* Update jackson dependency to 3.1.6 https://github.com/elastic/logstash-filter-elastic_integration/pull/497[#497]
+
+*Azure_event_hubs Input - 1.5.10*
+
+* Update `proton-j` to 0.35.0 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/122[#122]
+
+*Beats Input - 6.9.13*
+
+* Update Netty dependency to 4.1.138.Final https://github.com/logstash-plugins/logstash-input-beats/pull/580[#580]
+
+*Http Input - 3.11.2*
+
+* Update Netty dependency to 4.1.138.Final https://github.com/logstash-plugins/logstash-input-http/pull/242[#242]
+
+*Tcp Input - 6.4.17*
+
+* Update Netty dependency to 4.1.138.Final https://github.com/logstash-plugins/logstash-input-tcp/pull/289[#289]
+
+* Fix for processing the HA Proxy protocol, considering the line can be split in multiple buffers. https://github.com/logstash-plugins/logstash-input-tcp/pull/287[#287]
+
+*Jdbc Integration - 5.6.6*
+
+* Fix access method to big tables to avoid materialising the full result set in memory and generate an out-of-memory error. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/204[#204]
+
+* Prevent concurrent Sequel JDBC subadapter initialization races by preloading adapter at driver load time https://github.com/logstash-plugins/logstash-integration-jdbc/pull/203[#203]
+
+*Kafka Integration - 11.8.12*
+
+* Upgrade zstd-jni dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/280[#280]
+
+*Scheduler Mixin - 1.0.2*
+
+* Fix: terminate idle scheduler work threads on plugin close, which leaked one thread per pipeline reload https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/7[#7]
+
+*Email Output - 4.1.4*
+
+* Requiere `mail` dependency 2.9 or later  https://github.com/logstash-plugins/logstash-output-email/pull/72[#72]
+
 
 [[logstash-8-19-21]]
 === Logstash 8.19.21 Release Notes
