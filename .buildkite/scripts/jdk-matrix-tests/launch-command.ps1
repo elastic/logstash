@@ -27,6 +27,8 @@ $JAVA_CUSTOM_DIR = "C:\Users\buildkite\.java\$JDK"
 $env:BUILD_JAVA_HOME = $JAVA_CUSTOM_DIR
 $env:RUNTIME_JAVA_HOME = $JAVA_CUSTOM_DIR
 $env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
+# forked JRuby launcher reads JAVACMD, not *_JAVA_HOME
+$env:JAVACMD = "$JAVA_CUSTOM_DIR\bin\java.exe"
 
 Write-Host "--- Running test: $CIScript"
 try {
