@@ -33,7 +33,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "com.fasterxml.jackson.core:jackson-databind:",https://github.com/FasterXML/jackson-databind,Apache-2.0
 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
 "com.fasterxml.jackson.module:jackson-module-afterburner:",https://github.com/FasterXML/jackson-modules-base,Apache-2.0
-"com.github.luben:zstd-jni:1.5.7-4",https://github.com/luben/zstd-jni,BSD-2-Clause
+"com.github.luben:zstd-jni:1.5.7-14",https://github.com/luben/zstd-jni,BSD-2-Clause
 "com.google.googlejavaformat:google-java-format:",https://github.com/google/google-java-format,Apache-2.0
 "com.google.guava:guava:",https://github.com/google/guava,Apache-2.0
 "commons-codec:commons-codec:",http://commons.apache.org/proper/commons-codec/,Apache-2.0
@@ -107,7 +107,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "jls-grok:",https://github.com/jordansissel/ruby-grok,Apache-2.0
 "jls-lumberjack:",https://github.com/elastic/ruby-lumberjack,Apache-2.0
 "jmespath:",https://github.com/jmespath/jmespath.rb,Apache-2.0
-"jrjackson:",https://github.com/guyboertje/jrjackson,Apache-2.0
+"jrjackson:",https://github.com/elastic/jrjackson,Apache-2.0
 "jruby-jms:",https://github.com/reidmorrison/jruby-jms,Apache-2.0
 "jruby-openssl:","https://github.com/jruby/jruby-openssl/",EPL-1.0
 "jruby-readline:",https://github.com/jruby/jruby,EPL-1.0
@@ -216,7 +216,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "ruby-progressbar:",https://github.com/jfelchner/ruby-progressbar,MIT
 "ruby2_keywords",https://github.com/ruby/ruby2_keywords,BSD-2-Clause
 "rubygems-update:",https://guides.rubygems.org,MIT
-"rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause-FreeBSD
+"rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause
 "rufus-scheduler:",http://github.com/jmettraux/rufus-scheduler,MIT
 "securerandom:",https://github.com/ruby/securerandom,BSD-2-Clause
 "semantic_logger:",https://github.com/rocketjob/semantic_logger,Apache-2.0

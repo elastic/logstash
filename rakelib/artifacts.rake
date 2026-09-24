@@ -111,6 +111,11 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/*/test/**/*'
     @exclude_paths << 'vendor/**/gems/*/spec/**/*'
 
+    # JRuby auto-generates a per-JDK AppCDS archive on launch; it is a build-environment
+    # cache (regenerated at runtime) and must not be shipped, otherwise a stale archive
+    # can trigger a "sealing violation" at startup.
+    @exclude_paths << 'vendor/jruby/lib/jruby-*.jsa'
+
     # vulnerability scanners shouldn't pick dependency Gemfile(s)
     @exclude_paths << 'vendor/**/gems/**/Gemfile.lock'
     @exclude_paths << 'vendor/**/gems/**/Gemfile'
@@ -659,7 +664,7 @@ namespace "artifact" do
     zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exist?(zippath)
-    Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
+    Zip::File.open(zippath, create: true) do |zipfile|
       files(exclude_paths).each do |path|
         dest_path = transform_jdk_path(path)
         path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{dest_path}"

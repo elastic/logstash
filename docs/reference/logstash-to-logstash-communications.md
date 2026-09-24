@@ -34,6 +34,7 @@ $$$lumberjack-considerations$$$**Lumberjack-Beats considerations**
 
 Lumberjack output to Beats input has been our standard approach for {{ls}}-to-{{ls}} communication, but our recommended approach is now [Logstash-to-Logstash: Output to Input](/reference/ls-to-ls-native.md). Before you implement the Lumberjack to Beats configuration, keep these points in mind:
 
+* The Lumberjack input plugin is not maintained or supported and should not be used.
 * Lumberjack to Beats provides high availability, but does not provide load balancing. The Lumberjack output plugin allows defining multiple output hosts for high availability, but instead of load-balancing between all output hosts, it falls back to one host on the list in the case of failure.
 * If you need a proxy between the Logstash instances, TCP proxy is the only option.
 * There’s no explicit way to exert back pressure back to the beats input.

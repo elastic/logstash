@@ -17,7 +17,7 @@ gem "childprocess", "~> 4", :group => :build
 gem "fpm", "~> 1", ">= 1.14.1", :group => :build # compound due to bugfix https://github.com/jordansissel/fpm/pull/1856
 gem "gems", "~> 1", :group => :build
 gem "octokit", "~> 4.25", :group => :build
-gem "rubyzip", "~> 1", :group => :build
+gem "rubyzip", "~> 3", :group => :build
 gem "stud", "~> 0.0.22", :group => :build
 # remove fileutils declaration when start using Ruby 3.2+, by default includes `fileutils-v1.7.0`
 # (https://git.ruby-lang.org/ruby.git/commit/?h=ruby_3_2&id=05caafb4731c796890027cafedaac59dc108a23a)
@@ -43,3 +43,4 @@ gem "date", "= 3.3.3"
 gem "thwait"
 gem "bigdecimal", "~> 3.1"
 gem "jar-dependencies", "= 0.5.4" # Pin to avoid conflict with default
+gem "resolv", "~> 0.7.2" # Require resolv 0.7.x (>= 0.7.2) until JRuby ships the patched version
