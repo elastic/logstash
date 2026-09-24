@@ -331,7 +331,6 @@ class LogStash::Runner < Clamp::StrictCommand
       deprecation_logger.deprecated msg
     end
 
-    jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
     if JavaVersion::CURRENT < JavaVersion::JAVA_11
       logger.warn I18n.t("logstash.runner.java.version",
                                              :java_home => java.lang.System.getProperty("java.home"))
@@ -339,7 +338,7 @@ class LogStash::Runner < Clamp::StrictCommand
       deprecation_logger.deprecated I18n.t("logstash.runner.java.version_17_minimum",
                                            :java_home => java.lang.System.getProperty("java.home"))
     elsif JavaVersion::CURRENT < JavaVersion::JAVA_21
-      if allow_jdk17_check(jvmArgs)
+      if allow_jdk17_check
         logger.warn I18n.t("logstash.runner.java.version_below_21_force",
                            :java_home => java.lang.System.getProperty("java.home"),
                            :java_version => JavaVersion::CURRENT)
@@ -658,8 +657,9 @@ class LogStash::Runner < Clamp::StrictCommand
     end
   end
 
-  def allow_jdk17_check(jvm_args_list)
-    jvm_args_list.include? "-Dlogstash.jdk17.allow=true"
+  def allow_jdk17_check
+    jdk17_allow = java.lang.System.getProperty("logstash.jdk17.allow")
+    return 'true' == jdk17_allow
   end
   private :allow_jdk17_check
 end
