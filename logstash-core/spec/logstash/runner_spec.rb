@@ -720,7 +720,13 @@ describe LogStash::Runner do
       skip "Test requires JDK 17, found #{JavaVersion::CURRENT}" unless JavaVersion::CURRENT.compare_to(JavaVersion::JAVA_17) == 0
       allow(runner).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
       allow(logger).to receive(:error)
-      allow(subject).to receive(:allow_jdk17_check).and_return(mock_allow_jdk17_check)
+      # allow(subject).to receive(:allow_jdk17_check).and_return(mock_allow_jdk17_check)
+      @existing_hatch_value = java.lang.System.getProperty("logstash.jdk17.allow")
+      java.lang.System.setProperty("logstash.jdk17.allow", mock_allow_jdk17_check.to_s)
+    end
+    
+    after(:each) do
+      java.lang.System.setProperty("logstash.jdk17.allow", @existing_hatch_value)
     end
 
     context "without -Dlogstash.jdk17.allow=true" do
