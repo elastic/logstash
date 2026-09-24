@@ -726,7 +726,11 @@ describe LogStash::Runner do
     end
     
     after(:each) do
-      java.lang.System.setProperty("logstash.jdk17.allow", @existing_hatch_value)
+      if @existing_hatch_value.nil?
+        java.lang.System.clearProperty("logstash.jdk17.allow")
+      else
+        java.lang.System.setProperty("logstash.jdk17.allow", @existing_hatch_value)
+      end
     end
 
     context "without -Dlogstash.jdk17.allow=true" do
