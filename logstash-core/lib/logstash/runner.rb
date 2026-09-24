@@ -357,6 +357,7 @@ class LogStash::Runner < Clamp::StrictCommand
       return 0
     end
 
+    jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
     logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
     logger.info "JVM bootstrap flags: #{jvmArgs}"
 
