@@ -746,6 +746,7 @@ describe LogStash::Runner do
 
       it "logs a warning about forced execution with unsupported Java version" do
         expect(logger).to receive(:warn).with(a_string_including("force the execution with unsupported Java version"))
+        expect(agent).to receive(:execute)
         subject.run(args)
       end
     end
