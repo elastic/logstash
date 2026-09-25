@@ -53,7 +53,7 @@ For testing purposes, you may still run Logstash from the command line, but you 
 Download and install the Public Signing Key:
 
 ```
-wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elastic-keyring.gpg
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elastic-keyring.gpg && sudo chmod 644 /usr/share/keyrings/elastic-keyring.gpg
 ```
 
 You may need to install the `apt-transport-https` package on Debian before proceeding:
