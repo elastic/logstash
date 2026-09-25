@@ -201,7 +201,7 @@ unset JAVA_HOME
 # LS env vars for JDK matrix tests
 export BUILD_JAVA_HOME={jdk_dir}
 export RUNTIME_JAVA_HOME={jdk_dir}
-export LS_JAVA_HOME={jdk_dir}
+export LS_JAVA_HOME={jdk_dir}{force_opts}
 # forked JRuby launcher reads JAVACMD, not *_JAVA_HOME
 export JAVACMD={jdk_dir}/bin/java
 
