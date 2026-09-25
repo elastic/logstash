@@ -22,6 +22,7 @@ package org.logstash.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Helper class to compare current version of JVM with a target version.
@@ -30,7 +31,6 @@ import java.util.Objects;
 public class JavaVersion implements Comparable<JavaVersion> {
 
     public static final JavaVersion CURRENT = parse(System.getProperty("java.specification.version"));
-    public static final JavaVersion JAVA_11 = parse("11");
     public static final JavaVersion JAVA_17 = parse("17");
     public static final JavaVersion JAVA_21 = parse("21");
 
@@ -83,5 +83,10 @@ public class JavaVersion implements Comparable<JavaVersion> {
     @Override
     public int compareTo(JavaVersion other) {
         return compare(this, other);
+    }
+
+    @Override
+    public String toString() {
+        return version.stream().map(Object::toString).collect(Collectors.joining("."));
     }
 }
