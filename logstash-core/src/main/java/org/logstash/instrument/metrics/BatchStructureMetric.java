@@ -50,6 +50,7 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
             BuiltInFlowMetricRetentionPolicies.LAST_15_MINUTES,
             BuiltInFlowMetricRetentionPolicies.LIFETIME
     );
+
     private final ConcurrentMap<FlowMetricRetentionPolicy, HistogramRetentionWindow> histogramsWindows = new ConcurrentHashMap<>();
 
     public BatchStructureMetric(final String name, final HistogramMetric batchHistogram) {
@@ -105,12 +106,13 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
     }
 
     public int estimateBatchMetricsFootprintInBytes() {
-        int singleHistogramFootprint = batchHistogram.estimateSingleHistogramFootprintInBytes();
-        int totalDatapointsCount = 0;
-        for (FlowMetricRetentionPolicy supportedPolicy : SUPPORTED_POLICIES) {
-            totalDatapointsCount += supportedPolicy.datapointsCount();
+        int footprintBytes = batchHistogram.estimateBatchMetricsFootprintInBytes();
+
+        for (HistogramRetentionWindow window : this.histogramsWindows.values()) {
+            footprintBytes += window.estimateMaxFootprintInBytes();
         }
-        return singleHistogramFootprint * totalDatapointsCount;
+
+        return footprintBytes;
     }
 
     /**
@@ -186,6 +188,21 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
                 var result = compareCapture.getValueHistogram().subtract(baselineCapture.getValueHistogram());
                 return Optional.of(result);
             });
+        }
+
+        /**
+         * @return a (conservatively high) estimate of the retention window's footprint in bytes using the largest
+         *         known capture and the maximum quantity captures for the policy (even if the metric hasn't been
+         *         alive for long enough to have that many captures).
+         */
+        int estimateMaxFootprintInBytes() {
+            // since we are tracking lifetime histograms, the youngest ValueHistogram is going to be the largest
+            int largestHistogramFootprint = youngestCapture().getValueHistogram().getEstimatedFootprintInBytes();
+
+            int maxNodeFootprint = Math.addExact(RetentionWindow.NODE_OVERHEAD, largestHistogramFootprint);
+            int possibleDatapoints = policy.datapointsCount();
+
+            return Math.addExact(RetentionWindow.WINDOW_OVERHEAD, Math.multiplyExact(possibleDatapoints, maxNodeFootprint));
         }
     }
 }
