@@ -6642,7 +6642,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
-<<<<<<< HEAD
 Notice for: jls-grok-0.11.5
 ----------
 
@@ -7053,10 +7052,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
    of your accepting any such warranty or additional liability.
 
 ==========
-Notice for: jrjackson-0.5.3
-=======
 Notice for: jrjackson-0.5.4
->>>>>>> 9e80fce (Updates Jackson to 2.21.7 (#19577))
 ----------
 
 https://github.com/elastic/jrjackson/blob/v0.5.4/README.md
