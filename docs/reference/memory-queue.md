@@ -22,7 +22,7 @@ The memory queue might be a good choice if you value throughput over data resili
 ## Limitations of memory queues [mem-queue-limitations]
 
 * Can lose data in abnormal termination
-* Don’t do well handling sudden bursts of data, where extra capacity in needed for {{ls}} to catch up
+* Don’t do well handling sudden bursts of data, where extra capacity is needed for {{ls}} to catch up
 
 ::::{tip}
 Consider using [persistent queues](/reference/persistent-queues.md) to avoid these limitations.
