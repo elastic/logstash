@@ -331,15 +331,17 @@ class LogStash::Runner < Clamp::StrictCommand
       deprecation_logger.deprecated msg
     end
 
-    if JavaVersion::CURRENT < JavaVersion::JAVA_11
-      logger.warn I18n.t("logstash.runner.java.version",
-                                             :java_home => java.lang.System.getProperty("java.home"))
-    elsif JavaVersion::CURRENT < JavaVersion::JAVA_17
-      deprecation_logger.deprecated I18n.t("logstash.runner.java.version_17_minimum",
-                                           :java_home => java.lang.System.getProperty("java.home"))
-    elsif JavaVersion::CURRENT < JavaVersion::JAVA_21
-      deprecation_logger.deprecated I18n.t("logstash.runner.java.version_21_minimum",
-                                           :java_home => java.lang.System.getProperty("java.home"))
+    if JavaVersion::CURRENT < JavaVersion::JAVA_21
+      if allow_jdk17_check
+        logger.warn I18n.t("logstash.runner.java.version_below_21_force",
+                           :java_home => java.lang.System.getProperty("java.home"),
+                           :java_version => JavaVersion::CURRENT)
+      else
+        logger.error I18n.t("logstash.runner.java.version_21_minimum",
+                            :java_home => java.lang.System.getProperty("java.home"), 
+                            :java_version => JavaVersion::CURRENT)
+        return 1
+      end
     end
 
     logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]
@@ -349,8 +351,8 @@ class LogStash::Runner < Clamp::StrictCommand
       return 0
     end
 
-    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
     jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
+    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
     logger.info "JVM bootstrap flags: #{jvmArgs}"
 
     # Add local modules to the registry before everything else
@@ -650,4 +652,9 @@ class LogStash::Runner < Clamp::StrictCommand
     end
   end
 
+  def allow_jdk17_check
+    jdk17_allow = java.lang.System.getProperty("logstash.jdk17.allow")
+    return 'true' == jdk17_allow
+  end
+  private :allow_jdk17_check
 end
