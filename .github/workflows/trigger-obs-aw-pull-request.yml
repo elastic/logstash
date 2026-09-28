@@ -1,0 +1,20 @@
+name: Observability Agentic Workflow — Pull Request
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+
+jobs:
+  run-obs-aw-pull-request:
+    permissions:
+      actions: read
+      contents: write
+      copilot-requests: write
+      discussions: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    uses: elastic/oblt-aw/.github/workflows/obs-aw-event-pull-request.yml@main # ratchet:exclude

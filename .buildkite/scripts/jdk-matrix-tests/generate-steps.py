@@ -200,6 +200,8 @@ unset JAVA_HOME
 export BUILD_JAVA_HOME={jdk_dir}
 export RUNTIME_JAVA_HOME={jdk_dir}
 export LS_JAVA_HOME={jdk_dir}
+# forked JRuby launcher reads JAVACMD, not *_JAVA_HOME
+export JAVACMD={jdk_dir}/bin/java
 
 export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
 eval "$(rbenv init -)"
