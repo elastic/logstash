@@ -171,17 +171,20 @@ void rake(File projectDir, File buildDir, String task, String... args) {
 }
 
 /**
- * Run Bundler in a forked JRuby process so gem installation can spawn subprocesses
- * independently of the Gradle daemon's embedded JRuby runtime.
+ * Installs the bundled gems in a forked JRuby process. An embedded ScriptingContainer cannot
+ * spawn a gem's native-extension build under the Gradle daemon (Errno::EBADF).
  */
 void setupJruby(File projectDir, File buildDir) {
     def isWindows = System.properties['os.name'].toLowerCase(Locale.ROOT).startsWith('windows')
+    // Windows uses the native jruby.exe (ProcessBuilder runs it directly, no cmd.exe arg mangling).
     def jrubyBin = new File(projectDir, isWindows ? 'vendor/jruby/bin/jruby.exe' : 'vendor/jruby/bin/jruby')
+    // invoke! captures and returns bundler's output and raises on failure; print the output.
     def rubyScript = "require './lib/bootstrap/environment'; " +
         "\$stdout.write(LogStash::Bundler.invoke!.to_s); LogStash::Bundler.genericize_platform"
     def pb = new ProcessBuilder(jrubyBin.toString(), "-e", rubyScript.toString())
     pb.directory(projectDir)
     pb.environment().put('GEM_SPEC_CACHE', "${buildDir}/cache".toString())
+    // Empty stdin (an inherited daemon stdin can hang the child on Windows); stream merged output.
     pb.redirectErrorStream(true)
     pb.redirectInput(new File(isWindows ? 'NUL' : '/dev/null'))
     if (project.hasProperty('fedrampHighMode') && project.property('fedrampHighMode').toBoolean()) {
