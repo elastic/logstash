@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-23,Logstash 8.19.23>>
 * <<logstash-8-19-22,Logstash 8.19.22>>
 * <<logstash-8-19-21,Logstash 8.19.21>>
 * <<logstash-8-19-20,Logstash 8.19.20>>
@@ -113,6 +114,46 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-23]]
+=== Logstash 8.19.23 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.23
+
+=== Logstash Commits between 8.19 and 8.19.22
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.22..8.19"
+
+d0a0914e2 - (HEAD -> 8.19, origin/8.19) Update patch plugin versions in gemfile lock (#19599) (6 hours ago) <github-actions[bot]>
+91ff56a03 - Fix sbom generation script such that snyk can find jar deps (#19555) (#19597) (19 hours ago) <mergify[bot]>
+f104a22b5 - chore: deps(updatecli): Bump updatecli version to v0.122.0 (#19589) (#19592) (22 hours ago) <mergify[bot]>
+f7951fe06 - Re-introduce jdk21 mandatory requirement to run Logstash but provide an escape hatch to use JDK 17 (#19556) (30 hours ago) <Andrea Selva>
+3a45be78d - [8.19] (backport #19577) Updates Jackson to 2.21.7 (#19588) (4 days ago) <mergify[bot]>
+6af27f559 - fix jdk matrix tests with new gradle/bundler pattern (#19576) (#19582) (6 days ago) <mergify[bot]>
+467566f6a - Add a grype ignore file (#19575) (#19585) (6 days ago) <mergify[bot]>
+7d6508cf6 - Bump logstash version 8.19.23 (#19579) (6 days ago) <github-actions[bot]>
+5baca3398 - [CI] Copy the resolv-0.7.2 JRuby extension into the directory to support JDK 17 (#19565) (6 days ago) <Andrea Selva>
+5818ef7ce - Release notes for 8.19.22 (#19564) (7 days ago) <github-actions[bot]>
+a5297e2eb - Update patch plugin versions in gemfile lock (#19573) (7 days ago) <github-actions[bot]>
+87d8d8e0f - Revert "Update patch plugin versions in gemfile lock (#19568)" (#19571) (8 days ago) <Mashhur>
+102db73c0 - Update patch plugin versions in gemfile lock (#19568) (8 days ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.19.22..8.19 *.release"
+Changed plugin versions:
+logstash-integration-rabbitmq: 7.4.1 -> 7.4.3
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Rabbitmq Integration - 7.4.3*
+
+* Downgrade march_hare dependency to 4.8 https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/85[#85]
+
+* DO NOT USE - may have undefined side effects when used with Netty based Logstash Plugins
+* Upgrade march_hare dependency to 4.9+ https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/84[#84]
+
 
 [[logstash-8-19-22]]
 === Logstash 8.19.22 Release Notes
