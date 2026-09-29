@@ -23,46 +23,16 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.5.5 [logstash-9.5.5-release-notes]
 
-### Features and enhancements [logstash-9.5.5-features-enhancements]
+### Updates to dependencies [logstash-9.5.5-dependencies]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.5.5
+* Update bundled JDK to 21.0.12.1 build 1 [#19510](https://github.com/elastic/logstash/pull/19510)
+* Update Jackson to 2.21.7 and jrjackson to 0.5.4 [#19442](https://github.com/elastic/logstash/pull/19442) [#19577](https://github.com/elastic/logstash/pull/19577)
+* Upgrade `rubyzip` dependency to 3.x [#19501](https://github.com/elastic/logstash/pull/19501)
+* Upgrade `zstd-jni` dependency to 1.5.7-14 [#19512](https://github.com/elastic/logstash/pull/19512)
 
-=== Logstash Commits between 9.5 and 9.5.4
+### Updates to documentations [logstash-9.5.5-documentations]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.5.4..9.5"
-
-a914be9b9 - (HEAD -> 9.5, origin/9.5) Update patch plugin versions in gemfile lock (#19600) (4 hours ago) <github-actions[bot]>
-dfda6e46b - Fix sbom generation script such that snyk can find jar deps (#19555) (#19595) (19 hours ago) <mergify[bot]>
-973e062ab - chore: deps(updatecli): Bump updatecli version to v0.122.0 (#19589) (#19590) (22 hours ago) <mergify[bot]>
-1aaf80b7c - [9.5] (backport #19577) Updates Jackson to 2.21.7 (#19586) (4 days ago) <mergify[bot]>
-f51b68143 - fix jdk matrix tests with new gradle/bundler pattern (#19576) (#19580) (6 days ago) <mergify[bot]>
-d64fdc27a - Add a grype ignore file (#19575) (#19583) (6 days ago) <mergify[bot]>
-b5e49726b - Update patch plugin versions in gemfile lock (#19572) (7 days ago) <github-actions[bot]>
-a0657d71b - Update patch plugin versions in gemfile lock (#19563) (12 days ago) <github-actions[bot]>
-97161de10 - Aligns dependency bump workflow on run branch. (#19343) (#19562) (12 days ago) <mergify[bot]>
-40d58b2f5 - Upgrade rubyzip dependency. (#19501) (#19554) (13 days ago) <mergify[bot]>
-5fb603a6c - [9.5] (backport #19442) Update jackson to 2.21.6 (#19547) (13 days ago) <mergify[bot]>
-e48036592 - Updates NOTICE.TXT with fresh dependencies. (#19544) (13 days ago) <Mashhur>
-a1b09cfaa - Update load balance link for Beats in Logstash docs (#19539) (13 days ago) <James Moon>
-53bfaa942 - [9.5] (backport #19483) Pin resolv 0.7.2 and fork JRuby for gem installs (#19534) (13 days ago) <mergify[bot]>
-3f0af1993 - Bump logstash version 9.5.5 (#19532) (2 weeks ago) <github-actions[bot]>
-671e9e1de - Update patch plugin versions in gemfile lock (#19530) (2 weeks ago) <github-actions[bot]>
-47236182a - Update bundled JDK to 21.0.12.1 build 1 (#19510) (2 weeks ago) <github-actions[bot]>
-7e51ea5f4 - Add a line in LS-LS comm page, to signal users that lumberjack inpu plugin should not be used. (#19505) (#19525) (2 weeks ago) <mergify[bot]>
-a0eb2e0a3 - Release notes for 9.5.4 (#19502) (2 weeks ago) <github-actions[bot]>
-2f6a3bd78 - Upgrades zstd-jni (#19512) (#19521) (2 weeks ago) <mergify[bot]>
-f6013104a - [9.5] (backport #19506) Bump actions/setup-java from 6.0.0 to 6.0.1 in the github-actions group across 1 directory (#19513) (2 weeks ago) <mergify[bot]>
-3076caa72 - chore: deps(updatecli): Bump updatecli version to v0.121.0 (#19511) (#19516) (2 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.5.4..9.5 *.release"
-Changed plugin versions:
-logstash-input-beats: 7.0.14 -> 7.0.15
-logstash-input-http: 4.2.1 -> 4.2.2
-logstash-input-tcp: 7.0.14 -> 7.0.15
-logstash-integration-rabbitmq: 7.4.1 -> 7.4.3
----------- GENERATED CONTENT ENDS HERE ------------
+* Document that the `lumberjack` input plugin should not be used for Logstash-to-Logstash communication [#19505](https://github.com/elastic/logstash/pull/19505)
 
 ### Plugins [logstash-plugin-9.5.5-changes]
 
@@ -81,9 +51,6 @@ logstash-integration-rabbitmq: 7.4.1 -> 7.4.3
 **Rabbitmq Integration - 7.4.3**
 
 * Downgrade march_hare dependency to 4.8 [#85](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/85)
-
-* DO NOT USE - may have undefined side effects when used with Netty based Logstash Plugins
-* Upgrade march_hare dependency to 4.9+ [#84](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/84)
 
 
 ## 9.5.4 [logstash-9.5.4-release-notes]
