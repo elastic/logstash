@@ -21,6 +21,71 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.8 [logstash-9.4.8-release-notes]
+
+### Features and enhancements [logstash-9.4.8-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.4.8
+
+=== Logstash Commits between 9.4 and 9.4.7
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.7..9.4"
+
+e09ea3139 - (HEAD -> 9.4, origin/9.4) Update patch plugin versions in gemfile lock (#19601) (4 hours ago) <github-actions[bot]>
+6e9352b2c - Fix sbom generation script such that snyk can find jar deps (#19555) (#19596) (19 hours ago) <mergify[bot]>
+d0b8633df - chore: deps(updatecli): Bump updatecli version to v0.122.0 (#19589) (#19591) (22 hours ago) <mergify[bot]>
+ceeeb4f00 - [9.4] (backport #19577) Updates Jackson to 2.21.7 (#19587) (4 days ago) <mergify[bot]>
+185343393 - Add a grype ignore file (#19575) (#19584) (6 days ago) <mergify[bot]>
+7d0b5dbce - fix jdk matrix tests with new gradle/bundler pattern (#19576) (#19581) (6 days ago) <mergify[bot]>
+1392722c0 - Update patch plugin versions in gemfile lock (#19574) (7 days ago) <github-actions[bot]>
+be32d764b - Aligns dependency bump workflow on run branch. (#19343) (#19561) (12 days ago) <mergify[bot]>
+12faaa611 - Update patch plugin versions in gemfile lock (#19559) (12 days ago) <github-actions[bot]>
+71093ab6e - Upgrade rubyzip dependency. (#19501) (#19553) (13 days ago) <mergify[bot]>
+234ea696c - [9.4] (backport #19442) Update jackson to 2.21.6 (#19548) (13 days ago) <mergify[bot]>
+c0abe1abb - Update load balance link for Beats in Logstash docs (#19539) (#19545) (13 days ago) <mergify[bot]>
+8f6b06acd - Updates NOTICE.TXT with fresh dependencies. (#19541) (13 days ago) <Mashhur>
+f09dd9f3e - [9.4] (backport #19483) Pin resolv 0.7.2 and fork JRuby for gem installs (#19535) (13 days ago) <mergify[bot]>
+fbe59c7b8 - Bump logstash version 9.4.8 (#19533) (2 weeks ago) <github-actions[bot]>
+fcd42c867 - Update patch plugin versions in gemfile lock (#19531) (2 weeks ago) <github-actions[bot]>
+4ae12847a - Update bundled JDK to 21.0.12.1 build 1 (#19508) (2 weeks ago) <github-actions[bot]>
+fbd76f985 - Add a line in LS-LS comm page, to signal users that lumberjack inpu plugin should not be used. (#19505) (#19524) (2 weeks ago) <mergify[bot]>
+575412ebb - Release notes for 9.4.7 (#19503) (2 weeks ago) <github-actions[bot]>
+a1c01efca - Upgrades zstd-jni (#19512) (#19520) (2 weeks ago) <mergify[bot]>
+6c648fb7f - [9.4] (backport #19506) Bump actions/setup-java from 6.0.0 to 6.0.1 in the github-actions group across 1 directory (#19514) (2 weeks ago) <mergify[bot]>
+c05b4f70c - chore: deps(updatecli): Bump updatecli version to v0.121.0 (#19511) (#19517) (2 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.4.7..9.4 *.release"
+Changed plugin versions:
+logstash-input-beats: 7.0.14 -> 7.0.15
+logstash-input-http: 4.2.1 -> 4.2.2
+logstash-input-tcp: 7.0.14 -> 7.0.15
+logstash-integration-rabbitmq: 7.4.1 -> 7.4.3
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.4.8-changes]
+
+**Beats Input - 7.0.15**
+
+* Update Netty dependency to 4.1.138.Final [#579](https://github.com/logstash-plugins/logstash-input-beats/pull/579)
+
+**Http Input - 4.2.2**
+
+* Update Netty dependency to 4.1.138.Final [#241](https://github.com/logstash-plugins/logstash-input-http/pull/241)
+
+**Tcp Input - 7.0.15**
+
+* Update Netty dependency to 4.1.138.Final [#290](https://github.com/logstash-plugins/logstash-input-tcp/pull/290)
+
+**Rabbitmq Integration - 7.4.3**
+
+* Downgrade march_hare dependency to 4.8 [#85](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/85)
+
+* DO NOT USE - may have undefined side effects when used with Netty based Logstash Plugins
+* Upgrade march_hare dependency to 4.9+ [#84](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/84)
+
+
 ## 9.4.7 [logstash-9.4.7-release-notes]
 
 No user-facing changes in Logstash core.
