@@ -26,6 +26,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 ### Updates to dependencies [logstash-9.5.5-dependencies]
 
 * Update bundled JDK to 21.0.12.1 build 1 [#19510](https://github.com/elastic/logstash/pull/19510)
+* Update bundled JRuby to 10.0.7.0 [#19608](https://github.com/elastic/logstash/pull/19608)
 * Update Jackson to 2.21.7 and jrjackson to 0.5.4 [#19442](https://github.com/elastic/logstash/pull/19442) [#19577](https://github.com/elastic/logstash/pull/19577)
 * Upgrade `rubyzip` dependency to 3.x [#19501](https://github.com/elastic/logstash/pull/19501)
 * Upgrade `zstd-jni` dependency to 1.5.7-14 [#19512](https://github.com/elastic/logstash/pull/19512)
