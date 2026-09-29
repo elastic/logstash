@@ -132,9 +132,9 @@ This section summarizes the changes in the following releases:
 
 ==== Plugins
 
-*Rabbitmq Integration - 7.4.3*
+*Rabbitmq Integration - 7.4.4*
 
-* Downgrade march_hare dependency to 4.8 https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/85[#85]
+* Upgrade match_hare to consume 4.10+ https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/87[#87]
 
 
 [[logstash-8-19-22]]
