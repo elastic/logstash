@@ -50,7 +50,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Rabbitmq Integration - 7.4.3**
 
-* Downgrade march_hare dependency to 4.8 [#85](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/85)
+* Upgrade march_hare dependency to 4.10.0 [#87](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/87)
 
 
 ## 9.5.4 [logstash-9.5.4-release-notes]
