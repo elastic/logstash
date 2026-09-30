@@ -74,7 +74,24 @@ if (Test-Path Env:BUILD_JAVA_HOME) {
     }
 }
 
+<<<<<<< HEAD
 $testOpts = "GRADLE_OPTS: $env:GRADLE_OPTS, BUILD_JAVA_HOME: $env:BUILD_JAVA_HOME"
+=======
+# Gradle 9's gradle-fileevents.dll can't load on Windows Server 2016 (build 14393); it works from
+# Windows Server 2019 (build 17763) onward, so disable native services on anything older than that.
+# The single-use daemon only reads org.gradle.native from its own JVM system properties, which
+# GRADLE_OPTS and org.gradle.jvmargs don't reach, so pass it via JAVA_TOOL_OPTIONS.
+$windowsServer2019Build = 17763
+if ([Environment]::OSVersion.Version.Build -lt $windowsServer2019Build) {
+    if (Test-Path Env:JAVA_TOOL_OPTIONS) {
+        $env:JAVA_TOOL_OPTIONS=$env:JAVA_TOOL_OPTIONS + " -Dorg.gradle.native=false"
+    } else {
+        $env:JAVA_TOOL_OPTIONS="-Dorg.gradle.native=false"
+    }
+}
+
+$testOpts = "GRADLE_OPTS: $env:GRADLE_OPTS, JAVA_TOOL_OPTIONS: $env:JAVA_TOOL_OPTIONS, BUILD_JAVA_HOME: $env:BUILD_JAVA_HOME"
+>>>>>>> 6a7ec65 (Fix Gradle native services crash on Windows Server 2016 (#19598))
 
 try {
     if ($selectedTestSuite -eq "java") {
