@@ -134,7 +134,7 @@ This section summarizes the changes in the following releases:
 
 *Rabbitmq Integration - 7.4.4*
 
-* Upgrade match_hare to consume 4.10+ https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/87[#87]
+* Upgrade march_hare to consume 4.10+ https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/87[#87]
 
 
 [[logstash-8-19-22]]
