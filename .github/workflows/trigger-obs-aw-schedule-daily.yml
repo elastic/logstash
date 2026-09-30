@@ -1,5 +1,7 @@
-name: Observability Agentic Workflow — Schedule
+name: Observability Agentic Workflow — Schedule (daily)
 
+# Second cadence lives in trigger-obs-aw-schedule-frequent.yml: GitHub does not
+# expose which cron fired when multiple expressions share one workflow file.
 on:
   schedule:
     - cron: "0 6 * * *"
@@ -9,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  run-obs-aw-schedule:
+  run-obs-aw-schedule-daily:
     permissions:
       actions: read
       contents: write
@@ -18,3 +20,5 @@ jobs:
       issues: write
       pull-requests: write
     uses: elastic/oblt-aw/.github/workflows/obs-aw-event-schedule.yml@main # ratchet:exclude
+    with:
+      schedule-profile: daily
