@@ -51,7 +51,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Rabbitmq Integration - 7.4.4**
 
-* Upgrade match_hare to consume 4.10+ [#87](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/87)
+* Upgrade march_hare to consume 4.10+ [#87](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/87)
 
 
 ## 9.5.4 [logstash-9.5.4-release-notes]
