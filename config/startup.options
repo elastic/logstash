@@ -38,7 +38,7 @@ LS_GC_LOG_FILE=/var/log/logstash/gc.log
 LS_OPEN_FILES=16384
 
 # Nice level
-LS_NICE=19
+LS_NICE=0
 
 # Change these to have the init script named and described differently
 # This is useful when running multiple instances of Logstash on the same
