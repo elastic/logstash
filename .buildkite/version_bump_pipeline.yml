@@ -53,8 +53,6 @@ steps:
       cpu: 250m
       memory: 512Mi
       ephemeralStorage: 1Gi
-    command:
-      - echo "Starting DRA artifacts retrieval..."
     timeout_in_minutes: 240
     retry:
       automatic:
@@ -64,13 +62,8 @@ steps:
         permit_on_passed: true
 
     plugins:
-      - elastic/json-watcher#v1.0.0:
-          url: "https://artifacts-staging.elastic.co/logstash/latest/${BRANCH}.json"
-          field: ".version"
-          expected_value: "${NEW_VERSION}"
-          polling_interval: "30"
-      - elastic/json-watcher#v1.0.0:
-          url: "https://storage.googleapis.com/elastic-artifacts-snapshot/logstash/latest/${BRANCH}.json"
-          field: ".version"
-          expected_value: "${NEW_VERSION}-SNAPSHOT"
-          polling_interval: "30"
+      - elastic/version-bump-dra#v1.0.0:
+          product: "logstash"
+          version: "${NEW_VERSION}"
+          workflow: "${WORKFLOW}"
+          polling_interval: 30
