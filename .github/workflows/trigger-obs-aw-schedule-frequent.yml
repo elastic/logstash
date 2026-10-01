@@ -12,11 +12,14 @@ permissions:
 
 jobs:
   run-obs-aw-schedule-frequent:
+    # Union of ALL jobs in obs-aw-event-schedule.yml (GitHub checks callers
+    # against every declared job, including daily-only routes skipped by if:).
     permissions:
       actions: read
       contents: write
+      copilot-requests: write
       id-token: write
-      issues: read
+      issues: write
       pull-requests: write
     uses: elastic/oblt-aw/.github/workflows/obs-aw-event-schedule.yml@main # ratchet:exclude
     with:
