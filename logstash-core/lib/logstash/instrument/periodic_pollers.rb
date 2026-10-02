@@ -21,6 +21,7 @@ require "logstash/instrument/periodic_poller/jvm"
 require "logstash/instrument/periodic_poller/pq"
 require "logstash/instrument/periodic_poller/flow_rate"
 require "logstash/instrument/periodic_poller/batch_structure"
+require "logstash/instrument/periodic_poller/batch_structure_logging"
 
 module LogStash module Instrument
   # Each PeriodPoller manager his own thread to do the poller
@@ -38,7 +39,8 @@ module LogStash module Instrument
                            PeriodicPoller::PersistentQueue.new(metric, @settings.get("queue.type"), agent),
                            PeriodicPoller::DeadLetterQueue.new(metric, agent),
                            PeriodicPoller::FlowRate.new(metric, agent),
-                           PeriodicPoller::BatchStructure.new(metric, agent)]
+                           PeriodicPoller::BatchStructure.new(metric, agent),
+                           PeriodicPoller::BatchStructureLogging.new(metric, agent)]
 
       # Add OpenTelemetry metrics exporter if enabled
       if otel_metrics_enabled?
