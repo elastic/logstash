@@ -48,9 +48,9 @@ project(':logstash-core') {
                 // Add FIPS dependencies to the runtimeOnly configuration
                 // This ensures they'll be included by the existing copyRuntimeLibs task
                 runtimeOnly "org.bouncycastle:bc-fips:2.0.0"
-                runtimeOnly "org.bouncycastle:bcpkix-fips:2.0.7"
-                runtimeOnly "org.bouncycastle:bctls-fips:2.0.19"
-                runtimeOnly "org.bouncycastle:bcutil-fips:2.0.3"
+                runtimeOnly "org.bouncycastle:bcpkix-fips:2.0.13"
+                runtimeOnly "org.bouncycastle:bctls-fips:2.0.25"
+                runtimeOnly "org.bouncycastle:bcutil-fips:2.0.8"
             }
         }
     }
