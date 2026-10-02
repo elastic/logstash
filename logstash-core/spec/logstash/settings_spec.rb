@@ -325,7 +325,7 @@ describe LogStash::Settings do
 
     subject do
       settings = described_class.new
-      settings.register(LogStash::Setting::ArrayCoercible.new("host", String, []))
+      settings.register(LogStash::Setting::ArrayCoercibleSetting.new("host", java.lang.String.java_class, []))
       settings
     end
 
