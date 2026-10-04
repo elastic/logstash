@@ -21,7 +21,7 @@ module LogStash
     module ThreadSafeAttributes
       # Thread-safe lazy initialized attribute with a given (variable) name.
       def lazy_init_attr(attribute, variable: "@#{attribute}".to_sym, &block)
-        raise ArgumentError.new("invalid attribute name: #{attribute}") unless attribute.match? /^[_A-Za-z]\w*$/
+        raise ArgumentError.new("invalid attribute name: #{attribute}") unless attribute.match? /\A[_A-Za-z]\w*\z/
         raise ArgumentError.new('no block given') unless block_given?
         send(:define_method, attribute.to_sym) do
           if instance_variable_defined?(variable)
