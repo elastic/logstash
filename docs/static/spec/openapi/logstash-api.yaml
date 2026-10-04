@@ -331,6 +331,63 @@ paths:
         - content: Logstash
           name: product_name
 
+/_node/pipelines/{pipeline_name}/_reload:
+    post:
+      summary: Reload a pipeline
+      description: Reloads the specified pipeline.
+      operationId: nodeReloadPipeline
+      tags:
+        - node info
+      parameters:
+        - name: pipeline_name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the pipeline to reload.
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        description: Whether the pipeline was reloaded successfully.
+                      failed_actions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            actions_type:
+                              type: string
+                      successful_actions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            action_type:
+                              type: string
+              example:
+                ReloadPipelineExample1:
+                  value:
+                    success: true
+                    failed_actions: []
+                    successful_actions:
+                      - id: "main"
+                        actionn_type: "Logstash::PipelineAction::Reload"
+      x-metaTags:
+        - content: Logstash
+          name: product_name
+
   /_node/plugins:
     get:
       summary: Get plugin info
