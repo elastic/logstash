@@ -946,10 +946,9 @@ public final class Queue implements Closeable {
     private boolean awaitReadDemand(final long timeoutMillis, final int elementsNeeded) throws InterruptedException {
         assert this.lock.isHeldByCurrentThread();
 
-        final long deadlineMillis = Math.addExact(System.currentTimeMillis(), timeoutMillis);
-        this.readDemand = new ReadDemand(deadlineMillis, elementsNeeded);
+        this.readDemand = ReadDemand.fromExpectedTimeout(timeoutMillis, elementsNeeded);
 
-        boolean unElapsed = this.notEmpty.awaitUntil(new Date(deadlineMillis));
+        boolean unElapsed = this.notEmpty.awaitUntil(this.readDemand.expectedExpiry());
         this.readDemand = null;
         return unElapsed;
     }
@@ -960,7 +959,7 @@ public final class Queue implements Closeable {
         // if we're not forcing, and if the current read demand has
         // neither been met nor expired, this method becomes a no-op.
         if (!forceSignal && Objects.nonNull(readDemand)) {
-            if (unreadCount < readDemand.elementsNeeded && System.currentTimeMillis() < readDemand.deadlineMillis) {
+            if (readDemand.isDeferrable(unreadCount)) {
                 return;
             }
         }
@@ -975,6 +974,19 @@ public final class Queue implements Closeable {
         ReadDemand(long deadlineMillis, int elementsNeeded) {
             this.deadlineMillis = deadlineMillis;
             this.elementsNeeded = elementsNeeded;
+        }
+
+        boolean isDeferrable(long elementsAvailable) {
+            return elementsAvailable < elementsNeeded && System.currentTimeMillis() < deadlineMillis;
+        }
+
+        static ReadDemand fromExpectedTimeout(long timeoutMillis, int elementsNeeded) {
+            final long deadlineMillis = Math.addExact(System.currentTimeMillis(), timeoutMillis);
+            return new ReadDemand(deadlineMillis, elementsNeeded);
+        }
+
+        public Date expectedExpiry() {
+            return new Date(deadlineMillis);
         }
     }
 }
