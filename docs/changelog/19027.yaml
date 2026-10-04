@@ -1,0 +1,5 @@
+pr: 19027
+summary: "Introduce per-PR changelog fragment system for structured release notes"
+area: docs
+type: feature
+issues: []

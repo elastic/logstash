@@ -1,0 +1,79 @@
+name: Validate changelog fragment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches:
+      - main
+      - 9.*
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+
+      - name: Check for rn:skip
+        id: skip_check
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if echo "${PR_BODY}" | grep -qxF '[rn:skip]'; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping: [rn:skip] found in PR body"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for backport label
+        id: backport_check
+        env:
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          if echo "${PR_LABELS}" | grep -qF '"backport"'; then
+            echo "is_backport=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_backport=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate fragment exists and is valid (normal PR)
+        if: steps.skip_check.outputs.skip == 'false' && steps.backport_check.outputs.is_backport == 'false'
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          FRAGMENT="docs/changelog/${PR_NUMBER}.yaml"
+
+          if [[ ! -f "${FRAGMENT}" ]]; then
+            echo "ERROR: No changelog fragment found at ${FRAGMENT}."
+            echo ""
+            echo "Add a fragment file (see docs/changelog/README.md) or add [rn:skip] to the"
+            echo "PR description to skip release notes for this PR."
+            exit 1
+          fi
+
+          ruby tools/release/validate_changelog_fragment.rb "${FRAGMENT}"
+
+      - name: Validate fragment present in diff (backport PR)
+        if: steps.skip_check.outputs.skip == 'false' && steps.backport_check.outputs.is_backport == 'true'
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+
+          FRAGMENT=$(git diff --name-only "${BASE}".."${HEAD}" -- 'docs/changelog/*.yaml' | head -1)
+
+          if [[ -z "${FRAGMENT}" ]]; then
+            echo "ERROR: Backport PR contains no changelog fragment in docs/changelog/."
+            echo ""
+            echo "The cherry-pick should have included the fragment from the original PR."
+            echo "Check that the fragment file was not dropped during conflict resolution."
+            exit 1
+          fi
+
+          echo "Found fragment in diff: ${FRAGMENT}"
+          ruby tools/release/validate_changelog_fragment.rb "${FRAGMENT}"
