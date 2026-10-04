@@ -27,6 +27,7 @@ import org.assertj.core.data.Percentage;
 import org.jruby.RubyHash;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.logstash.instrument.metrics.MetricType;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -191,13 +192,23 @@ public class NamespacedMetricImplTest extends MetricTestCase {
         assertThat(rightCustomMetric.getValue()).contains("that=2", "another=2");
     }
 
-    private interface CustomMetric extends UserMetric<String> {
+    private interface CustomMetric extends UserMetric<String>, org.logstash.instrument.metrics.Metric<String> {
         void record(final String value);
 
         UserMetric.Provider<CustomMetric> PROVIDER = new UserMetric.Provider<CustomMetric>(CustomMetric.class, new CustomMetric() {
             @Override
             public void record(String value) {
                 // no-op
+            }
+
+            @Override
+            public String getName() {
+                return "CustomMetric";
+            }
+
+            @Override
+            public MetricType getType() {
+                return MetricType.USER;
             }
 
             @Override
@@ -215,6 +226,16 @@ public class NamespacedMetricImplTest extends MetricTestCase {
         @Override
         public void record(String value) {
             mapping.compute(value, (k, v) -> v == null ? 1 : v + 1);
+        }
+
+        @Override
+        public String getName() {
+            return "CorrelatingCustomMetric";
+        }
+
+        @Override
+        public MetricType getType() {
+            return MetricType.USER;
         }
 
         @Override
