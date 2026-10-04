@@ -20,26 +20,43 @@
 
 package org.logstash.ackedqueue;
 
+import java.util.ArrayList;
 import java.util.List;
-import org.logstash.ackedqueue.io.LongVector;
 
 /**
  * Carries sequence numbers and items read from queue.
  * */
 public class SequencedList<E> {
     private final List<E> elements;
-    private final LongVector seqNums;
+    private final long minSeqNum;
 
-    public SequencedList(List<E> elements, LongVector seqNums) {
+    public SequencedList(List<E> elements, long minSeqNum) {
         this.elements = elements;
-        this.seqNums = seqNums;
+        this.minSeqNum = minSeqNum;
     }
 
     public List<E> getElements() {
         return elements;
     }
 
-    public LongVector getSeqNums() {
-        return seqNums;
+    public long getMinSeqNum() {
+        return this.minSeqNum;
+    }
+
+    public List<Entry<E>> entries() {
+        List<Entry<E>> entries = new ArrayList<>(elements.size());
+        for (int i = 0; i < elements.size(); i++) {
+            entries.add(new Entry<>(elements.get(i), this.minSeqNum + i));
+        }
+        return entries;
+    }
+
+    public static class Entry<E> {
+        public final E element;
+        public final long seqNum;
+        public Entry(E element, long seqNum) {
+            this.element = element;
+            this.seqNum = seqNum;
+        }
     }
 }
