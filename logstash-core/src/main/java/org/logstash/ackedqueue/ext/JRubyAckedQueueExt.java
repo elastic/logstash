@@ -146,6 +146,20 @@ public final class JRubyAckedQueueExt extends RubyObject {
         }
     }
 
+    public void ensurePersisted(ThreadContext context) {
+        try {
+            this.queue.ensurePersisted();
+        } catch (IOException e) {
+            throw RubyUtil.newRubyIOError(context.runtime, e);
+        }
+    }
+
+    @JRubyMethod(name = "ensure_persisted")
+    public IRubyObject rubyEnsurePersisted(ThreadContext context) {
+        ensurePersisted(context);
+        return context.nil;
+    }
+
     public void write(Event event) {
         try {
             this.queue.write(event);
