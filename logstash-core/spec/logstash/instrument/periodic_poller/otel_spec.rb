@@ -270,6 +270,9 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       expect(otel_service).to receive(:registerObservableCounter).with(
         "logstash.events.filtered", anything, anything, anything, anything
       )
+      expect(otel_service).to receive(:registerObservableCounter).with(
+        "logstash.events.duration", anything, anything, anything, anything
+      )
       expect(otel_service).to receive(:registerGauge).with(
         "logstash.queue.events", anything, anything, anything, anything
       )
@@ -291,6 +294,9 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       expect(otel_service).to receive(:registerGauge).with("logstash.jvm.process.open_file_descriptors", anything, anything, anything, anything)
       expect(otel_service).to receive(:registerGauge).with("logstash.jvm.process.max_file_descriptors", anything, anything, anything, anything)
       expect(otel_service).to receive(:registerGauge).with("logstash.jvm.process.cpu.percent", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.os.cpu.load_average.1m", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.os.cpu.load_average.5m", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.os.cpu.load_average.15m", anything, anything, anything, anything)
       expect(otel_service).to receive(:registerObservableCounter).with("logstash.jvm.process.cpu.total", anything, anything, anything, anything)
       expect(otel_service).to receive(:registerGauge).with("logstash.jvm.uptime", anything, anything, anything, anything)
 
@@ -452,6 +458,60 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         # Second collect should not register the same plugins again
         expect(otel_service).not_to receive(:registerObservableCounter).with(
           "logstash.plugin.events.in", anything, anything, anything, anything
+        )
+
+        otel_poller.collect
+      end
+    end
+
+    context "with codecs" do
+      let(:metric_store) do
+        double("metric_store").tap do |store|
+          allow(store).to receive(:get_shallow).and_return(nil)
+          allow(store).to receive(:get_shallow)
+            .with(:stats, :pipelines, :main, :plugins, :filters)
+            .and_return({})
+          allow(store).to receive(:get_shallow)
+            .with(:stats, :pipelines, :main, :plugins, :outputs)
+            .and_return({})
+          allow(store).to receive(:get_shallow)
+            .with(:stats, :pipelines, :main, :plugins, :inputs)
+            .and_return({})
+          allow(store).to receive(:get_shallow)
+            .with(:stats, :pipelines, :main, :plugins, :codecs)
+            .and_return({ :plain_abc123 => {} })
+        end
+      end
+
+      let(:snapshot) do
+        double("snapshot", :metric_store => metric_store)
+      end
+
+      before do
+        otel_poller.collect
+        allow(collector).to receive(:snapshot_metric).and_return(snapshot)
+        otel_poller.instance_variable_set(:@snapshot, snapshot)
+      end
+
+      it "registers codec metrics with codec.encode and codec.decode plugin.type" do
+        expect(otel_service).to receive(:registerObservableCounter).with(
+          "logstash.plugin.writes_in", anything, anything, anything, anything
+        ).exactly(2).times
+        expect(otel_service).to receive(:registerObservableCounter).with(
+          "logstash.plugin.events.duration", anything, anything, anything, anything
+        ).exactly(2).times
+        expect(otel_service).to receive(:registerObservableCounter).with(
+          "logstash.plugin.writes_out", anything, anything, anything, anything
+        ).once
+
+        otel_poller.collect
+      end
+
+      it "only registers each codec once across multiple collects" do
+        otel_poller.collect
+
+        expect(otel_service).not_to receive(:registerObservableCounter).with(
+          "logstash.plugin.writes_in", anything, anything, anything, anything
         )
 
         otel_poller.collect
@@ -682,20 +742,43 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         java_import 'io.opentelemetry.api.common.AttributeKey'
       end
 
-      it "creates Attributes with pipeline.id, plugin.type, and plugin.id" do
-        attrs = otel_poller.send(:create_plugin_attributes, :main, :filters, :mutate_abc123)
+      it "creates Attributes with pipeline.id, plugin.type, plugin.id, and plugin.name" do
+        attrs = otel_poller.send(:create_plugin_attributes, :main, :filters, :mutate_abc123, "mutate")
 
         expect(attrs.get(AttributeKey.stringKey("pipeline.id"))).to eq("main")
         expect(attrs.get(AttributeKey.stringKey("plugin.type"))).to eq("filters")
         expect(attrs.get(AttributeKey.stringKey("plugin.id"))).to eq("mutate_abc123")
+        expect(attrs.get(AttributeKey.stringKey("plugin.name"))).to eq("mutate")
       end
 
       it "converts all symbol arguments to strings" do
-        attrs = otel_poller.send(:create_plugin_attributes, :secondary, :outputs, :elasticsearch_xyz)
+        attrs = otel_poller.send(:create_plugin_attributes, :secondary, :outputs, :elasticsearch_xyz, "elasticsearch")
 
         expect(attrs.get(AttributeKey.stringKey("pipeline.id"))).to eq("secondary")
         expect(attrs.get(AttributeKey.stringKey("plugin.type"))).to eq("outputs")
         expect(attrs.get(AttributeKey.stringKey("plugin.id"))).to eq("elasticsearch_xyz")
+        expect(attrs.get(AttributeKey.stringKey("plugin.name"))).to eq("elasticsearch")
+      end
+    end
+
+    describe "codec attributes via #create_plugin_attributes" do
+      before do
+        java_import 'io.opentelemetry.api.common.AttributeKey'
+      end
+
+      it "sets plugin.type to codec.encode for encode attributes" do
+        attrs = otel_poller.send(:create_plugin_attributes, :main, "codec.encode", :plain_abc123, "plain")
+
+        expect(attrs.get(AttributeKey.stringKey("pipeline.id"))).to eq("main")
+        expect(attrs.get(AttributeKey.stringKey("plugin.type"))).to eq("codec.encode")
+        expect(attrs.get(AttributeKey.stringKey("plugin.id"))).to eq("plain_abc123")
+        expect(attrs.get(AttributeKey.stringKey("plugin.name"))).to eq("plain")
+      end
+
+      it "sets plugin.type to codec.decode for decode attributes" do
+        attrs = otel_poller.send(:create_plugin_attributes, :main, "codec.decode", :plain_abc123, "plain")
+
+        expect(attrs.get(AttributeKey.stringKey("plugin.type"))).to eq("codec.decode")
       end
     end
   end
