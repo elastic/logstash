@@ -98,11 +98,6 @@ allprojects {
       "--add-opens=java.base/java.lang=ALL-UNNAMED",
       "--add-opens=java.base/java.util=ALL-UNNAMED"
     ]
-    // On JDK < 21 (below LogStash's supported minimum) let in-process specs that boot
-    // LogStash::Runner start instead of aborting (see runner.rb JDK check).
-    if (JavaVersion.current() < JavaVersion.VERSION_21) {
-      jvmArgs += "-Dlogstash.jdk17.allow=true"
-    }
     maxHeapSize = "2g"
     //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
     testLogging {
@@ -411,8 +406,8 @@ tasks.register("artifactAll", Exec) {
     dependsOn bootstrap
     dependsOn copyAllJdks
     workingDir projectDir
-    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.4.0"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "rake", "artifact:all"
 }
 
@@ -422,8 +417,8 @@ tasks.register("artifactDeb", Exec) {
     dependsOn copyAllJdks
     workingDir projectDir
     environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
-    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.4.0"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "rake", "artifact:deb"
 }
 
@@ -433,8 +428,8 @@ tasks.register("artifactRpm", Exec) {
     dependsOn copyAllJdks
     workingDir projectDir
     environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
-    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.4.0"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "rake", "artifact:rpm"
 }
 
