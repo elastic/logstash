@@ -23,6 +23,11 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.4.8 [logstash-9.4.8-release-notes]
 
+::::{important}
+The 9.4.8 release contains fixes for potential security vulnerabilities.
+Check out the [security advisory](https://discuss.elastic.co/c/announcements/security-announcements/31) for details.
+::::
+
 ### Updates to dependencies [logstash-9.4.8-dependencies]
 
 * Update bundled JDK to 21.0.12.1 build 1 [#19508](https://github.com/elastic/logstash/pull/19508)
