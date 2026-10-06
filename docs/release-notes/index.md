@@ -21,6 +21,39 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.5 [logstash-9.5.5-release-notes]
+
+### Updates to dependencies [logstash-9.5.5-dependencies]
+
+* Update bundled JDK to 21.0.12.1 build 1 [#19510](https://github.com/elastic/logstash/pull/19510)
+* Update bundled JRuby to 10.0.7.0 [#19608](https://github.com/elastic/logstash/pull/19608)
+* Update Jackson to 2.21.7 and jrjackson to 0.5.4 [#19442](https://github.com/elastic/logstash/pull/19442) [#19577](https://github.com/elastic/logstash/pull/19577)
+* Upgrade `rubyzip` dependency to 3.x [#19501](https://github.com/elastic/logstash/pull/19501)
+* Upgrade `zstd-jni` dependency to 1.5.7-14 [#19512](https://github.com/elastic/logstash/pull/19512)
+
+### Updates to documentations [logstash-9.5.5-documentations]
+
+* Document that the `lumberjack` input plugin should not be used for Logstash-to-Logstash communication [#19505](https://github.com/elastic/logstash/pull/19505)
+
+### Plugins [logstash-plugin-9.5.5-changes]
+
+**Beats Input - 7.0.15**
+
+* Update Netty dependency to 4.1.138.Final [#579](https://github.com/logstash-plugins/logstash-input-beats/pull/579)
+
+**Http Input - 4.2.2**
+
+* Update Netty dependency to 4.1.138.Final [#241](https://github.com/logstash-plugins/logstash-input-http/pull/241)
+
+**Tcp Input - 7.0.15**
+
+* Update Netty dependency to 4.1.138.Final [#290](https://github.com/logstash-plugins/logstash-input-tcp/pull/290)
+
+**Rabbitmq Integration - 7.4.4**
+
+* Upgrade march_hare to consume 4.10+ [#87](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/87)
+
+
 ## 9.5.4 [logstash-9.5.4-release-notes]
 
 No user-facing changes in Logstash core.
