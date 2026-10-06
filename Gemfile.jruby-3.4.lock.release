@@ -46,8 +46,8 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1290.0)
-    aws-sdk-cloudfront (1.155.0)
+    aws-partitions (1.1292.0)
+    aws-sdk-cloudfront (1.156.0)
       aws-sdk-core (~> 3, >= 3.256.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-cloudwatch (1.149.0)
@@ -68,7 +68,7 @@ GEM
     aws-sdk-resourcegroups (1.102.0)
       aws-sdk-core (~> 3, >= 3.256.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.232.3)
+    aws-sdk-s3 (1.233.1)
       aws-sdk-core (~> 3, >= 3.256.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -105,7 +105,7 @@ GEM
       bigdecimal
       rexml
     csv (3.3.6)
-    dalli (3.2.10)
+    dalli (3.2.13)
       logger
     date (3.3.4-java)
     diff-lcs (1.6.2)
@@ -307,7 +307,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elastic_integration (9.4.8-java)
+    logstash-filter-elastic_integration (9.4.9-java)
       logstash-core (>= 8.7.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-elasticsearch (4.3.1)
@@ -717,7 +717,7 @@ GEM
       net-protocol
     net-protocol (0.2.2)
       timeout
-    net-smtp (0.5.1)
+    net-smtp (0.5.2)
       net-protocol
     nio4r (2.7.5-java)
     nokogiri (1.19.4-java)
@@ -851,7 +851,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2026.4)
+    tzinfo-data (1.2026.5)
       tzinfo (>= 1.0.0)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
