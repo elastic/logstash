@@ -26,7 +26,6 @@ spec:
   lifecycle: production
   dependsOn:
     - resource:buildkite-logstash-serverless-integration-testing
-    - resource:logstash-snyk-report
     - resource:logstash-plugins-snyk-report
     - resource:logstash-artifact-snyk-scan
     - resource:logstash-artifacts-acceptance
@@ -80,52 +79,6 @@ spec:
           cronline: "@daily"
           message: "Run the serverless integration test every day."
 
-
-# ***********************************
-# Declare Logstash core snyk-report pipeline
-# ***********************************
----
-# yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/rre.schema.json
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: logstash-snyk-report
-  description: 'The logstash-snyk-report pipeline.'
-spec:
-  type: buildkite-pipeline
-  owner: group:logstash
-  system: platform-ingest
-  implementation:
-    apiVersion: buildkite.elastic.dev/v1
-    kind: Pipeline
-    metadata:
-      name: logstash-snyk-report-ci
-      description: ':logstash: The logstash-snyk-report :pipeline:'
-    spec:
-      repository: elastic/logstash
-      pipeline_file: ".buildkite/snyk_report_pipeline.yml"
-      maximum_timeout_in_minutes: 60
-      provider_settings:
-        trigger_mode: none # don't trigger jobs
-      env:
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
-        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
-        SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
-        SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
-      teams:
-        streams:
-          access_level: MANAGE_BUILD_AND_READ
-        logstash:
-          access_level: MANAGE_BUILD_AND_READ
-        ingest-eng-prod:
-          access_level: MANAGE_BUILD_AND_READ
-        everyone:
-          access_level: READ_ONLY
-      schedules:
-        Daily Snyk scan:
-          branch: main
-          cronline: "@daily"
-          message: "Run the Logstash Snyk report every day."
 
 # ***********************************
 # Declare plugins-snyk-report pipeline
