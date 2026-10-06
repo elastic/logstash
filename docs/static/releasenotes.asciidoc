@@ -120,7 +120,7 @@ This section summarizes the changes in the following releases:
 
 ==== Breaking changes
 
-* Logstash now checks the Java version at startup and refuses to start on a JDK older than 21. JDK 17 was deprecated in 8.19.19, and JDK 21 is the bundled and recommended version. If you set `LS_JAVA_HOME` to JDK 17 and need to keep using it, add `-Dlogstash.jdk17.allow=true` to `config/jvm.options` or `LS_JAVA_OPTS`; Logstash then logs a warning and starts as usual https://github.com/elastic/logstash/pull/19556[#19556]
+* Logstash now checks the Java version at startup and refuses to start on a JDK older than 21. JDK 17 was deprecated in 8.19.19, and JDK 21 is the bundled and recommended version. If you set `LS_JAVA_HOME` to JDK 17 and need to keep using it, add `-Dlogstash.jdk17.allow=true` to `config/jvm.options` or `LS_JAVA_OPTS`; Logstash then logs a warning and starts as usual. This setting will be in place for a limited amount of time, and will be removed in a subsequent version of Logstash `8.19`, when JDK 21 will be required to run Logstash https://github.com/elastic/logstash/pull/19556[#19556]
 
 ==== Notable issues fixed
 
