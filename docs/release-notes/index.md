@@ -21,6 +21,43 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.5 [logstash-9.5.5-release-notes]
+
+::::{important}
+The 9.5.5 release contains fixes for potential security vulnerabilities.
+Check out the [security advisory](https://discuss.elastic.co/c/announcements/security-announcements/31) for details.
+::::
+
+### Updates to dependencies [logstash-9.5.5-dependencies]
+
+* Update bundled JDK to 21.0.12.1 build 1 [#19510](https://github.com/elastic/logstash/pull/19510)
+* Update bundled JRuby to 10.0.7.0 [#19608](https://github.com/elastic/logstash/pull/19608)
+* Update Jackson to 2.21.7 and jrjackson to 0.5.4 [#19442](https://github.com/elastic/logstash/pull/19442) [#19577](https://github.com/elastic/logstash/pull/19577)
+* Upgrade `rubyzip` dependency to 3.x [#19501](https://github.com/elastic/logstash/pull/19501)
+* Upgrade `zstd-jni` dependency to 1.5.7-14 [#19512](https://github.com/elastic/logstash/pull/19512)
+
+### Updates to documentations [logstash-9.5.5-documentations]
+
+* Document that the `lumberjack` input plugin should not be used for Logstash-to-Logstash communication [#19505](https://github.com/elastic/logstash/pull/19505)
+
+### Plugins [logstash-plugin-9.5.5-changes]
+
+**Beats Input - 7.0.15**
+
+* Update Netty dependency to 4.1.138.Final [#579](https://github.com/logstash-plugins/logstash-input-beats/pull/579)
+
+**Http Input - 4.2.2**
+
+* Update Netty dependency to 4.1.138.Final [#241](https://github.com/logstash-plugins/logstash-input-http/pull/241)
+
+**Tcp Input - 7.0.15**
+
+* Update Netty dependency to 4.1.138.Final [#290](https://github.com/logstash-plugins/logstash-input-tcp/pull/290)
+
+**Rabbitmq Integration - 7.4.4**
+
+* Upgrade march_hare to consume 4.10+ [#87](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/87)
+
 ## 9.5.4 [logstash-9.5.4-release-notes]
 
 No user-facing changes in Logstash core.
@@ -264,6 +301,43 @@ This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The 
 
 * Added support for IPv6 addresses [#16](https://github.com/logstash-plugins/logstash-output-udp/pull/16)
 
+## 9.4.8 [logstash-9.4.8-release-notes]
+
+::::{important}
+The 9.4.8 release contains fixes for potential security vulnerabilities.
+Check out the [security advisory](https://discuss.elastic.co/c/announcements/security-announcements/31) for details.
+::::
+
+### Updates to dependencies [logstash-9.4.8-dependencies]
+
+* Update bundled JDK to 21.0.12.1 build 1 [#19508](https://github.com/elastic/logstash/pull/19508)
+* Update bundled JRuby to 10.0.7.0 [#19609](https://github.com/elastic/logstash/pull/19609)
+* Update Jackson to 2.21.7 and jrjackson to 0.5.4 [#19442](https://github.com/elastic/logstash/pull/19442) [#19577](https://github.com/elastic/logstash/pull/19577)
+* Upgrade `rubyzip` dependency to 3.x [#19501](https://github.com/elastic/logstash/pull/19501)
+* Upgrade `zstd-jni` dependency to 1.5.7-14 [#19512](https://github.com/elastic/logstash/pull/19512)
+
+### Updates to documentations [logstash-9.4.8-documentations]
+
+* Document that the `lumberjack` input plugin should not be used for Logstash-to-Logstash communication [#19505](https://github.com/elastic/logstash/pull/19505)
+
+### Plugins [logstash-plugin-9.4.8-changes]
+
+**Beats Input - 7.0.15**
+
+* Update Netty dependency to 4.1.138.Final [#579](https://github.com/logstash-plugins/logstash-input-beats/pull/579)
+
+**Http Input - 4.2.2**
+
+* Update Netty dependency to 4.1.138.Final [#241](https://github.com/logstash-plugins/logstash-input-http/pull/241)
+
+**Tcp Input - 7.0.15**
+
+* Update Netty dependency to 4.1.138.Final [#290](https://github.com/logstash-plugins/logstash-input-tcp/pull/290)
+
+**Rabbitmq Integration - 7.4.4**
+
+* Upgrade march_hare to consume 4.10+ [#87](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/87)
+
 ## 9.4.7 [logstash-9.4.7-release-notes]
 
 No user-facing changes in Logstash core.
@@ -374,6 +448,24 @@ No user-facing changes in Logstash core.
 **Translate Filter - 3.5.1**
 
 * Fixes an issue where failing to load a dictionary could cause the plugin to continue to run with a missing or partially-updated dictionary; this issue was especially noticeable when configured with `refresh_behaviour => replace`, which clears the dictionary before loading the replacement [#112](https://github.com/logstash-plugins/logstash-filter-translate/issues/112).
+
+**Beats Input - 7.0.13**
+
+* Update Netty dependency to 4.1.136.Final [#575](https://github.com/logstash-plugins/logstash-input-beats/pull/575)
+
+**Http Input - 4.1.13**
+
+* Fix to use the `Content-type` declared charset to decode the request body [#230](https://github.com/logstash-plugins/logstash-input-http/pull/230)
+
+* Update Netty dependency to 4.1.136.Final [#228](https://github.com/logstash-plugins/logstash-input-http/pull/228)
+
+**Tcp Input - 7.0.12**
+
+* Update Netty dependency to 4.1.136.Final [#281](https://github.com/logstash-plugins/logstash-input-tcp/pull/281)
+
+**Jdbc Integration - 5.6.4**
+
+* Fix connection leak on statement retry by opening JDBC connection once outside retry loop [#201](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/201)
 
 ## 9.4.4 [logstash-9.4.4-release-notes]
 
