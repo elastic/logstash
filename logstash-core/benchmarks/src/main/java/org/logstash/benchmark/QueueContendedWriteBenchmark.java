@@ -23,6 +23,8 @@ package org.logstash.benchmark;
 import java.nio.file.Files;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.logstash.Event;
@@ -41,17 +43,25 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
+/**
+ * Measures persisted queue write throughput when multiple writer threads contend on the same
+ * queue, which is the situation of a pipeline-to-pipeline topology where many upstream workers
+ * write into one downstream persisted queue.
+ */
 @Warmup(iterations = 3, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@State(Scope.Thread)
-public class QueueWriteBenchmark {
+@State(Scope.Benchmark)
+public class QueueContendedWriteBenchmark {
 
-    private static final int EVENTS_PER_INVOCATION = 500_000;
+    private static final int EVENTS_PER_INVOCATION = 10_000;
+
+    private static final int BATCH_SIZE = 1_000;
 
     private static final Event EVENT = new Event();
 
@@ -79,12 +89,28 @@ public class QueueWriteBenchmark {
     }
 
     @Benchmark
+    @Threads(8)
     @OperationsPerInvocation(EVENTS_PER_INVOCATION)
-    public final void pushToPersistedQueue() throws Exception {
+    public final void contendedSingleWrites() throws Exception {
         for (int i = 0; i < EVENTS_PER_INVOCATION; ++i) {
             final Event evnt = EVENT.clone();
             evnt.setTimestamp(Timestamp.now());
             queue.write(evnt);
+        }
+    }
+
+    @Benchmark
+    @Threads(8)
+    @OperationsPerInvocation(EVENTS_PER_INVOCATION)
+    public final void contendedBatchWrites() throws Exception {
+        for (int i = 0; i < EVENTS_PER_INVOCATION; i += BATCH_SIZE) {
+            final List<Event> batch = new ArrayList<>(BATCH_SIZE);
+            for (int j = 0; j < BATCH_SIZE; ++j) {
+                final Event evnt = EVENT.clone();
+                evnt.setTimestamp(Timestamp.now());
+                batch.add(evnt);
+            }
+            queue.write(batch);
         }
     }
 
