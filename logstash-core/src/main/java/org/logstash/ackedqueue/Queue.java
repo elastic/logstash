@@ -123,7 +123,7 @@ public final class Queue implements Closeable {
         this.maxBytes = settings.getQueueMaxBytes();
         this.checkpointIO = new FileCheckpointIO(dirPath, settings.getCheckpointRetry());
         this.elementClass = settings.getElementClass();
-        this.compressionCodec = settings.getCompressionCodecFactory().create(metric);
+        this.compressionCodec = settings.getCompressionCodecFactory().create(this.metric);
         this.tailPages = new ArrayList<>();
         this.unreadTailPages = new ArrayList<>();
         this.closed = new AtomicBoolean(true); // not yet opened
