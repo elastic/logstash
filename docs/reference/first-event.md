@@ -19,14 +19,14 @@ To test your Logstash installation, run the most basic Logstash pipeline.
 **MacOS, Linux**
 
 ```sh
-cd logstash-9.0.0
+cd logstash-<VERSION>
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 ```
 
 **Windows**
 
 ```sh
-cd logstash-9.0.0
+cd logstash-<VERSION>
 .\bin\logstash.bat -e "input { stdin { } } output { stdout {} }"
 ```
 

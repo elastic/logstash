@@ -70,7 +70,7 @@ After installing a [supported JVM](https://www.elastic.co/support/matrix#matrix_
 Once you have [*Setting Up and Running Logstash*](/reference/setting-up-running-logstash.md) and validated JVM pre-requisites, you may proceed.
 
 ::::{note}
-For the examples listed below, we are running Windows Server 2016, Java 11.0.3, have extracted the [Logstash ZIP package](https://www.elastic.co/downloads/logstash) to `C:\logstash-9.0.0\`, and using the example `syslog.conf` file shown below (stored in `C:\logstash-9.0.0\config\`).
+For the examples listed below, we are running Windows Server 2016, Java 11.0.3, have extracted the [Logstash ZIP package](https://www.elastic.co/downloads/logstash) to `C:\logstash-<VERSION>\`, and using the example `syslog.conf` file shown below (stored in `C:\logstash-<VERSION>\config\`).
 ::::
 
 
@@ -81,8 +81,8 @@ For the examples listed below, we are running Windows Server 2016, Java 11.0.3, 
 Logstash can be run manually using [PowerShell](https://docs.microsoft.com/en-us/powershell/).  Open an Administrative [PowerShell](https://docs.microsoft.com/en-us/powershell/) session, then run the following commands:
 
 ```sh
-PS C:\Windows\system32> cd C:\logstash-9.0.0\
-PS C:\logstash-9.0.0> .\bin\logstash.bat -f .\config\syslog.conf
+PS C:\Windows\system32> cd C:\logstash-<VERSION>\
+PS C:\logstash-<VERSION>> .\bin\logstash.bat -f .\config\syslog.conf
 ```
 
 ::::{note}
@@ -106,20 +106,20 @@ It is recommended to validate your configuration works by running Logstash manua
 ::::
 
 
-Download [NSSM](https://nssm.cc/), then extract `nssm.exe` from `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-9.0.0\bin\`. Then open an Administrative [PowerShell](https://docs.microsoft.com/en-us/powershell/) session, then run the following commands:
+Download [NSSM](https://nssm.cc/), then extract `nssm.exe` from `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-<VERSION>\bin\`. Then open an Administrative [PowerShell](https://docs.microsoft.com/en-us/powershell/) session, then run the following commands:
 
 ```sh
-PS C:\Windows\system32> cd C:\logstash-9.0.0\
-PS C:\logstash-9.0.0> .\bin\nssm.exe install logstash
+PS C:\Windows\system32> cd C:\logstash-<VERSION>\
+PS C:\logstash-<VERSION>> .\bin\nssm.exe install logstash
 ```
 
 Once the `NSSM service installer` window appears, specify the following parameters in the `Application` tab:
 
 * In the `Application` tab:
 
-    * Path: Path to `logstash.bat`: `C:\logstash-9.0.0\bin\logstash.bat`
-    * Startup Directory: Path to the `bin` directory: `C:\logstash-9.0.0\bin`
-    * Arguments: For this example to start Logstash: `-f C:\logstash-9.0.0\config\syslog.conf`
+    * Path: Path to `logstash.bat`: `C:\logstash-<VERSION>\bin\logstash.bat`
+    * Startup Directory: Path to the `bin` directory: `C:\logstash-<VERSION>\bin`
+    * Arguments: For this example to start Logstash: `-f C:\logstash-<VERSION>\config\syslog.conf`
 
         ::::{note}
         In a production environment, we recommend that you use [logstash.yml](/reference/logstash-settings-file.md) to control Logstash execution.
@@ -159,9 +159,9 @@ Open the Windows [Task Scheduler](https://docs.microsoft.com/en-us/windows/deskt
 
     * Click `New`, then specify the following:
     * Action: `Start a program`
-    * Program/script: `C:\logstash-9.0.0\bin\logstash.bat`
-    * Add arguments: `-f C:\logstash-9.0.0\config\syslog.conf`
-    * Start in: `C:\logstash-9.0.0\bin\`
+    * Program/script: `C:\logstash-<VERSION>\bin\logstash.bat`
+    * Add arguments: `-f C:\logstash-<VERSION>\config\syslog.conf`
+    * Start in: `C:\logstash-<VERSION>\bin\`
 
         ::::{note}
         In a production environment, we recommend that you use [logstash.yml](/reference/logstash-settings-file.md) to control Logstash execution.
