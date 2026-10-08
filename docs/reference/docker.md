@@ -20,9 +20,21 @@ Obtaining Logstash for Docker is as simple as issuing a `docker
 pull` command against the Elastic Docker registry.
 
 
+::::{tab-set}
+:::{tab-item} Latest
+:sync: latest
 ```sh subs=true
 docker pull {{docker-repo}}:{{version.stack}}
 ```
+:::
+:::{tab-item} Specific version
+:sync: specific
+Replace `<VERSION>` with your installed {{ls}} version.
+```sh
+docker pull docker.elastic.co/logstash/logstash:<VERSION>
+```
+:::
+::::
 
 Alternatively, you can download other Docker images that contain only features
 available under the Apache 2.0 license. To download the images, go to
@@ -37,8 +49,11 @@ Elastic images are signed with [Cosign](https://docs.sigstore.dev/cosign/) which
 Cosign supports container signing, verification, and storage in an OCI registry.
 Install the appropriate Cosign application for your operating system.
 
-Run the following commands to verify the container image signature for {{ls}} v{{version.stack}}:
+Run the following commands to verify the container image signature for {{ls}}:
 
+::::{tab-set}
+:::{tab-item} Latest
+:sync: latest
 ```sh subs=true
 wget https://artifacts.elastic.co/cosign.pub <1>
 cosign verify --key cosign.pub {{docker-repo}}:{{version.stack}} <2>
@@ -46,6 +61,19 @@ cosign verify --key cosign.pub {{docker-repo}}:{{version.stack}} <2>
 
 1. Download the Elastic public key to verify container signature
 2. Verify the container against the Elastic public key
+:::
+:::{tab-item} Specific version
+:sync: specific
+Replace `<VERSION>` with your installed {{ls}} version.
+```sh
+wget https://artifacts.elastic.co/cosign.pub <1>
+cosign verify --key cosign.pub docker.elastic.co/logstash/logstash:<VERSION> <2>
+```
+
+1. Download the Elastic public key to verify container signature
+2. Verify the container against the Elastic public key
+:::
+::::
 
 The command prints the check results and the signature payload in JSON format, for example:
 
