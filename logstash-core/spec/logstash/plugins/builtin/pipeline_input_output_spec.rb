@@ -242,4 +242,87 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
       end
     end
   end
+
+  describe "with a queue that supports batch pushes" do
+
+    # mimics the wrapped write client interface: responds to push_batch
+    let(:batch_queue) do
+      Class.new do
+        attr_reader :batches
+
+        def initialize
+          @batches = []
+        end
+
+        def push_batch(batch)
+          @batches << batch.to_a
+        end
+
+        def <<(event)
+          raise "single-event push should not be used when push_batch is available"
+        end
+      end.new
+    end
+
+    let(:events) { [::LogStash::Event.new("foo" => "bar"), ::LogStash::Event.new("baz" => "bot")] }
+
+    def start_input_with(queue)
+      input.register
+      @input_thread = Thread.new { input.run(queue) }
+      wait_input_running(input)
+    end
+
+    after(:each) do
+      input.do_stop
+      input.do_close
+      @input_thread.join
+    end
+
+    it "pushes all events of an internalReceive call through a single push_batch" do
+      start_input_with(batch_queue)
+
+      res = input.internalReceive(java.util.ArrayList.new(events).stream)
+
+      expect(res.status).to eq org.logstash.plugins.pipeline.PipelineInput::ReceiveStatus::COMPLETED
+      expect(batch_queue.batches.size).to eq(1)
+      expect(batch_queue.batches.first.size).to eq(2)
+      expect(batch_queue.batches.first.map { |e| e.to_hash_with_metadata }).to match(events.map { |e| e.to_hash_with_metadata })
+    end
+
+    context "with decoration configured" do
+      let(:input_options) { super().merge("add_field" => { "decorated" => "true" }) }
+
+      it "decorates events before pushing them" do
+        start_input_with(batch_queue)
+
+        res = input.internalReceive(java.util.ArrayList.new(events).stream)
+
+        expect(res.status).to eq org.logstash.plugins.pipeline.PipelineInput::ReceiveStatus::COMPLETED
+        expect(batch_queue.batches.first).to all(satisfy { |e| e.get("decorated") == "true" })
+      end
+    end
+
+    it "reports a failed batch at position zero so the whole batch is retried" do
+      failing_queue = double("failing queue")
+      allow(failing_queue).to receive(:push_batch).and_raise(
+        org.logstash.ackedqueue.QueueRuntimeException.new("Tried to write to a closed queue.")
+      )
+      start_input_with(failing_queue)
+
+      res = input.internalReceive(java.util.ArrayList.new(events).stream)
+
+      expect(res.status).to eq org.logstash.plugins.pipeline.PipelineInput::ReceiveStatus::FAIL
+      expect(res.sequence_position).to eq(0)
+    end
+
+    it "falls back to single-event pushes when the queue does not support push_batch" do
+      start_input_with(queue)
+
+      res = input.internalReceive(java.util.ArrayList.new(events).stream)
+
+      expect(res.status).to eq org.logstash.plugins.pipeline.PipelineInput::ReceiveStatus::COMPLETED
+      expect(queue.pop(true).to_hash_with_metadata).to match(events[0].to_hash_with_metadata)
+      expect(queue.pop(true).to_hash_with_metadata).to match(events[1].to_hash_with_metadata)
+    end
+  end
 end

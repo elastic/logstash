@@ -30,6 +30,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -426,8 +427,7 @@ public final class Queue implements Closeable {
             throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
         }
 
-        byte[] serializedBytes = element.serialize();
-        byte[] data = compressionCodec.encode(serializedBytes);
+        byte[] data = serializeAndEncode(element);
 
         // the write strategy with regard to the isFull() state is to assume there is space for this element
         // and write it, then after write verify if we just filled the queue and wait on the notFull condition
@@ -447,56 +447,82 @@ public final class Queue implements Closeable {
                 throw new QueueRuntimeException(QueueExceptionMessages.BIGGER_DATA_THAN_PAGE_SIZE);
             }
 
-            // since a reader's batch cannot span multiple pages,
-            // we flag a force-flush when changing the head page.
-            boolean needsForceFlush = false;
-
-            // create a new head page if the current does not have sufficient space left for data to be written
-            if (!this.headPage.hasSpace(data.length)) {
-
-                // TODO: verify queue state integrity WRT Queue.open()/recover() at each step of this process
-
-                int newHeadPageNum = this.headPage.pageNum + 1;
-
-                if (this.headPage.isFullyAcked()) {
-                    // here we can just purge the data file and avoid beheading since we do not need
-                    // to add this fully hacked page into tailPages. a new head page will just be created.
-                    // TODO: we could possibly reuse the same page file but just rename it?
-                    this.headPage.purge();
-                } else {
-                    behead();
-                }
-
-                // create new head page
-                newCheckpointedHeadpage(newHeadPageNum);
-                needsForceFlush = true;
-            }
-
-            long seqNum = this.seqNum += 1;
-            this.headPage.write(data, seqNum, this.checkpointMaxWrites);
-            this.unreadCount++;
-
-            maybeSignalReadDemand(needsForceFlush);
+            long seqNum = writeEncodedElement(data);
 
             // now check if we reached a queue full state and block here until it is not full
-            // for the next write or the queue was closed.
-            while (isFull() && !isClosed()) {
-                try {
-                    notFull.await();
-                } catch (InterruptedException e) {
-                    logger.debug("interrupted waiting for queue to not be full", e);
-                    // the thread interrupt() has been called while in the await() blocking call.
-                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
-                    // to any upstream calls on it. for now our choice is to return normally and set back
-                    // the Thread.interrupted() flag so it can be checked upstream.
+            // for the next write or the queue was closed. on interrupt, return normally with
+            // the interrupt flag set back; the element has already been written.
+            awaitNotFull();
 
-                    // this is a bit tricky in the case of the queue full condition blocking state.
-                    // TODO: we will want to avoid initiating a new write operation if Thread.interrupted() was called.
+            return seqNum;
+        } finally {
+            lock.unlock();
+        }
+    }
 
-                    // set back the interrupted flag
-                    Thread.currentThread().interrupt();
+    /**
+     * write a collection of {@link Queueable} elements to the queue using a single lock acquisition.
+     *
+     * <p>Elements are serialized and compressed before the queue lock is taken, and all of them are
+     * validated to individually fit in a queue page before any of them is written, so an oversized
+     * element fails the whole batch without writing anything.</p>
+     *
+     * <p>Like {@link #write(Queueable)}, the queue full condition is checked and waited on <strong>after</strong>
+     * each element is written. If the thread is interrupted while waiting, the remaining elements are
+     * written without further waiting and the interrupt flag is set back, mirroring the behavior of
+     * repeated calls to {@link #write(Queueable)}. If the queue is closed while waiting on a full queue,
+     * a {@link QueueRuntimeException} is thrown and the elements written up to that point remain
+     * persisted, consistent with the queue's at-least-once delivery semantics.</p>
+     *
+     * @param elements the collection of {@link Queueable} elements to write
+     * @return the sequence number of the last written element, or -1 if the collection is empty
+     * @throws IOException if an IO error occurs
+     */
+    public long write(Collection<? extends Queueable> elements) throws IOException {
+        // pre-check before incurring serialization overhead;
+        // we must check again after acquiring the lock.
+        if (this.closed.get()) {
+            throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
+        }
 
-                    return seqNum;
+        if (elements.isEmpty()) {
+            return -1L;
+        }
+
+        final List<byte[]> encodedElements = new ArrayList<>(elements.size());
+        for (Queueable element : elements) {
+            encodedElements.add(serializeAndEncode(element));
+        }
+
+        lock.lock();
+        try {
+            // ensure that the queue is still open now that this thread has acquired the lock.
+            if (this.closed.get()) {
+                throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
+            }
+
+            // validate all elements before writing any of them, so an oversized element
+            // cannot leave a partially written batch behind.
+            for (byte[] data : encodedElements) {
+                if (!this.headPage.hasCapacity(data.length)) {
+                    throw new QueueRuntimeException(QueueExceptionMessages.BIGGER_DATA_THAN_PAGE_SIZE);
+                }
+            }
+
+            long seqNum = -1L;
+            boolean awaitWhenFull = true;
+
+            for (byte[] data : encodedElements) {
+                // waiting on a full queue releases the lock, so the queue can be closed concurrently
+                // while this batch is in progress; writing to a closed queue is not possible.
+                if (this.closed.get()) {
+                    throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
+                }
+
+                seqNum = writeEncodedElement(data);
+
+                if (awaitWhenFull) {
+                    awaitWhenFull = awaitNotFull();
                 }
             }
 
@@ -504,6 +530,87 @@ public final class Queue implements Closeable {
         } finally {
             lock.unlock();
         }
+    }
+
+    private byte[] serializeAndEncode(Queueable element) throws IOException {
+        byte[] serializedBytes = element.serialize();
+        return compressionCodec.encode(serializedBytes);
+    }
+
+    /**
+     * write a single serialized and compressed element to the head page, creating a new head page
+     * if the current one does not have enough space left. Caller <em>MUST</em> hold the lock.
+     *
+     * @param data the serialized and compressed element bytes
+     * @return the sequence number assigned to the written element
+     * @throws IOException if an IO error occurs
+     */
+    private long writeEncodedElement(final byte[] data) throws IOException {
+        assert lock.isHeldByCurrentThread();
+
+        // since a reader's batch cannot span multiple pages,
+        // we flag a force-flush when changing the head page.
+        boolean needsForceFlush = false;
+
+        // create a new head page if the current does not have sufficient space left for data to be written
+        if (!this.headPage.hasSpace(data.length)) {
+
+            // TODO: verify queue state integrity WRT Queue.open()/recover() at each step of this process
+
+            int newHeadPageNum = this.headPage.pageNum + 1;
+
+            if (this.headPage.isFullyAcked()) {
+                // here we can just purge the data file and avoid beheading since we do not need
+                // to add this fully hacked page into tailPages. a new head page will just be created.
+                // TODO: we could possibly reuse the same page file but just rename it?
+                this.headPage.purge();
+            } else {
+                behead();
+            }
+
+            // create new head page
+            newCheckpointedHeadpage(newHeadPageNum);
+            needsForceFlush = true;
+        }
+
+        long seqNum = this.seqNum += 1;
+        this.headPage.write(data, seqNum, this.checkpointMaxWrites);
+        this.unreadCount++;
+
+        maybeSignalReadDemand(needsForceFlush);
+
+        return seqNum;
+    }
+
+    /**
+     * wait until the queue is no longer in the full state, the queue is closed, or the current
+     * thread is interrupted. Caller <em>MUST</em> hold the lock; waiting releases it.
+     *
+     * @return false if the wait was interrupted, in which case the interrupt flag is set back
+     */
+    private boolean awaitNotFull() {
+        assert lock.isHeldByCurrentThread();
+
+        while (isFull() && !isClosed()) {
+            try {
+                notFull.await();
+            } catch (InterruptedException e) {
+                logger.debug("interrupted waiting for queue to not be full", e);
+                // the thread interrupt() has been called while in the await() blocking call.
+                // at this point the interrupted flag is reset and Thread.interrupted() will return false
+                // to any upstream calls on it. for now our choice is to return normally and set back
+                // the Thread.interrupted() flag so it can be checked upstream.
+
+                // this is a bit tricky in the case of the queue full condition blocking state.
+                // TODO: we will want to avoid initiating a new write operation if Thread.interrupted() was called.
+
+                // set back the interrupted flag
+                Thread.currentThread().interrupt();
+
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
