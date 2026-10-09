@@ -23,6 +23,8 @@ package org.logstash.benchmark;
 import java.nio.file.Files;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.logstash.Event;
@@ -37,6 +39,7 @@ import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OperationsPerInvocation;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -49,11 +52,14 @@ import org.openjdk.jmh.annotations.Warmup;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-public class QueueWriteBenchmark {
+public class QueueBatchWriteBenchmark {
 
     private static final int EVENTS_PER_INVOCATION = 500_000;
 
     private static final Event EVENT = new Event();
+
+    @Param({"128", "1024", "4096"})
+    private int batchSize;
 
     private Queue queue;
 
@@ -80,11 +86,15 @@ public class QueueWriteBenchmark {
 
     @Benchmark
     @OperationsPerInvocation(EVENTS_PER_INVOCATION)
-    public final void pushToPersistedQueue() throws Exception {
-        for (int i = 0; i < EVENTS_PER_INVOCATION; ++i) {
-            final Event evnt = EVENT.clone();
-            evnt.setTimestamp(Timestamp.now());
-            queue.write(evnt);
+    public final void pushBatchesToPersistedQueue() throws Exception {
+        for (int i = 0; i < EVENTS_PER_INVOCATION; i += batchSize) {
+            final List<Event> batch = new ArrayList<>(batchSize);
+            for (int j = 0; j < batchSize; ++j) {
+                final Event evnt = EVENT.clone();
+                evnt.setTimestamp(Timestamp.now());
+                batch.add(evnt);
+            }
+            queue.write(batch);
         }
     }
 

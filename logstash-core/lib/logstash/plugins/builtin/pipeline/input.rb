@@ -40,6 +40,8 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
 
   def run(queue)
     @queue = queue
+    # the wrapped write client supports batch pushes; plain queues (used in tests) may not
+    @queue_supports_batch = queue.respond_to?(:push_batch)
     @running.set(true)
 
     while @running.get()
@@ -57,20 +59,43 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
   def internalReceive(events)
     return ReceiveResponse.closing() if !@running.get()
 
-    # TODO This should probably push a batch at some point in the future when doing so
-    # buys us some efficiency
-    begin
-      stream_position = 0
-      events.forEach (lambda do |event|
-        decorate(event)
-        @queue << event
-        stream_position = stream_position + 1
-      end)
-      ReceiveResponse.completed()
-    rescue java.lang.InterruptedException, org.logstash.ackedqueue.QueueRuntimeException, IOError => e
-      logger.debug? && logger.debug('queueing event failed', message: e.message, exception: e.class, backtrace: e.backtrace)
-      ReceiveResponse.failed_at(stream_position, e)
+    if @queue_supports_batch
+      internal_receive_batch(events)
+    else
+      internal_receive_single(events)
     end
+  end
+
+  # pushes the whole batch through a single queue call, letting a persisted queue
+  # write all events under one lock acquisition instead of one per event.
+  # on failure, a BatchWriteException reports how many events were already persisted
+  # so the upstream output resumes from the first unwritten event; other errors
+  # report position 0 and the whole batch is retried.
+  def internal_receive_batch(events)
+    batch = []
+    events.forEach (lambda do |event|
+      decorate(event)
+      batch << event
+    end)
+    @queue.push_batch(batch)
+    ReceiveResponse.completed()
+  rescue java.lang.InterruptedException, org.logstash.ackedqueue.QueueRuntimeException, IOError => e
+    position = e.respond_to?(:written_count) ? e.written_count : 0
+    logger.debug? && logger.debug('queueing batch failed', message: e.message, exception: e.class, written: position, backtrace: e.backtrace)
+    ReceiveResponse.failed_at(position, e)
+  end
+
+  def internal_receive_single(events)
+    stream_position = 0
+    events.forEach (lambda do |event|
+      decorate(event)
+      @queue << event
+      stream_position = stream_position + 1
+    end)
+    ReceiveResponse.completed()
+  rescue java.lang.InterruptedException, org.logstash.ackedqueue.QueueRuntimeException, IOError => e
+    logger.debug? && logger.debug('queueing event failed', message: e.message, exception: e.class, backtrace: e.backtrace)
+    ReceiveResponse.failed_at(stream_position, e)
   end
 
   def stop
