@@ -470,13 +470,14 @@ public final class Queue implements Closeable {
      * <p>Like {@link #write(Queueable)}, the queue full condition is checked and waited on <strong>after</strong>
      * each element is written. If the thread is interrupted while waiting, the remaining elements are
      * written without further waiting and the interrupt flag is set back, mirroring the behavior of
-     * repeated calls to {@link #write(Queueable)}. If the queue is closed while waiting on a full queue,
-     * a {@link QueueRuntimeException} is thrown and the elements written up to that point remain
-     * persisted, consistent with the queue's at-least-once delivery semantics.</p>
+     * repeated calls to {@link #write(Queueable)}. If a write fails after part of the batch has been
+     * written — the queue was closed while waiting on a full queue, or an IO error occurred — a
+     * {@link BatchWriteException} is thrown reporting how many elements were persisted, so the caller
+     * can resume delivery from the first unwritten element.</p>
      *
      * @param elements the collection of {@link Queueable} elements to write
      * @return the sequence number of the last written element, or -1 if the collection is empty
-     * @throws IOException if an IO error occurs
+     * @throws IOException if an IO error occurs while serializing an element, before anything is written
      */
     public long write(Collection<? extends Queueable> elements) throws IOException {
         // pre-check before incurring serialization overhead;
@@ -511,15 +512,23 @@ public final class Queue implements Closeable {
 
             long seqNum = -1L;
             boolean awaitWhenFull = true;
+            int written = 0;
 
             for (byte[] data : encodedElements) {
                 // waiting on a full queue releases the lock, so the queue can be closed concurrently
                 // while this batch is in progress; writing to a closed queue is not possible.
                 if (this.closed.get()) {
-                    throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
+                    throw new BatchWriteException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE, written, null);
                 }
 
-                seqNum = writeEncodedElement(data);
+                try {
+                    seqNum = writeEncodedElement(data);
+                } catch (IOException e) {
+                    throw new BatchWriteException(
+                        String.format("batch write failed after %d of %d elements", written, encodedElements.size()),
+                        written, e);
+                }
+                written++;
 
                 if (awaitWhenFull) {
                     awaitWhenFull = awaitNotFull();

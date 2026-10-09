@@ -1465,8 +1465,10 @@ public class QueueTest {
         q.close();
 
         final ExecutionException ee = assertThrows(ExecutionException.class, future::get);
-        assertThat(ee.getCause(), instanceOf(QueueRuntimeException.class));
+        assertThat(ee.getCause(), instanceOf(BatchWriteException.class));
         assertThat(ee.getCause().getMessage(), containsString(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE));
+        // the exception reports how many elements were persisted so callers can resume from there
+        assertThat(((BatchWriteException) ee.getCause()).getWrittenCount(), is(2));
 
         // the elements written before the close must survive a reopen, consistent with at-least-once delivery
         try (Queue reopened = new Queue(settings)) {

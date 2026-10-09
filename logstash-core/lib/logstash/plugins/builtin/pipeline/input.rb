@@ -68,9 +68,9 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
 
   # pushes the whole batch through a single queue call, letting a persisted queue
   # write all events under one lock acquisition instead of one per event.
-  # on failure the whole batch is reported as failed (position 0); events already
-  # persisted will be duplicated when the upstream output retries, which is
-  # consistent with the queue's at-least-once delivery semantics.
+  # on failure, a BatchWriteException reports how many events were already persisted
+  # so the upstream output resumes from the first unwritten event; other errors
+  # report position 0 and the whole batch is retried.
   def internal_receive_batch(events)
     batch = []
     events.forEach (lambda do |event|
@@ -80,8 +80,9 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
     @queue.push_batch(batch)
     ReceiveResponse.completed()
   rescue java.lang.InterruptedException, org.logstash.ackedqueue.QueueRuntimeException, IOError => e
-    logger.debug? && logger.debug('queueing batch failed', message: e.message, exception: e.class, backtrace: e.backtrace)
-    ReceiveResponse.failed_at(0, e)
+    position = e.respond_to?(:written_count) ? e.written_count : 0
+    logger.debug? && logger.debug('queueing batch failed', message: e.message, exception: e.class, written: position, backtrace: e.backtrace)
+    ReceiveResponse.failed_at(position, e)
   end
 
   def internal_receive_single(events)

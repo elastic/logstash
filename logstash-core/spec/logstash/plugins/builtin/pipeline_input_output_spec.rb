@@ -315,6 +315,19 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
       expect(res.sequence_position).to eq(0)
     end
 
+    it "reports a partially written batch at the written count so only the remainder is retried" do
+      failing_queue = double("failing queue")
+      allow(failing_queue).to receive(:push_batch).and_raise(
+        org.logstash.ackedqueue.BatchWriteException.new("Tried to write to a closed queue.", 1, nil)
+      )
+      start_input_with(failing_queue)
+
+      res = input.internalReceive(java.util.ArrayList.new(events).stream)
+
+      expect(res.status).to eq org.logstash.plugins.pipeline.PipelineInput::ReceiveStatus::FAIL
+      expect(res.sequence_position).to eq(1)
+    end
+
     it "falls back to single-event pushes when the queue does not support push_batch" do
       start_input_with(queue)
 
