@@ -16,6 +16,7 @@
 # under the License.
 
 require 'spec_helper'
+require 'logstash/instrument/collector'
 
 describe ::LogStash::Plugins::Builtin::Pipeline do
   let(:address) {  "fooAdr" }
@@ -336,6 +337,136 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
       expect(res.status).to eq org.logstash.plugins.pipeline.PipelineInput::ReceiveStatus::COMPLETED
       expect(queue.pop(true).to_hash_with_metadata).to match(events[0].to_hash_with_metadata)
       expect(queue.pop(true).to_hash_with_metadata).to match(events[1].to_hash_with_metadata)
+    end
+  end
+
+  describe "with real queue write clients" do
+    let(:events) { 5.times.map { |i| LogStash::Event.new("sequence" => i) } }
+    let(:input_options) { super().merge("add_field" => { "decorated" => "yes" }) }
+    let(:queue_metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
+    let(:wrapped_writer) { LogStash::WrappedWriteClient.new(write_client, :downstream, queue_metric, input.id) }
+
+    def await_condition
+      deadline = java.lang.System.nano_time + 10_000_000_000
+      until yield
+        raise "timed out waiting for queue operation" if java.lang.System.nano_time >= deadline
+        sleep 0.001
+      end
+    end
+
+    before do
+      input.register
+      @input_thread = Thread.new { input.run(wrapped_writer) }
+      wait_input_running(input)
+      output.register
+    end
+
+    after do
+      output.do_close
+      input.do_stop
+      input.do_close
+      @input_thread.join
+    end
+
+    context "with an interrupted memory queue delivery" do
+      let(:storage) { java.util.concurrent.ArrayBlockingQueue.new(2) }
+      let(:write_client) { org.logstash.ext.JrubyMemoryWriteClientExt.create(storage) }
+
+      before do
+        # A plain Ruby guard avoids RSpec's synchronized method spies, which consume
+        # the interrupt and can mask the regression. Fail instead of retrying forever.
+        input.singleton_class.prepend(Module.new do
+          def internalReceive(events)
+            @receive_attempts = (@receive_attempts || 0) + 1
+            raise "interrupted delivery did not make progress" if @receive_attempts > 2
+            super
+          end
+        end)
+      end
+
+      it "retries only the unwritten suffix on the same thread and delivers every event once" do
+        sender_thread = java.util.concurrent.atomic.AtomicReference.new
+        sender = Thread.new do
+          sender_thread.set(java.lang.Thread.current_thread)
+          output.multi_receive(events)
+        ensure
+          java.lang.Thread.interrupted
+        end
+        begin
+          await_condition { storage.size == 2 && sender_thread.get.state == java.lang.Thread::State::WAITING }
+          sender_thread.get.interrupt
+
+          received = events.map do
+            event = storage.poll(10, java.util.concurrent.TimeUnit::SECONDS)
+            expect(event).not_to be_nil
+            event
+          end
+          expect(sender.join(10)).not_to be_nil
+          sender.value
+          expect(received.map { |e| e.get("sequence") }).to eq((0...5).to_a)
+          expect(received.map { |e| e.get("decorated") }).to eq(["yes"] * 5)
+          expect(events.map { |e| e.get("decorated") }).to eq([nil] * 5)
+          expect(storage).to be_empty
+        ensure
+          sender.kill if sender.alive?
+          sender.join
+        end
+      end
+    end
+
+    context "with a persisted queue" do
+      let(:path) { Stud::Temporary.directory }
+      let(:max_unread) { 0 }
+      let(:settings) do
+        LogStash::AckedQueue.file_settings_builder(path)
+          .capacity(1024).maxUnread(max_unread).checkpointMaxWrites(1).build
+      end
+      let(:storage) do
+        LogStash::WrappedAckedQueue.new(settings, org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode::DISABLED)
+      end
+      let(:write_client) { storage.write_client }
+
+      after { storage.close }
+
+      it "batches decorated clones through the Ruby and Java clients and persists them" do
+        expect(wrapped_writer).to receive(:push_batch).with(kind_of(Array)).once.and_call_original
+        output.multi_receive(events)
+        storage.close
+
+        reopened = LogStash::WrappedAckedQueue.new(settings, org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode::DISABLED)
+        begin
+          received = []
+          while reopened.queue.unread_count > 0
+            batch = reopened.read_batch(5, 0).to_java
+            received.concat(batch.events.to_a)
+            batch.close
+          end
+          expect(received.map { |e| e.get("sequence") }).to eq((0...5).to_a)
+          expect(received.map { |e| e.get("decorated") }).to eq(["yes"] * 5)
+          expect(events.map { |e| e.get("decorated") }).to eq([nil] * 5)
+        ensure
+          reopened.close
+        end
+      end
+
+      context "when closed partway through a blocked batch" do
+        let(:max_unread) { 2 }
+
+        it "reports the completed prefix through the wrapped client and Ruby rescue" do
+          receiver = Thread.new { input.internalReceive(java.util.ArrayList.new(events).stream) }
+          begin
+            await_condition { storage.queue.unread_count == 2 }
+            storage.close
+            expect(receiver.join(10)).not_to be_nil
+            response = receiver.value
+            expect(response.status).to eq org.logstash.plugins.pipeline.PipelineInput::ReceiveStatus::FAIL
+            expect(response.sequence_position).to eq(2)
+          ensure
+            storage.close
+            receiver.join(10)
+          end
+        end
+      end
     end
   end
 end

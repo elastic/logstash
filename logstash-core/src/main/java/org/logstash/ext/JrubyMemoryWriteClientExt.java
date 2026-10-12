@@ -72,10 +72,9 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
                 written++;
             }
         } catch (InterruptedException e) {
-            // restore the interrupt flag and report how many events were already added to the
-            // queue, so callers can resume delivery from the first unwritten event instead of
-            // redelivering (and thus duplicating) the whole batch.
-            Thread.currentThread().interrupt();
+            // BlockingQueue.put clears the interrupt flag when it throws. Leave it cleared,
+            // as with a single-event push: the pipeline bus must be able to sleep and put
+            // again when retrying the unwritten suffix on this same thread.
             throw new BatchWriteException(
                 String.format("batch write interrupted after %d of %d events", written, batch.size()),
                 written, e);
