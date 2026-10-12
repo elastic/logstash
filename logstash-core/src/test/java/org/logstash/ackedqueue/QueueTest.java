@@ -24,7 +24,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +51,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
+import org.logstash.RubyTestBase;
 import org.logstash.ackedqueue.io.MmapPageIOV2;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -57,6 +60,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertFalse;
@@ -64,7 +68,7 @@ import static org.junit.Assert.fail;
 import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
 import static org.junit.Assert.assertThrows;
 
-public class QueueTest {
+public class QueueTest extends RubyTestBase {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -1308,6 +1312,31 @@ public class QueueTest {
         }
     }
 
+    @Test
+    public void batchWriteOneByteOverCapacityRejectsWholeBatch() throws Exception {
+        final Queueable exactFit = new StringElement("123456789");
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(
+                computeCapacityForMmapPageIO(exactFit), dataPath))) {
+            q.open();
+            final QueueRuntimeException failure = assertThrows(QueueRuntimeException.class,
+                () -> q.write(List.of(new StringElement("first"), new StringElement("1234567890"))));
+            assertThat(failure.getMessage(), containsString(QueueExceptionMessages.BIGGER_DATA_THAN_PAGE_SIZE));
+            assertThat(q.getUnreadCount(), is(0L));
+            assertThat(q.tailPages.isEmpty(), is(true));
+            assertThat(q.write(List.of(exactFit)), is(1L));
+            assertThat(q.nonBlockReadBatch(1).getElements().get(0).toString(), is("123456789"));
+        }
+    }
+
+    @Test
+    public void pageCapacityCheckCannotOverflow() throws Exception {
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(1024, dataPath))) {
+            q.open();
+            assertThat(q.headPage.hasCapacity(Integer.MAX_VALUE), is(false));
+            assertThat(q.headPage.hasSpace(Integer.MAX_VALUE), is(false));
+        }
+    }
+
     @Test(timeout = 50_000)
     public void batchWriteToClosedQueueThrows() throws Exception {
         Queue q = new Queue(TestSettings.persistedQueueSettings(1024, dataPath));
@@ -1396,13 +1425,11 @@ public class QueueTest {
     public void batchWriteInterruptedWhileFullWritesRemainingWithoutBlocking() throws Exception {
         final Queueable element = new StringElement("foobarbaz");
 
-        // use the production default checkpointMaxWrites instead of TestSettings' 1: after the
-        // interrupt the writer thread's interrupt flag stays set, and any checkpoint FileChannel
-        // write on that thread would throw ClosedByInterruptException (pre-existing behavior,
-        // same as a single-element write loop on an interrupted thread).
+        // Force both checkpoints and page rollover after the interrupted wait. The interrupt
+        // must not poison checkpoint I/O while the remainder of the batch is being written.
         Settings settings = SettingsImpl.builder(
-            TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element, 10), dataPath)
-        ).maxUnread(2).checkpointMaxWrites(1024).build();
+            TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element, 2), dataPath)
+        ).maxUnread(2).build();
 
         try (Queue q = new Queue(settings)) {
             q.open();
@@ -1412,9 +1439,12 @@ public class QueueTest {
 
             Future<long[]> future = executor.submit(() -> {
                 writerThread.set(Thread.currentThread());
-                long lastSeqNum = q.write(elements);
-                // Thread.interrupted() clears the flag, which also avoids poisoning the executor worker
-                return new long[] { lastSeqNum, Thread.interrupted() ? 1L : 0L };
+                try {
+                    long lastSeqNum = q.write(elements);
+                    return new long[] { lastSeqNum, Thread.currentThread().isInterrupted() ? 1L : 0L };
+                } finally {
+                    Thread.interrupted(); // do not poison the executor worker, even on failure
+                }
             });
 
             // the writer blocks once maxUnread is reached
@@ -1440,6 +1470,92 @@ public class QueueTest {
                 b.close();
             }
             assertThat(readCount, is(5));
+        }
+    }
+
+    @Test
+    public void batchWriteWithPendingInterruptCheckpointsAndRestoresFlag() throws Exception {
+        final Queueable element = new StringElement("foobarbaz");
+        final Settings settings = TestSettings.persistedQueueSettings(
+            computeCapacityForMmapPageIO(element, 2), dataPath);
+        try (Queue q = new Queue(settings)) {
+            q.open();
+            try {
+                Thread.currentThread().interrupt();
+                assertThat(q.write(Collections.nCopies(5, element)), is(5L));
+                assertThat(Thread.currentThread().isInterrupted(), is(true));
+            } finally {
+                Thread.interrupted();
+            }
+            assertThat(q.getUnreadCount(), is(5L));
+        }
+        try (Queue reopened = new Queue(settings)) {
+            reopened.open();
+            assertThat(reopened.getUnreadCount(), is(5L));
+        }
+    }
+
+    @Test
+    public void batchSerializationFailureWritesNothing() throws Exception {
+        final IOException failure = new IOException("serialization failed");
+        final Queueable broken = () -> { throw failure; };
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(1024, dataPath))) {
+            q.open();
+            assertThat(assertThrows(IOException.class,
+                () -> q.write(Arrays.asList(new StringElement("first"), broken))), sameInstance(failure));
+            assertThat(q.getUnreadCount(), is(0L));
+            assertThat(q.write(new StringElement("next")), is(1L));
+        }
+    }
+
+    @Test
+    public void batchRolloverFailureReportsCompletedPrefixAndRestoresInterrupt() throws Exception {
+        final Queueable element = new StringElement("foobarbaz");
+        final Settings settings = TestSettings.persistedQueueSettings(
+            computeCapacityForMmapPageIO(element, 2), dataPath);
+        try (Queue q = new Queue(settings)) {
+            q.open();
+            // Fail the real tail-checkpoint file write when the third event rolls over page 0.
+            final Path blockedCheckpoint = Files.createDirectory(Paths.get(dataPath, "checkpoint.0.tmp"));
+            try {
+                Thread.currentThread().interrupt();
+                final BatchWriteException failure = assertThrows(BatchWriteException.class,
+                    () -> q.write(Collections.nCopies(5, element)));
+                assertThat(failure.getWrittenCount(), is(2));
+                assertThat(failure.getCause(), instanceOf(IOException.class));
+                assertThat(Thread.currentThread().isInterrupted(), is(true));
+            } finally {
+                Thread.interrupted();
+                Files.delete(blockedCheckpoint);
+            }
+        }
+        try (Queue reopened = new Queue(settings)) {
+            reopened.open();
+            final Batch batch = reopened.nonBlockReadBatch(5);
+            assertThat(batch.getElements().size(), is(2));
+            assertThat(reopened.nonBlockReadBatch(1), nullValue());
+        }
+    }
+
+    @Test(timeout = 30_000)
+    public void batchCloseDuringFinalWaitCompletesSuccessfully() throws Exception {
+        final Settings settings = SettingsImpl.builder(TestSettings.persistedQueueSettings(1024, dataPath))
+            .maxUnread(1).build();
+        final Queue q = new Queue(settings);
+        try {
+            q.open();
+            final Future<Long> write = executor.submit(() -> q.write(List.of(new StringElement("last"))));
+            while (!q.isFull()) {
+                Thread.sleep(1);
+            }
+            q.close();
+            assertThat(write.get(10, TimeUnit.SECONDS), is(1L));
+        } finally {
+            q.close();
+        }
+        try (Queue reopened = new Queue(settings)) {
+            reopened.open();
+            assertThat(reopened.nonBlockReadBatch(1).getElements().get(0).toString(), is("last"));
         }
     }
 
@@ -1524,6 +1640,68 @@ public class QueueTest {
             if (!writers.awaitTermination(2L, TimeUnit.MINUTES)) {
                 throw new IllegalStateException("Failed to shut down writer pool");
             }
+        }
+    }
+
+    @Test(timeout = 60_000)
+    public void mixedWritersAndReaderPreserveOrderUnderBackpressureWithCompression() throws Exception {
+        final int writerCount = 4;
+        final int elementsPerWriter = 200;
+        final int totalElements = writerCount * elementsPerWriter;
+        final Settings settings = SettingsImpl.builder(TestSettings.persistedQueueSettings(256, 768, dataPath))
+            .maxUnread(7).checkpointMaxWrites(2)
+            .compressionCodecFactory(CompressionCodec.fromConfigValue("balanced")).build();
+        final ExecutorService workers = Executors.newFixedThreadPool(writerCount + 1);
+        try (Queue q = new Queue(settings)) {
+            q.open();
+            final Future<?> reader = workers.submit(() -> {
+                final int[] nextByWriter = new int[writerCount];
+                int readCount = 0;
+                while (readCount < totalElements) {
+                    try (Batch batch = q.readBatch(3, 10)) {
+                        for (Queueable element : batch.getElements()) {
+                            final String[] coordinates = element.toString().split(":");
+                            final int writer = Integer.parseInt(coordinates[0]);
+                            final int sequence = Integer.parseInt(coordinates[1]);
+                            assertThat(sequence, is(nextByWriter[writer]++));
+                            readCount++;
+                        }
+                    }
+                }
+                for (int count : nextByWriter) {
+                    assertThat(count, is(elementsPerWriter));
+                }
+                return null;
+            });
+            final List<Future<?>> writers = new ArrayList<>();
+            for (int writer = 0; writer < writerCount; writer++) {
+                final int id = writer;
+                writers.add(workers.submit(() -> {
+                    for (int start = 0; start < elementsPerWriter; start += 10) {
+                        final List<Queueable> batch = new ArrayList<>();
+                        for (int i = start; i < start + 10; i++) {
+                            batch.add(new StringElement(id + ":" + i));
+                        }
+                        if (id % 2 == 0) {
+                            q.write(batch);
+                        } else {
+                            for (Queueable element : batch) {
+                                q.write(element);
+                            }
+                        }
+                    }
+                    return null;
+                }));
+            }
+            for (Future<?> writer : writers) {
+                writer.get(30, TimeUnit.SECONDS);
+            }
+            reader.get(30, TimeUnit.SECONDS);
+            assertThat(q.getUnreadCount(), is(0L));
+            assertThat(q.isFullyAcked(), is(true));
+        } finally {
+            workers.shutdownNow();
+            assertThat(workers.awaitTermination(10, TimeUnit.SECONDS), is(true));
         }
     }
 

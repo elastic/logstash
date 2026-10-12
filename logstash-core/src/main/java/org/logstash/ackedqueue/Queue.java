@@ -452,7 +452,9 @@ public final class Queue implements Closeable {
             // now check if we reached a queue full state and block here until it is not full
             // for the next write or the queue was closed. on interrupt, return normally with
             // the interrupt flag set back; the element has already been written.
-            awaitNotFull();
+            if (!awaitNotFull()) {
+                Thread.currentThread().interrupt();
+            }
 
             return seqNum;
         } finally {
@@ -469,11 +471,14 @@ public final class Queue implements Closeable {
      *
      * <p>Like {@link #write(Queueable)}, the queue full condition is checked and waited on <strong>after</strong>
      * each element is written. If the thread is interrupted while waiting, the remaining elements are
-     * written without further waiting and the interrupt flag is set back, mirroring the behavior of
-     * repeated calls to {@link #write(Queueable)}. If a write fails after part of the batch has been
+     * written without further waiting. The interrupt flag is restored when this method exits,
+     * rather than before the remaining writes, since an interrupted thread cannot perform checkpoint
+     * file I/O. An interrupt already pending when the lock is acquired is handled the same way.
+     * If a write fails after part of the batch has been
      * written — the queue was closed while waiting on a full queue, or an IO error occurred — a
-     * {@link BatchWriteException} is thrown reporting how many elements were persisted, so the caller
-     * can resume delivery from the first unwritten element.</p>
+     * {@link BatchWriteException} is thrown reporting the successfully completed prefix. The caller
+     * can resume at the failed element. An I/O failure may occur after that element's bytes have
+     * been written but before its checkpoint completes, so retrying it can produce a duplicate.</p>
      *
      * @param elements the collection of {@link Queueable} elements to write
      * @return the sequence number of the last written element, or -1 if the collection is empty
@@ -496,6 +501,7 @@ public final class Queue implements Closeable {
         }
 
         lock.lock();
+        boolean interrupted = Thread.interrupted();
         try {
             // ensure that the queue is still open now that this thread has acquired the lock.
             if (this.closed.get()) {
@@ -511,7 +517,6 @@ public final class Queue implements Closeable {
             }
 
             long seqNum = -1L;
-            boolean awaitWhenFull = true;
             int written = 0;
 
             for (byte[] data : encodedElements) {
@@ -521,6 +526,9 @@ public final class Queue implements Closeable {
                     throw new BatchWriteException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE, written, null);
                 }
 
+                // Consume pending interrupts before checkpoint/page I/O, and defer restoring
+                // them until all remaining writes (or a failure) have released the queue lock.
+                interrupted |= Thread.interrupted();
                 try {
                     seqNum = writeEncodedElement(data);
                 } catch (IOException e) {
@@ -530,14 +538,17 @@ public final class Queue implements Closeable {
                 }
                 written++;
 
-                if (awaitWhenFull) {
-                    awaitWhenFull = awaitNotFull();
+                if (!interrupted) {
+                    interrupted = !awaitNotFull();
                 }
             }
 
             return seqNum;
         } finally {
             lock.unlock();
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -595,7 +606,7 @@ public final class Queue implements Closeable {
      * wait until the queue is no longer in the full state, the queue is closed, or the current
      * thread is interrupted. Caller <em>MUST</em> hold the lock; waiting releases it.
      *
-     * @return false if the wait was interrupted, in which case the interrupt flag is set back
+     * @return false if the wait was interrupted; the caller is responsible for restoring the flag
      */
     private boolean awaitNotFull() {
         assert lock.isHeldByCurrentThread();
@@ -605,17 +616,6 @@ public final class Queue implements Closeable {
                 notFull.await();
             } catch (InterruptedException e) {
                 logger.debug("interrupted waiting for queue to not be full", e);
-                // the thread interrupt() has been called while in the await() blocking call.
-                // at this point the interrupted flag is reset and Thread.interrupted() will return false
-                // to any upstream calls on it. for now our choice is to return normally and set back
-                // the Thread.interrupted() flag so it can be checked upstream.
-
-                // this is a bit tricky in the case of the queue full condition blocking state.
-                // TODO: we will want to avoid initiating a new write operation if Thread.interrupted() was called.
-
-                // set back the interrupted flag
-                Thread.currentThread().interrupt();
-
                 return false;
             }
         }

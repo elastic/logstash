@@ -20,12 +20,14 @@
 package org.logstash.ackedqueue;
 
 /**
- * Thrown when a batch write fails after some of its elements have already been written
- * to the queue. {@link #getWrittenCount()} reports how many elements of the batch were
- * persisted, so callers can resume delivery from the first unwritten element instead of
- * redelivering the whole batch.
+ * A failed batch write, possibly before any elements have been written.
+ * {@link #getWrittenCount()} is the number of consecutive elements whose writes completed
+ * successfully, and therefore the position at which delivery should resume. This applies to
+ * both memory and persisted queues; it is not a durability guarantee. A persisted-queue I/O
+ * failure can occur after writing the failed element's bytes, so retrying that element may
+ * duplicate it. Elements after the reported position have not been attempted.
  */
-public class BatchWriteException extends QueueRuntimeException {
+public final class BatchWriteException extends QueueRuntimeException {
 
     private static final long serialVersionUID = 1L;
 

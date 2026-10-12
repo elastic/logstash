@@ -51,6 +51,9 @@ public interface PageIO extends Closeable {
     // verify if the data container has space for the given number of bytes
     boolean hasSpace(int bytes);
 
+    // verify if the given data bytes could fit in an empty writable page, including all overhead
+    boolean hasCapacity(int bytes);
+
     // write the given bytes to the data container
     void write(byte[] bytes, long seqNum) throws IOException;
 
