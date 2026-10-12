@@ -30,7 +30,7 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.runtime.ThreadContext;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
-import org.logstash.common.LsQueueUtils;
+import org.logstash.ackedqueue.BatchWriteException;
 
 @JRubyClass(name = "MemoryWriteClient")
 public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClientExt {
@@ -64,8 +64,21 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
 
     @Override
     public JRubyAbstractQueueWriteClientExt doPushBatch(final ThreadContext context,
-                                                        final Collection<JrubyEventExtLibrary.RubyEvent> batch) throws InterruptedException {
-        LsQueueUtils.addAll(queue, batch);
+                                                        final Collection<JrubyEventExtLibrary.RubyEvent> batch) {
+        int written = 0;
+        try {
+            for (final JrubyEventExtLibrary.RubyEvent event : batch) {
+                queue.put(event);
+                written++;
+            }
+        } catch (InterruptedException e) {
+            // BlockingQueue.put clears the interrupt flag when it throws. Leave it cleared,
+            // as with a single-event push: the pipeline bus must be able to sleep and put
+            // again when retrying the unwritten suffix on this same thread.
+            throw new BatchWriteException(
+                String.format("batch write interrupted after %d of %d events", written, batch.size()),
+                written, e);
+        }
         return this;
     }
 
