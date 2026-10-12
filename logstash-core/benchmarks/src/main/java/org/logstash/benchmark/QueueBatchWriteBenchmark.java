@@ -88,8 +88,9 @@ public class QueueBatchWriteBenchmark {
     @OperationsPerInvocation(EVENTS_PER_INVOCATION)
     public final void pushBatchesToPersistedQueue() throws Exception {
         for (int i = 0; i < EVENTS_PER_INVOCATION; i += batchSize) {
-            final List<Event> batch = new ArrayList<>(batchSize);
-            for (int j = 0; j < batchSize; ++j) {
+            final int size = Math.min(batchSize, EVENTS_PER_INVOCATION - i);
+            final List<Event> batch = new ArrayList<>(size);
+            for (int j = 0; j < size; ++j) {
                 final Event evnt = EVENT.clone();
                 evnt.setTimestamp(Timestamp.now());
                 batch.add(evnt);
@@ -101,7 +102,7 @@ public class QueueBatchWriteBenchmark {
     private static Settings settings() throws IOException {
         return SettingsImpl.fileSettingsBuilder(String.valueOf(Files.createTempDirectory(null)))
             .capacity(256 * 1024 * 1024)
-            .queueMaxBytes(20L * 1024 * 1024 * 1024) // must pass the available-disk pre-check at open()
+            .queueMaxBytes(0) // write-only benchmark: do not block waiting for a reader
             .checkpointMaxWrites(1024)
             .checkpointMaxAcks(1024)
             .elementClass(Event.class).build();

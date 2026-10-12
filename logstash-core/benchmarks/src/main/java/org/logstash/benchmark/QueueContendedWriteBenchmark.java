@@ -117,7 +117,7 @@ public class QueueContendedWriteBenchmark {
     private static Settings settings() throws IOException {
         return SettingsImpl.fileSettingsBuilder(String.valueOf(Files.createTempDirectory(null)))
             .capacity(256 * 1024 * 1024)
-            .queueMaxBytes(20L * 1024 * 1024 * 1024) // must pass the available-disk pre-check at open()
+            .queueMaxBytes(0) // write-only benchmark: do not block waiting for a reader
             .checkpointMaxWrites(1024)
             .checkpointMaxAcks(1024)
             .elementClass(Event.class).build();
