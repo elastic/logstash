@@ -137,8 +137,6 @@ kind: Resource
 metadata:
   name: logstash-artifact-snyk-scan
   description: 'The logstash-artifacts-snyk-report pipeline.'
-  tags:
-    - user:obltmachine
 spec:
   type: buildkite-pipeline
   owner: group:logstash
