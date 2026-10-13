@@ -165,6 +165,9 @@ spec:
           access_level: MANAGE_BUILD_AND_READ
         ingest-eng-prod:
           access_level: MANAGE_BUILD_AND_READ
+        # obltmachine access to read
+        observablt-robots-automation:
+          access_level: READ_ONLY
         everyone:
           access_level: READ_ONLY
       schedules:
