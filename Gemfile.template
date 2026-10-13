@@ -19,11 +19,6 @@ gem "gems", "~> 1", :group => :build
 gem "octokit", "~> 4.25", :group => :build
 gem "rubyzip", "~> 3", :group => :build
 gem "stud", "~> 0.0.22", :group => :build
-# remove fileutils declaration when start using Ruby 3.2+, by default includes `fileutils-v1.7.0`
-# (https://git.ruby-lang.org/ruby.git/commit/?h=ruby_3_2&id=05caafb4731c796890027cafedaac59dc108a23a)
-# note that the reason to use 1.7.0 is due to https://github.com/logstash-plugins/logstash-integration-aws/issues/28
-gem "fileutils", "~> 1.7"
-
 gem "rubocop", :group => :development
 # rubocop-ast 1.43.0 carries a dep on `prism` which requires native c extensions
 gem 'rubocop-ast', '= 1.42.0', :group => :development
@@ -39,8 +34,6 @@ gem "webmock", "~> 3", :group => :development
 gem "simplecov", "~> 0.22.0", :group => :development
 gem "simplecov-json", require: false, :group => :development
 gem "murmurhash3", "= 0.1.6" # Pins until version 0.1.7-java is released
-gem "date", "= 3.3.3"
 gem "thwait"
 gem "bigdecimal", "~> 3.1"
 gem "jar-dependencies", "= 0.5.4" # Pin to avoid conflict with default
-gem "resolv", "~> 0.7.2" # Require resolv 0.7.x (>= 0.7.2) until JRuby ships the patched version
