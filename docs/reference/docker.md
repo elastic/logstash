@@ -21,6 +21,7 @@ pull` command against the Elastic Docker registry.
 
 
 ::::{tab-set}
+:group: docker
 :::{tab-item} Latest
 :sync: latest
 ```sh subs=true
@@ -29,7 +30,7 @@ docker pull {{docker-repo}}:{{version.stack}}
 :::
 :::{tab-item} Specific version
 :sync: specific
-Replace `<VERSION>` with your installed {{ls}} version.
+Replace `<VERSION>` with the {{ls}} version you want to pull.
 ```sh
 docker pull docker.elastic.co/logstash/logstash:<VERSION>
 ```
@@ -52,6 +53,7 @@ Install the appropriate Cosign application for your operating system.
 Run the following commands to verify the container image signature for {{ls}}:
 
 ::::{tab-set}
+ :group: docker
 :::{tab-item} Latest
 :sync: latest
 ```sh subs=true
@@ -64,7 +66,7 @@ cosign verify --key cosign.pub {{docker-repo}}:{{version.stack}} <2>
 :::
 :::{tab-item} Specific version
 :sync: specific
-Replace `<VERSION>` with your installed {{ls}} version.
+Replace `<VERSION>` with the version of the Docker image you want to verify.
 ```sh
 wget https://artifacts.elastic.co/cosign.pub <1>
 cosign verify --key cosign.pub docker.elastic.co/logstash/logstash:<VERSION> <2>

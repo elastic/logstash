@@ -40,7 +40,7 @@ The location of the `bin` directory varies by platform. See [Directory layout](/
 ::::{admonition} macOS Gatekeeper warnings
 :class: important
 
-Apple’s rollout of stricter notarization requirements affected the notarization of {{ls}} artifacts. If macOS displays a dialog when you first run {{ls}} that interrupts it, you will need to take an action to allow it to run. To prevent Gatekeeper checks on the {{ls}} files, run the following command on the downloaded `.tar.gz` archive or the directory to which was extracted:
+Apple’s rollout of stricter notarization requirements affected the notarization of {{ls}} artifacts. If macOS displays a dialog when you first run {{ls}} that interrupts it, you will need to take an action to allow it to run. To prevent Gatekeeper checks on the {{ls}} files, run the following command on the downloaded `.tar.gz` archive or the directory to which it was extracted:
 
 ```sh
 xattr -d -r com.apple.quarantine <archive-or-directory>
