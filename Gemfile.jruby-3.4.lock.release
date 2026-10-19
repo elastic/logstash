@@ -391,7 +391,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri (>= 1.18.9)
       xml-simple
-    logstash-input-azure_event_hubs (1.5.10)
+    logstash-input-azure_event_hubs (1.5.11)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -568,7 +568,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (12.1.10-java)
+    logstash-integration-kafka (12.1.11-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -672,7 +672,7 @@ GEM
     logstash-output-udp (3.3.0)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-webhdfs (3.1.1-java)
+    logstash-output-webhdfs (3.1.2-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       webhdfs
     logstash-patterns-core (4.3.4)
