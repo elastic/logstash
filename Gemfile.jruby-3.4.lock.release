@@ -46,8 +46,8 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1292.0)
-    aws-sdk-cloudfront (1.156.0)
+    aws-partitions (1.1296.0)
+    aws-sdk-cloudfront (1.157.0)
       aws-sdk-core (~> 3, >= 3.256.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-cloudwatch (1.149.0)
@@ -68,7 +68,7 @@ GEM
     aws-sdk-resourcegroups (1.102.0)
       aws-sdk-core (~> 3, >= 3.256.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.233.1)
+    aws-sdk-s3 (1.233.2)
       aws-sdk-core (~> 3, >= 3.256.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -568,7 +568,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.8.12-java)
+    logstash-integration-kafka (11.8.13-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -710,7 +710,7 @@ GEM
     naught (1.1.0)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-imap (0.6.7)
+    net-imap (0.6.8)
       date
       net-protocol
     net-pop (0.1.2)
@@ -856,7 +856,7 @@ GEM
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.2.0)
-    uri (1.1.1)
+    uri (1.1.2)
     webhdfs (0.11.0)
       addressable
     webmock (3.26.4)
