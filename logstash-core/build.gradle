@@ -241,8 +241,14 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-annotations:${jacksonAnnotationsVersion}"
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
+<<<<<<< HEAD
     implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
     implementation group: 'com.google.guava', name: 'guava', version: '33.1.0-jre'
+=======
+    implementation 'org.yaml:snakeyaml:2.2'
+    implementation 'com.google.guava:guava:33.7.2-jre'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+>>>>>>> d762b08 (bump guava dependency (#19690))
     implementation('com.google.googlejavaformat:google-java-format:1.22.0') {
         exclude group: 'com.google.guava', module: 'guava'
     }
