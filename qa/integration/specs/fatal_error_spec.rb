@@ -68,11 +68,46 @@ describe "uncaught exception" do
     expect(File.read(log_file)).to match /\[ERROR\]\[org\.logstash\.Logstash\s*\].*?uncaught exception \(in thread .*?java\.io\.EOFException: unexpected/m
   end
 
+  it "exits when a beats input is running and a Ruby thread raises a Java runtime exception" do
+    beats_port = random_port
+    ready_flag = File.join(temp_dir, "beats-ready")
+    exception_message = "Index -1 out of bounds for length 80"
+    # Forward slashes keep the path literal inside the Ruby string on Windows.
+    ready_flag_for_ruby = ready_flag.tr("\\", "/")
+    init_code = "Thread.new { deadline = Time.now + #{timeout}; sleep 0.1 until File.exist?(\"#{ready_flag_for_ruby}\") || Time.now > deadline; raise java.lang.ArrayIndexOutOfBoundsException.new(\"#{exception_message}\") }"
+    config = "input { beats { port => #{beats_port} } } "
+    config += "filter { ruby { init => '#{init_code}' code => 'event.set(\"x\", 1)' } } "
+    config += "output { stdout { codec => dots } }"
+
+    spawn_logstash_and_wait_for_exit!(config, timeout) do
+      wait_for_port(beats_port, timeout)
+      if @logstash.exited?
+        log_file = "#{logs_dir}/logstash-plain.log"
+        log_contents = File.exist?(log_file) ? File.read(log_file) : ""
+        raise "LS exited before beats input was ready (status #{@logstash.exit_code})\n#{log_contents}"
+      end
+      expect(is_port_open?(beats_port)).to be true
+      FileUtils.touch(ready_flag)
+    end
+
+    # Exit status 1 means the child stopped itself; this example does not signal it.
+    expect(@logstash.exit_code).to be 1
+
+    log_file = "#{logs_dir}/logstash-plain.log"
+    expect(File.exist?(log_file)).to be true
+    log_contents = File.read(log_file)
+    expect(log_contents).to match(/\[FATAL\]\[logstash\.runner\s*\].*?An unexpected error occurred!/m)
+    expect(log_contents).to match(/ArrayIndexOutOfBoundsException: #{Regexp.escape(exception_message)}/)
+    expect(is_port_open?(beats_port)).to be false
+  end
+
   def spawn_logstash_and_wait_for_exit!(config, timeout)
     @logstash.spawn_logstash('--pipeline.workers=1',
                              '--path.logs', logs_dir,
                              '--path.data', data_dir,
                              '--config.string', config)
+
+    yield if block_given?
 
     time = Time.now
     while (Time.now - time) < timeout
