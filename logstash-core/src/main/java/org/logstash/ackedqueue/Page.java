@@ -263,7 +263,7 @@ public final class Page implements Closeable {
      * @return true if data plus overhead fit in page
      */
     public boolean hasCapacity(int byteSize) {
-        return this.pageIO.persistedByteCount(byteSize) <= this.pageIO.getCapacity();
+        return this.pageIO.hasCapacity(byteSize);
     }
 
     public void close() throws IOException {
