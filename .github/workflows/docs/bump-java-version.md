@@ -24,6 +24,7 @@ Runs on a schedule or through `workflow_dispatch`. The schedule timing is define
 | --- | --- | --- | --- |
 | `filter` | Every scheduled or manual run | None declared | On `ubuntu-latest`, invokes the active-branches action with branch filtering; exposes its generated matrix as a job output. Timeout is one minute. |
 | `bump` | After `filter` succeeds | `filter` | Runs once per matrix branch; checks out that branch and runs Updatecli `apply` with the JDK update policy and SCM values. |
+| `notify-failure` | If `filter` or `bump` fails | `filter`, `bump` | Sends a failure notification to the `#logstash-build` Slack channel. |
 
 The local policy derives the JDK major from `versions.yml`, reads the latest Linux JDK version/build from the JVM catalog, checks other platform downloads, then updates `versions.yml` and opens a non-automerge PR labeled `automation`.
 
@@ -34,7 +35,7 @@ The local policy derives the JDK major from `versions.yml`, reads the latest Lin
 | Inputs | No dispatch inputs. `LOGSTASH_BRANCH` is supplied per matrix item. |
 | Outputs | `filter` exposes a JSON `matrix` consumed by `bump`; Updatecli may create branch changes and pull requests. |
 | Permissions | Top-level `contents: read`; `filter` also has `contents: read`. `bump` has `contents: write` and `pull-requests: write`. |
-| Secrets | `GITHUB_TOKEN` is passed to Updatecli. |
+| Secrets | `GITHUB_TOKEN` is passed to Updatecli; `SLACK_BOT_TOKEN` is used by the failure notification. |
 
 ## Operational notes
 
