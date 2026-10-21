@@ -33,7 +33,7 @@ sources:
       key: "$.bundled_jdk.revision"
     transformers:
       - findsubmatch:
-          pattern: '^(\d+)\.\d+\.\d+$'
+          pattern: '^(\d+)(?:\.\d+)*$'
           captureindex: 1
 
   latest_jdk_version:
