@@ -79,6 +79,7 @@ COPY_FILES := $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/dock
 COPY_FILES += $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/config/log4j2.properties
 COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint
+COPY_FILES += $(ARTIFACTS_DIR)/docker/bin/distrust-ca-certs
 
 $(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
 $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml: data/logstash/config/logstash-oss.yml
@@ -87,6 +88,7 @@ $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties: data/logstash/config/log4
 $(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
+$(ARTIFACTS_DIR)/docker/bin/distrust-ca-certs: data/logstash/bin/distrust-ca-certs
 $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
 
 $(ARTIFACTS_DIR)/docker/%:
@@ -104,6 +106,7 @@ docker_paths:
 COPY_IRONBANK_FILES := $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml
 COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties
 COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/bin/distrust-ca-certs
 COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/env2yaml
 COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/LICENSE $(ARTIFACTS_DIR)/ironbank/README.md
 
@@ -113,6 +116,7 @@ $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties: data/logstash/c
 $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
+$(ARTIFACTS_DIR)/ironbank/scripts/bin/distrust-ca-certs: data/logstash/bin/distrust-ca-certs
 $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
 $(ARTIFACTS_DIR)/ironbank/LICENSE: ironbank/LICENSE
 $(ARTIFACTS_DIR)/ironbank/README.md: ironbank/README.md

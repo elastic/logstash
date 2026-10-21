@@ -29,6 +29,8 @@
   <%   package_manager = 'apk' -%>
 <% end -%>
 <%   locale = 'C.UTF-8' -%>
+<%# SHA-256 public key hash of emSign ECC Root CA - G3 -%>
+<%   distrusted_ca_keys = '8D417DB2DD8BF5E3084D1E3F196D583849D81BDD4C00C70B9D39369E96B8C782' -%>
 
 FROM <%= base_image %>
 
@@ -94,6 +96,12 @@ COPY --chown=logstash:root config/logstash-full.yml /usr/share/logstash/config/l
 <% end -%>
 COPY --chown=logstash:root pipeline/default.conf /usr/share/logstash/pipeline/logstash.conf
 COPY --chmod=0755 bin/docker-entrypoint /usr/local/bin/
+COPY --chmod=0755 bin/distrust-ca-certs /tmp/distrust-ca-certs
+<% if image_flavor != 'observability-sre' -%>
+
+RUN /tmp/distrust-ca-certs <%= distrusted_ca_keys %> && \
+  rm /tmp/distrust-ca-certs
+<% end -%>
 
 <% if image_flavor == 'observability-sre' -%>
 <%# Add FIPS configuration for observability-sre image flavor %>
@@ -119,6 +127,10 @@ RUN find /usr/share/logstash -name *.jar | grep lib
 
 # Update certs installed from java-cacerts package
 RUN ln -sf /etc/ssl/certs/java/cacerts /usr/share/logstash/jdk/lib/security/cacerts
+
+RUN PATH=/usr/share/logstash/jdk/bin:$PATH /tmp/distrust-ca-certs \
+    -k /usr/share/logstash/jdk/lib/security/cacerts <%= distrusted_ca_keys %> && \
+    rm /tmp/distrust-ca-certs
 
 # Convert JKS to BCFKS for truststore
 RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \
