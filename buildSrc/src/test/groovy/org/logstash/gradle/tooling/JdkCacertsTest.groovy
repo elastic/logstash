@@ -30,7 +30,15 @@ class JdkCacertsTest {
         keyStore.setCertificateEntry("removed", certificate("emsign-root-tls-ca-g3-by-emsign-ecc-root-ca-g3.crt"))
         keyStore.setCertificateEntry("kept", certificate("em-dv-tls-ca-g3b-emsign.crt"))
         cacerts = tempDir.resolve("cacerts").toFile()
-        cacerts.withOutputStream { keyStore.store(it, null) }
+        // unprotected like the JDK's cacerts; JDK 17 otherwise encrypts the entries
+        System.setProperty("keystore.pkcs12.certProtectionAlgorithm", "NONE")
+        System.setProperty("keystore.pkcs12.macAlgorithm", "NONE")
+        try {
+            cacerts.withOutputStream { keyStore.store(it, null) }
+        } finally {
+            System.clearProperty("keystore.pkcs12.certProtectionAlgorithm")
+            System.clearProperty("keystore.pkcs12.macAlgorithm")
+        }
     }
 
     @Test

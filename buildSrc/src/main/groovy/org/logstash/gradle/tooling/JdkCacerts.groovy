@@ -28,7 +28,9 @@ class JdkCacerts {
         }
 
         matches.keySet().each { keyStore.deleteEntry(it) }
-        cacerts.withOutputStream { keyStore.store(it, null) }
+        ByteArrayOutputStream updated = new ByteArrayOutputStream()
+        keyStore.store(updated, null)
+        cacerts.bytes = updated.toByteArray()
     }
 
     static String spkiSha256(byte[] encodedPublicKey) {
