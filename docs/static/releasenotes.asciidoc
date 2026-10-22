@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-24,Logstash 8.19.24>>
 * <<logstash-8-19-23,Logstash 8.19.23>>
 * <<logstash-8-19-22,Logstash 8.19.22>>
 * <<logstash-8-19-21,Logstash 8.19.21>>
@@ -114,6 +115,36 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-24]]
+=== Logstash 8.19.24 Release Notes
+
+==== Updates to dependencies
+
+* Update Guava to 33.7.2 https://github.com/elastic/logstash/pull/19695[#19695]
+
+==== Plugins
+
+*Elastic_integration Filter - 8.19.13*
+
+* Update Jackson dependency to 3.1.8 https://github.com/elastic/logstash-filter-elastic_integration/pull/522[#522]
+
+* Sync up with Elasticsearch 8.19 branch to pull latest dependencies, including Jackson 2.21.7 https://github.com/elastic/logstash-filter-elastic_integration/pull/516[#516] https://github.com/elastic/logstash-filter-elastic_integration/pull/512[#512]
+
+*Azure_event_hubs Input - 1.5.11*
+
+* Update Jackson dependency to 2.21.7 and `guava` dependency to 33.7.2-jre https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/125[#125]
+
+*Kafka Integration - 11.8.14*
+
+* Update Jackson dependency to 2.21.7, and require `snappy-java` 1.1.10.10 or later and `guava` 33.7.2-jre or later https://github.com/logstash-plugins/logstash-integration-kafka/pull/290[#290]
+
+* Upgrade `lz4-java` dependency to 1.11.4 https://github.com/logstash-plugins/logstash-integration-kafka/pull/288[#288]
+
+*Webhdfs Output - 3.1.2*
+
+* Update `snappy-java` dependency to 1.1.10.12 https://github.com/logstash-plugins/logstash-output-webhdfs/pull/53[#53]
+
 
 [[logstash-8-19-23]]
 === Logstash 8.19.23 Release Notes
