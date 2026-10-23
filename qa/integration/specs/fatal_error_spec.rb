@@ -68,6 +68,21 @@ describe "uncaught exception" do
     expect(File.read(log_file)).to match /\[ERROR\]\[org\.logstash\.Logstash\s*\].*?uncaught exception \(in thread .*?java\.io\.EOFException: unexpected/m
   end
 
+  it "exits when a Ruby thread raises while beats inputs are running" do
+    inputs = Array.new(4) { "beats { port => #{random_port} }" }.join(" ")
+    config = "input { #{inputs} } "
+    config += "filter { ruby { init => 'Thread.new { sleep 8; raise java.lang.ArrayIndexOutOfBoundsException.new(\"Index -1 out of bounds for length 80\") }' code => 'event.set(\"x\", 1)' } } "
+    config += "output { stdout { codec => dots } }"
+
+    spawn_logstash_and_wait_for_exit! config, timeout
+
+    expect(@logstash.exit_code).to be 1
+
+    log_file = "#{logs_dir}/logstash-plain.log"
+    expect(File.exist?(log_file)).to be true
+    expect(File.read(log_file)).to match /\[FATAL\]\[logstash\.runner\s*\].*?An unexpected error occurred!/m
+  end
+
   def spawn_logstash_and_wait_for_exit!(config, timeout)
     @logstash.spawn_logstash('--pipeline.workers=1',
                              '--path.logs', logs_dir,
