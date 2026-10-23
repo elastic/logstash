@@ -13,11 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.head_ref, 'mergify/bp/')
     permissions:
-      # Add GH labels
-      pull-requests: write
-      # See https://github.com/cli/cli/issues/6274
-      repository-projects: read
+      id-token: write
     steps:
-      - uses: elastic/oblt-actions/mergify/labels-copier@v1
+      - name: Create ephemeral GitHub token
+        id: create-token
+        uses: elastic/oblt-actions/github/create-token@v1
+      - name: Copy parent labels to backport
+        uses: elastic/oblt-actions/mergify/labels-copier@v1
         with:
           excluded-labels-regex: "^backport-*"
+          github-token: ${{ steps.create-token.outputs.token }}
