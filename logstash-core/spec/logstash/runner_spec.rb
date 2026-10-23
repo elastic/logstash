@@ -643,4 +643,141 @@ describe LogStash::Runner do
       expect(subject.run(args)).to eq(0)
     end
   end
+
+  describe "unexpected errors while the agent is running" do
+    subject { LogStash::Runner.new("") }
+    let(:args) { ["-e", "input {} output {}"] }
+    let(:shutdown_failure_message) { "Agent shutdown after an unexpected error failed" }
+
+    def fail_waited_agent_task(error)
+      task = double("agent task")
+      allow(task).to receive(:stop!)
+      allow(Stud::Task).to receive(:new).and_return(task)
+      allow(task).to receive(:wait).and_raise(error)
+    end
+
+    def expect_original_fatal(error)
+      expect(logger).to receive(:fatal) do |message, details|
+        expect(message).to eq("An unexpected error occurred!")
+        expect(details[:error]).to equal(error)
+      end
+    end
+
+    def expect_data_path_lock_released
+      data_path = java.nio.file.Paths.get(LogStash::SETTINGS.get("path.data")).to_absolute_path
+      lock = org.logstash.FileLockFactory.obtainLock(data_path, ".lock")
+      org.logstash.FileLockFactory.releaseLock(lock)
+    end
+
+    context "when the waited agent task raises" do
+      let(:task_error) { RuntimeError.new("task failed") }
+
+      before do
+        fail_waited_agent_task(task_error)
+      end
+
+      it "shuts the agent down once, logs the original fatal diagnostic, and returns 1" do
+        expect(agent).to receive(:shutdown).once
+        expect_original_fatal(task_error)
+        expect(logger).not_to receive(:info).with("Logstash shut down.")
+
+        expect(subject.run(args)).to eq(1)
+      end
+
+      it "shuts the agent down once when the task raises a Java runtime exception" do
+        java_error = java.lang.ArrayIndexOutOfBoundsException.new("Index -1 out of bounds for length 80")
+        fail_waited_agent_task(java_error)
+
+        expect(agent).to receive(:shutdown).once
+        expect_original_fatal(java_error)
+
+        expect(subject.run(args)).to eq(1)
+      end
+
+      context "and agent shutdown fails during fatal cleanup" do
+        let(:cleanup_error) { RuntimeError.new("cleanup failed") }
+
+        before do
+          expect(agent).to receive(:shutdown).once.and_raise(cleanup_error)
+        end
+
+        it "returns 1, keeps the original diagnostic, reports the cleanup error, and releases the data path lock" do
+          expect_original_fatal(task_error)
+          expect(logger).to receive(:error) do |message, details|
+            expect(message).to eq(shutdown_failure_message)
+            expect(details[:error]).to equal(cleanup_error)
+          end
+          expect(Stud).to receive(:untrap).at_least(:once).and_call_original
+
+          expect(subject.run(args)).to eq(1)
+          expect_data_path_lock_released
+        end
+
+        it "reports the original and cleanup failures to stderr when logging is unavailable" do
+          allow(LogStash::Logging::Logger).to receive(:get_logging_context).and_return(nil)
+          expect(logger).not_to receive(:fatal)
+          expect(logger).not_to receive(:error)
+          allow($stderr).to receive(:puts)
+          expect($stderr).to receive(:puts).with(a_string_including("An unexpected error occurred!", "task failed"))
+          expect($stderr).to receive(:puts).with(a_string_including(shutdown_failure_message, "cleanup failed"))
+
+          expect(subject.run(args)).to eq(1)
+          expect_data_path_lock_released
+        end
+      end
+    end
+
+    context "when the agent is never created" do
+      let(:init_error) { RuntimeError.new("agent init failed") }
+
+      before do
+        allow(LogStash::Agent).to receive(:new).and_raise(init_error)
+      end
+
+      it "returns 1 without shutting down" do
+        expect(agent).not_to receive(:shutdown)
+        expect_original_fatal(init_error)
+
+        expect(subject.run(args)).to eq(1)
+      end
+
+      it "writes the fatal diagnostic to stderr when logging is unavailable" do
+        allow(LogStash::Logging::Logger).to receive(:get_logging_context).and_return(nil)
+        expect(agent).not_to receive(:shutdown)
+        expect(logger).not_to receive(:fatal)
+        allow($stderr).to receive(:puts)
+        expect($stderr).to receive(:puts).with(a_string_including("An unexpected error occurred!", "agent init failed"))
+
+        expect(subject.run(args)).to eq(1)
+      end
+    end
+
+    context "when the agent completes normally" do
+      before do
+        allow(agent).to receive(:execute).and_return(0)
+      end
+
+      it "shuts the agent down once and returns the agent status" do
+        sequence = []
+        expect(agent).to receive(:shutdown).once { sequence << :shutdown }
+        allow(logger).to receive(:info) do |message, *_rest|
+          sequence << :shut_down_log if message == "Logstash shut down."
+        end
+
+        expect(subject.run(args)).to eq(0)
+        expect(sequence).to eq([:shutdown, :shut_down_log])
+      end
+
+      it "does not shut the agent down again when shutdown raises" do
+        shutdown_error = RuntimeError.new("shutdown failed")
+        expect(agent).to receive(:shutdown).once.and_raise(shutdown_error)
+        expect_original_fatal(shutdown_error)
+        expect(logger).not_to receive(:error)
+        expect(logger).not_to receive(:info).with("Logstash shut down.")
+
+        expect(subject.run(args)).to eq(1)
+        expect_data_path_lock_released
+      end
+    end
+  end
 end

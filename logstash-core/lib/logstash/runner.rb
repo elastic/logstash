@@ -264,6 +264,10 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   def execute
+    # Set before any shutdown call. A failure from the normal shutdown must
+    # not be handled as a second, unexpected reason to stop the agent.
+    agent_shutdown_attempted = false
+
     LogStash::Util::SettingsHelper.post_process
 
     require "logstash/util"
@@ -423,6 +427,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     agent_return = @agent_task.wait
 
+    agent_shutdown_attempted = true
     @agent.shutdown
 
     logger.info("Logstash shut down.")
@@ -440,10 +445,19 @@ class LogStash::Runner < Clamp::StrictCommand
     return 1
   rescue => e
     # if logger itself is not initialized
-    if LogStash::Logging::Logger.get_logging_context.nil?
-      $stderr.puts "#{I18n.t("oops")} :error => #{e}, :backtrace => #{e.backtrace}"
-    else
-      logger.fatal(I18n.t("oops"), :error => e, :backtrace => e.backtrace)
+    report_runner_exception(I18n.t("oops"), e, :fatal)
+
+    # Waiting on the agent can surface an uncaught Ruby-thread exception
+    # before the normal shutdown above runs. Stop an agent that already
+    # exists so inputs are not left blocked for JRuby teardown to join.
+    if !agent_shutdown_attempted && @agent.respond_to?(:shutdown)
+      agent_shutdown_attempted = true
+      begin
+        @agent.shutdown
+      rescue Exception => shutdown_error
+        # Limited to this cleanup call so a secondary failure cannot replace status 1.
+        report_runner_exception("Agent shutdown after an unexpected error failed", shutdown_error, :error)
+      end
     end
     return 1
   ensure
@@ -454,6 +468,18 @@ class LogStash::Runner < Clamp::StrictCommand
     @ssl_file_tracker&.close
     @log_fd.close if @log_fd
   end # def self.main
+
+  # Log a runner failure. Falls back to stderr when logging is not initialized.
+  # +level+ is :fatal for the original error and :error for cleanup failures.
+  def report_runner_exception(message, error, level)
+    if LogStash::Logging::Logger.get_logging_context.nil?
+      $stderr.puts "#{message} :error => #{error}, :backtrace => #{error.backtrace}"
+    elsif level == :error
+      logger.error(message, :error => error, :backtrace => error.backtrace)
+    else
+      logger.fatal(message, :error => error, :backtrace => error.backtrace)
+    end
+  end
 
   def running_as_superuser
     return if LogStash::Environment.windows? # windows euid always returns 0, skip checking
