@@ -17,10 +17,11 @@ WORKDIR /usr/share
 COPY scripts/config/* config/
 COPY scripts/pipeline/default.conf pipeline/logstash.conf
 COPY scripts/bin/docker-entrypoint /usr/local/bin/
+COPY scripts/bin/distrust-ca-certs /tmp/distrust-ca-certs
 COPY logstash-${LOGSTASH_VERSION}-linux-<%= arch %>.tar.gz /tmp/logstash.tar.gz
 
 RUN dnf -y upgrade && \
-  dnf install -y procps findutils tar gzip which shadow-utils && \
+  dnf install -y procps findutils tar gzip which shadow-utils openssl && \
   dnf clean all && \
   groupadd --gid 1000 logstash && \
   adduser --uid 1000 --gid 1000 --home-dir /usr/share/logstash --no-create-home logstash && \
@@ -39,6 +40,10 @@ RUN dnf -y upgrade && \
   chmod 0755 /usr/local/bin/docker-entrypoint && \
   rmdir config && \
   rm /tmp/logstash.tar.gz
+
+<%# SHA-256 public key hash of emSign ECC Root CA - G3 -%>
+RUN sh /tmp/distrust-ca-certs 8D417DB2DD8BF5E3084D1E3F196D583849D81BDD4C00C70B9D39369E96B8C782 && \
+  rm /tmp/distrust-ca-certs
 
 <%# Copy env2yaml from tarball (pre-compiled by Gradle) %>
 COPY --chown=logstash:root scripts/env2yaml/classes /usr/share/logstash/env2yaml/classes/

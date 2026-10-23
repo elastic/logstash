@@ -1,0 +1,86 @@
+#!/bin/sh
+# Removes CA certificates from the OS trust store, and with -k from a Java keystore, by the SHA-256 hash of their
+# public key. Fails if any remain.
+# usage: distrust-ca-certs [-k KEYSTORE] SPKI_SHA256...
+set -eu
+
+keystore=""
+if [ "${1:-}" = "-k" ]; then
+  keystore="$2"
+  shift 2
+fi
+distrusted=" $* "
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+spki_sha256() {
+  openssl x509 -in "$1" -noout -pubkey | openssl pkey -pubin -outform DER | openssl dgst -sha256 -r | cut -c1-64 | tr 'a-f' 'A-F'
+}
+
+# splits PEM certificates (and keytool -list -rfc aliases) into one file each
+split_certs() {
+  rm -rf "$2" && mkdir -p "$2"
+  awk -v dir="$2" '
+    /^Alias name: / { alias = substr($0, 13) }
+    /-----BEGIN CERTIFICATE-----/ { n++; out = sprintf("%s/%05d.pem", dir, n); if (alias != "") { print alias > (out ".alias"); close(out ".alias") } }
+    out { print > out }
+    /-----END CERTIFICATE-----/ { close(out); out = ""; alias = "" }
+  ' "$1"
+}
+
+distrusted_certs() {
+  for cert in "$1"/*.pem; do
+    [ -e "$cert" ] || continue
+    case "$distrusted" in
+      *" $(spki_sha256 "$cert") "*) echo "$cert" ;;
+    esac
+  done
+}
+
+fail_if_distrusted() {
+  if [ -n "$(distrusted_certs "$1")" ]; then
+    echo "distrusted CA certificates remain in $2" >&2
+    exit 1
+  fi
+}
+
+if command -v update-ca-trust > /dev/null 2>&1; then
+  bundle=/etc/pki/tls/certs/ca-bundle.crt
+  split_certs "$bundle" "$work/os"
+  found="$(distrusted_certs "$work/os")"
+  if [ -n "$found" ]; then
+    for cert in $found; do
+      openssl x509 -in "$cert" -noout -subject
+      cp "$cert" "/etc/pki/ca-trust/source/blocklist/distrusted-$(spki_sha256 "$cert").pem"
+    done
+    update-ca-trust extract
+  fi
+else
+  bundle=/etc/ssl/certs/ca-certificates.crt
+  split_certs "$bundle" "$work/os"
+  found="$(distrusted_certs "$work/os")"
+  if [ -n "$found" ]; then
+    : > "$work/bundle"
+    for cert in "$work"/os/*.pem; do
+      if echo "$found" | grep -qxF "$cert"; then
+        openssl x509 -in "$cert" -noout -subject
+      else
+        cat "$cert" >> "$work/bundle"
+      fi
+    done
+    cat "$work/bundle" > "$(readlink -f "$bundle")"
+  fi
+fi
+split_certs "$bundle" "$work/os"
+fail_if_distrusted "$work/os" "$bundle"
+
+if [ -n "$keystore" ]; then
+  keytool -list -rfc -keystore "$keystore" -storepass changeit > "$work/keystore.txt"
+  split_certs "$work/keystore.txt" "$work/keystore"
+  for cert in $(distrusted_certs "$work/keystore"); do
+    keytool -delete -alias "$(cat "$cert.alias")" -keystore "$keystore" -storepass changeit
+  done
+  keytool -list -rfc -keystore "$keystore" -storepass changeit > "$work/keystore.txt"
+  split_certs "$work/keystore.txt" "$work/keystore"
+  fail_if_distrusted "$work/keystore" "$keystore"
+fi

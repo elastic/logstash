@@ -42,6 +42,7 @@ apply from: "rubyUtils.gradle"
 
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
+import org.logstash.gradle.tooling.JdkCacerts
 import org.logstash.gradle.tooling.ListProjectDependencies
 import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
@@ -1051,6 +1052,11 @@ def getTargetPlatforms() {
     }
 }
 
+// SHA-256 public key hashes of roots removed from the bundled JDK's cacerts until the JDK drops them
+List<String> distrustedTrustAnchors = [
+    '8D417DB2DD8BF5E3084D1E3F196D583849D81BDD4C00C70B9D39369E96B8C782', // emSign ECC Root CA - G3
+]
+
 ["linux", "windows", "darwin"].each { osName ->
     ["x86_64", "arm64"].each { archName ->
         if (osName == "windows" && archName == "arm64") { return }
@@ -1082,6 +1088,7 @@ def getTargetPlatforms() {
                     }
                 }
                 into "${projectDir}/${jdkFolderName}"
+                doFirst { delete "${projectDir}/${jdkFolderName}" }
                 doLast { delete "${projectDir}/${jdkFolderName}/$rootName" }
             }
         } else {
@@ -1092,6 +1099,14 @@ def getTargetPlatforms() {
                 doFirst { mkdir "${projectDir}/${jdkFolderName}" }
             }
         }
+
+        tasks.register("distrustCertsJdk${taskSuffix}") {
+            dependsOn "unpackJdk${taskSuffix}"
+            inputs.property("distrustedTrustAnchors", distrustedTrustAnchors)
+            doLast {
+                JdkCacerts.removeTrustAnchors(file("${projectDir}/${jdkFolderName}/${JdkCacerts.securityDir(osName)}/cacerts"), distrustedTrustAnchors)
+            }
+        }
     }
 }
 
@@ -1099,7 +1114,7 @@ tasks.register("copyAllJdks") {
     dependsOn bootstrap
     getTargetPlatforms().each { platform ->
         String taskSuffix = "${platform.os.capitalize()}${platform.arch == 'x86_64' ? 'X64' : 'Arm64'}"
-        dependsOn "unpackJdk${taskSuffix}"
+        dependsOn "distrustCertsJdk${taskSuffix}"
     }
     doLast {
         String arch = selectArch()
