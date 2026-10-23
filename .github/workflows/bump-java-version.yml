@@ -40,3 +40,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LOGSTASH_BRANCH: ${{ matrix.branch }}
+  notify-failure:
+    if: ${{ failure() }}
+    needs: [filter, bump]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: elastic/oblt-actions/slack/send@v1
+        with:
+          channel-id: '#logstash-build'
+          message: >-
+            :traffic_cone: bump-java-version failed for
+            `${{ github.repository }}@${{ github.ref_name }}`,
+            @robots-ci please look what's going on
+            <${{ format(
+              '{0}/{1}/actions/runs/{2}',
+              github.server_url,
+              github.repository,
+              github.run_id
+            ) }}|here>
+          bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
