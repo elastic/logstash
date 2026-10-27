@@ -42,6 +42,7 @@ apply from: "rubyUtils.gradle"
 
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
+import org.logstash.gradle.tooling.JdkCacerts
 import org.logstash.gradle.tooling.ListProjectDependencies
 import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
@@ -1051,6 +1052,17 @@ def getTargetPlatforms() {
     }
 }
 
+// bundled_jdk from versions.yml with its per-OS override applied
+Map bundledJdk(String osName) {
+    Map jdk = gradle.ext.versions.bundled_jdk
+    return jdk[osName] ? jdk + jdk[osName] : jdk
+}
+
+// SHA-256 public key hashes of roots removed from the Windows JDK's cacerts until it is upgraded
+List<String> distrustedTrustAnchors = [
+    '8D417DB2DD8BF5E3084D1E3F196D583849D81BDD4C00C70B9D39369E96B8C782', // emSign ECC Root CA - G3
+]
+
 ["linux", "windows", "darwin"].each { osName ->
     ["x86_64", "arm64"].each { archName ->
         if (osName == "windows" && archName == "arm64") { return }
@@ -1058,7 +1070,7 @@ def getTargetPlatforms() {
         String jdkFolderName = ToolingUtils.jdkFolderName(osName, archName)
 
         tasks.register("downloadJdk${taskSuffix}", Download) {
-            def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+            def jdkDetails = new JDKDetails(bundledJdk(osName), osName, archName)
             // Use provider for lazy evaluation - only resolve URL when task executes
             src provider { System.getenv("JDK_URL") ?: jdkDetails.createDownloadUrl() }
             onlyIfNewer true
@@ -1073,7 +1085,7 @@ def getTargetPlatforms() {
         if (osName == "windows") {
             tasks.register("unpackJdk${taskSuffix}", Copy) {
                 dependsOn "downloadJdk${taskSuffix}"
-                def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+                def jdkDetails = new JDKDetails(bundledJdk(osName), osName, archName)
                 String rootName = null
                 from(zipTree("${projectDir}/build/${jdkDetails.localPackageName}")) {
                     eachFile { fcd ->
@@ -1082,14 +1094,25 @@ def getTargetPlatforms() {
                     }
                 }
                 into "${projectDir}/${jdkFolderName}"
+                doFirst { delete "${projectDir}/${jdkFolderName}" }
                 doLast { delete "${projectDir}/${jdkFolderName}/$rootName" }
             }
         } else {
             tasks.register("unpackJdk${taskSuffix}", Exec) {
                 dependsOn "downloadJdk${taskSuffix}"
-                def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+                def jdkDetails = new JDKDetails(bundledJdk(osName), osName, archName)
                 commandLine 'tar', 'xf', "${projectDir}/build/${jdkDetails.localPackageName}", '-C', "${projectDir}/${jdkFolderName}", '--strip-components', '1'
                 doFirst { mkdir "${projectDir}/${jdkFolderName}" }
+            }
+        }
+
+        if (osName == "windows") {
+            tasks.register("distrustCertsJdk${taskSuffix}") {
+                dependsOn "unpackJdk${taskSuffix}"
+                inputs.property("distrustedTrustAnchors", distrustedTrustAnchors)
+                doLast {
+                    JdkCacerts.removeTrustAnchors(file("${projectDir}/${jdkFolderName}/${JdkCacerts.securityDir(osName)}/cacerts"), distrustedTrustAnchors)
+                }
             }
         }
     }
@@ -1099,17 +1122,19 @@ tasks.register("copyAllJdks") {
     dependsOn bootstrap
     getTargetPlatforms().each { platform ->
         String taskSuffix = "${platform.os.capitalize()}${platform.arch == 'x86_64' ? 'X64' : 'Arm64'}"
-        dependsOn "unpackJdk${taskSuffix}"
+        dependsOn(platform.os == "windows" ? "distrustCertsJdk${taskSuffix}" : "unpackJdk${taskSuffix}")
     }
     doLast {
         String arch = selectArch()
-        String jdkFolder = ToolingUtils.jdkFolderName("linux", arch)
-        File releaseFile = file("${projectDir}/${jdkFolder}/release")
-        if (releaseFile.exists()) {
-            def content = releaseFile.text
-            def matcher = content =~ /IMPLEMENTOR_VERSION="([^"]+)"/
-            if (matcher.find()) {
-                file("${projectDir}/JDK_VERSION").write(matcher.group(1))
+        [(ToolingUtils.jdkFolderName("linux", arch)): file("${projectDir}/JDK_VERSION"),
+         (ToolingUtils.jdkFolderName("windows", arch)): file("${buildDir}/JDK_VERSION-windows")].each { jdkFolder, versionFile ->
+            File releaseFile = file("${projectDir}/${jdkFolder}/release")
+            if (releaseFile.exists()) {
+                def matcher = releaseFile.text =~ /IMPLEMENTOR_VERSION="([^"]+)"/
+                if (matcher.find()) {
+                    versionFile.parentFile.mkdirs()
+                    versionFile.write(matcher.group(1))
+                }
             }
         }
     }
