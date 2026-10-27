@@ -13,13 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.head_ref, 'mergify/bp/')
     permissions:
+      # Add GH labels (GITHUB_TOKEN; Vault token scopes come from TokenPolicy)
+      pull-requests: write
+      # See https://github.com/cli/cli/issues/6274
+      repository-projects: read
+      # OIDC for create-token (required when use-ephemeral-token is true)
       id-token: write
     steps:
-      - name: Create ephemeral GitHub token
-        id: create-token
-        uses: elastic/oblt-actions/github/create-token@v1
       - name: Copy parent labels to backport
         uses: elastic/oblt-actions/mergify/labels-copier@v1
         with:
           excluded-labels-regex: "^backport-*"
-          github-token: ${{ steps.create-token.outputs.token }}
+          use-ephemeral-token: true
+
