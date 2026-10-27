@@ -1,6 +1,7 @@
 name: docs-build
 on:
   pull_request:
+    branches: [main, '[0-9]+.[0-9]+']
     types: [opened, synchronize, reopened]
   push:
     branches:
