@@ -697,6 +697,11 @@ namespace "artifact" do
       files(exclude_paths).each do |path|
         dest_path = transform_jdk_path(path)
         path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{dest_path}"
+        # JDK_VERSION of the Windows JDK
+        if path == "JDK_VERSION" && @target_os == "windows"
+          path = "build/JDK_VERSION-windows"
+          fail("Missing #{path}") unless File.exist?(path)
+        end
         zipfile.add(path_in_zip, path)
       end
 
