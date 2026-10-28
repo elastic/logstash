@@ -16,7 +16,7 @@ PATH
       filesize (~> 0.2)
       gems (~> 1)
       i18n (~> 1)
-      jrjackson (= 0.5.4)
+      jrjackson (= 0.5.6)
       manticore (~> 0.6)
       minitar (~> 1)
       multi_json (~> 1.20)
@@ -45,16 +45,16 @@ GEM
       atomic (~> 1.1)
     avro (1.10.2)
       multi_json (~> 1)
-    aws-eventstream (1.4.0)
-    aws-partitions (1.1296.0)
-    aws-sdk-cloudfront (1.159.0)
-      aws-sdk-core (~> 3, >= 3.258.0)
+    aws-eventstream (1.4.1)
+    aws-partitions (1.1299.0)
+    aws-sdk-cloudfront (1.160.0)
+      aws-sdk-core (~> 3, >= 3.260.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-cloudwatch (1.151.0)
-      aws-sdk-core (~> 3, >= 3.258.0)
+    aws-sdk-cloudwatch (1.152.0)
+      aws-sdk-core (~> 3, >= 3.260.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-core (3.259.0)
-      aws-eventstream (~> 1, >= 1.3.0)
+    aws-sdk-core (3.261.0)
+      aws-eventstream (~> 1, >= 1.4.1)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
       base64
@@ -62,21 +62,21 @@ GEM
       jmespath (~> 1, >= 1.6.1)
       logger
       rexml (~> 3.4, >= 3.4.2)
-    aws-sdk-kms (1.134.0)
-      aws-sdk-core (~> 3, >= 3.258.0)
+    aws-sdk-kms (1.136.0)
+      aws-sdk-core (~> 3, >= 3.260.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-resourcegroups (1.104.0)
-      aws-sdk-core (~> 3, >= 3.258.0)
+    aws-sdk-resourcegroups (1.105.0)
+      aws-sdk-core (~> 3, >= 3.260.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-s3 (1.235.0)
       aws-sdk-core (~> 3, >= 3.258.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
-    aws-sdk-sns (1.123.0)
-      aws-sdk-core (~> 3, >= 3.258.0)
+    aws-sdk-sns (1.124.1)
+      aws-sdk-core (~> 3, >= 3.260.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-sqs (1.121.0)
-      aws-sdk-core (~> 3, >= 3.258.0)
+    aws-sdk-sqs (1.122.0)
+      aws-sdk-core (~> 3, >= 3.260.0)
       aws-sigv4 (~> 1.5)
     aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
@@ -104,8 +104,8 @@ GEM
     crack (1.0.1)
       bigdecimal
       rexml
-    csv (3.3.6)
-    dalli (3.2.13)
+    csv (3.3.7)
+    dalli (3.2.15)
       logger
     date (3.3.4-java)
     diff-lcs (1.6.2)
@@ -175,7 +175,7 @@ GEM
     jls-lumberjack (0.0.26)
       concurrent-ruby
     jmespath (1.6.2)
-    jrjackson (0.5.4-java)
+    jrjackson (0.5.6-java)
       bigdecimal
     jruby-jms (1.3.0-java)
       gene_pool
@@ -292,7 +292,8 @@ GEM
     logstash-filter-clone (4.2.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.1)
-    logstash-filter-csv (3.1.1)
+    logstash-filter-csv (3.1.3)
+      csv (~> 3.3, >= 3.3.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-validator_support (~> 1.0)
@@ -307,7 +308,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elastic_integration (9.4.11-java)
+    logstash-filter-elastic_integration (9.4.12-java)
       logstash-core (>= 8.7.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-elasticsearch (4.3.1)
@@ -391,7 +392,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri (>= 1.18.9)
       xml-simple
-    logstash-input-azure_event_hubs (1.5.11)
+    logstash-input-azure_event_hubs (1.5.12)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -568,7 +569,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.8.14-java)
+    logstash-integration-kafka (11.8.15-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -699,7 +700,7 @@ GEM
       hitimes (~> 1.1)
     mini_mime (1.1.5)
     minitar (1.1.0)
-    msgpack (1.8.5-java)
+    msgpack (1.8.6-java)
     multi_json (1.21.2-java)
       concurrent-ruby (~> 1.2)
     multipart-post (2.4.1)
@@ -730,7 +731,7 @@ GEM
     ostruct (0.6.3)
     paquet (0.2.1)
     parallel (1.28.0)
-    parser (3.3.12.0)
+    parser (3.3.13.0)
       ast (~> 2.4.1)
       racc
     pleaserun (0.0.34)
