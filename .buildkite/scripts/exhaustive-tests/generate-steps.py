@@ -279,50 +279,47 @@ source .buildkite/scripts/common/vm-agent.sh
     } for arch, agent in agents.items()]
 
 def dra_trust_groups() -> list[typing.Any]:
-    hosts = {"snapshot": "https://artifacts-snapshot.elastic.co", "staging": "https://artifacts-staging.elastic.co"}
+    targets = [
+        ("8.19.24-SNAPSHOT", "https://artifacts-snapshot.elastic.co/logstash/8.19.24-f71ca139/downloads/logstash"),
+        ("8.19.24", "https://artifacts-staging.elastic.co/logstash/8.19.24-1282364c/downloads/logstash"),
+        ("9.4.9-SNAPSHOT", "https://artifacts-snapshot.elastic.co/logstash/9.4.9-9be9be17/downloads/logstash"),
+        ("9.4.9", "https://artifacts-staging.elastic.co/logstash/9.4.9-fea107be/downloads/logstash"),
+        ("9.5.6-SNAPSHOT", "https://artifacts-snapshot.elastic.co/logstash/9.5.6-84ae94f5/downloads/logstash"),
+        ("9.5.6", "https://artifacts-staging.elastic.co/logstash/9.5.6-1e02caae/downloads/logstash"),
+    ]
     agents = {
         "x86_64": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),
         "aarch64": aws_agent(vm_name="ubuntu-2204-aarch64", instance_type="m6g.4xlarge", image_prefix="platform-ingest-logstash"),
     }
     groups = []
-    for version in ["8.19.24", "9.4.9", "9.5.6"]:
-        for flavor, host in hosts.items():
-            ls_version = f"{version}-SNAPSHOT" if flavor == "snapshot" else version
-            slug = f"{version.replace('.', '-')}-{flavor}"
-            name = ls_version if flavor == "snapshot" else f"{version} staging"
-            resolve = f"""#!/usr/bin/env bash
+    for ls_version, url in targets:
+        slug = ls_version.lower().replace(".", "-")
+        env = f"""#!/usr/bin/env bash
 set -euo pipefail
 source .buildkite/scripts/common/vm-agent.sh
 export LS_VERSION={ls_version}
-BUILD_ID="$(curl -fsSL {host}/logstash/latest/${{LS_VERSION}}.json | python3 -c 'import json,sys; print(json.load(sys.stdin)["build_id"])')"
-curl -fsSL "{host}/logstash/${{BUILD_ID}}/manifest-${{LS_VERSION}}.json" \\
-  | python3 -c 'import json,sys; d=json.load(sys.stdin); p=d["projects"]["logstash"]; print("DRA build", d["build_id"], p["branch"], p["commit_hash"])'
-export BASE_URL="{host}/logstash/${{BUILD_ID}}/downloads/logstash"
-export IMAGE_URL="${{BASE_URL}}"
+export BASE_URL={url}
+export IMAGE_URL={url}
 """
-            steps = [{
-                "label": f"Artifacts / {name}",
-                "key": f"dra-trust-artifacts-{slug}",
-                "agents": agents["x86_64"],
+        steps = [{
+            "label": f"Artifacts / {ls_version}",
+            "key": f"dra-trust-artifacts-{slug}",
+            "agents": agents["x86_64"],
+            "retry": {"automatic": [{"limit": 1}]},
+            "command": LiteralScalarString(env + "./ci/bundled_jdk_trust_tests.sh\n"),
+        }]
+        for arch, agent in agents.items():
+            images = "logstash logstash-oss logstash-wolfi"
+            if ls_version.startswith("8.") and arch == "x86_64":
+                images += " logstash-ubi8"
+            steps.append({
+                "label": f"Containers / {ls_version} / {arch}",
+                "key": f"dra-trust-containers-{slug}-{arch}",
+                "agents": agent,
                 "retry": {"automatic": [{"limit": 1}]},
-                "command": LiteralScalarString(resolve + "./ci/bundled_jdk_trust_tests.sh\n"),
-            }]
-            for arch, agent in agents.items():
-                images = "logstash logstash-oss logstash-wolfi"
-                if version.startswith("8.") and arch == "x86_64":
-                    images += " logstash-ubi8"
-                steps.append({
-                    "label": f"Containers / {name} / {arch}",
-                    "key": f"dra-trust-containers-{slug}-{arch}",
-                    "agents": agent,
-                    "retry": {"automatic": [{"limit": 1}]},
-                    "command": LiteralScalarString(resolve + f'export IMAGES="{images}"\n./ci/container_trust_tests.sh\n'),
-                })
-            groups.append({
-                "group": f"Trust Store / {name}",
-                "key": f"dra-trust-store-{slug}",
-                "steps": steps,
+                "command": LiteralScalarString(env + f'export IMAGES="{images}"\n./ci/container_trust_tests.sh\n'),
             })
+        groups.append({"group": f"Trust Store / {ls_version}", "key": f"dra-trust-store-{slug}", "steps": steps})
     return groups
 
 if __name__ == "__main__":
