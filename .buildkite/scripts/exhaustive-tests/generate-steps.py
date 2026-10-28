@@ -247,6 +247,37 @@ source .buildkite/scripts/common/vm-agent.sh
     }
     return step
 
+def bundled_jdk_trust_step() -> dict[str, typing.Any]:
+    step = {
+        "label": "Bundled JDK trust store of published artifacts",
+        "key": "bundled-jdk-trust-store",
+        "agents": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),
+        "retry": {"automatic": [{"limit": 1}]},
+        "command": LiteralScalarString("""#!/usr/bin/env bash
+set -euo pipefail
+source .buildkite/scripts/common/vm-agent.sh
+./ci/bundled_jdk_trust_tests.sh
+"""),
+    }
+    return step
+
+def container_trust_steps() -> list[typing.Any]:
+    agents = {
+        "x86_64": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),
+        "aarch64": aws_agent(vm_name="ubuntu-2204-aarch64", instance_type="m6g.4xlarge", image_prefix="platform-ingest-logstash"),
+    }
+    return [{
+        "label": f"Trust stores of published containers / {arch}",
+        "key": f"container-trust-store-{arch}",
+        "agents": agent,
+        "retry": {"automatic": [{"limit": 1}]},
+        "command": LiteralScalarString("""#!/usr/bin/env bash
+set -euo pipefail
+source .buildkite/scripts/common/vm-agent.sh
+./ci/container_trust_tests.sh
+"""),
+    } for arch, agent in agents.items()]
+
 if __name__ == "__main__":
     LINUX_OS_ENV_VAR_OVERRIDE = os.getenv("LINUX_OS")
     WINDOWS_OS_ENV_VAR_OVERRIDE = os.getenv("WINDOWS_OS")
@@ -294,6 +325,12 @@ if __name__ == "__main__":
         "group": "Observability SRE Acceptance Tests",
         "key": "acceptance-observability-sre",
         "steps": [fips_test_runner_step()],
+    })
+
+    structure["steps"].append({
+        "group": "Trust Store",
+        "key": "acceptance-trust-store",
+        "steps": [bundled_jdk_trust_step(), *container_trust_steps()],
     })
 
     structure["steps"].append({

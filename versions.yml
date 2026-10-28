@@ -10,8 +10,12 @@ logstash-release-track: 9.next
 bundled_jdk:
   # for AdoptOpenJDK/OpenJDK jdk-14.0.1+7.1, the revision is 14.0.1 while the build is 7.1
   vendor: "adoptium"
-  revision: 21.0.12.1
-  build: "1"
+  revision: 21.0.13
+  build: "9"
+  # Windows x64 stays on this JDK with emSign ECC Root CA - G3 removed until 21.0.13+9 is published for Windows
+  windows:
+    revision: 21.0.12.1
+    build: "1"
 
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
 # *and* for which jars artifacts are published for compile-time
