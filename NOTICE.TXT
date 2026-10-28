@@ -7212,7 +7212,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
-<<<<<<< HEAD
 Notice for: jls-grok-0.11.5
 ----------
 
