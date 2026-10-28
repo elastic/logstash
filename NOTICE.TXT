@@ -7623,10 +7623,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
    of your accepting any such warranty or additional liability.
 
 ==========
-Notice for: jrjackson-0.5.4
-=======
 Notice for: jrjackson-0.5.6
->>>>>>> e971c3b (Updates Jackson to 2.21.8 (#19738))
 ----------
 
 https://github.com/elastic/jrjackson/blob/v0.5.6/README.md
