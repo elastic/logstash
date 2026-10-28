@@ -1051,6 +1051,12 @@ def getTargetPlatforms() {
     }
 }
 
+// bundled_jdk from versions.yml with its per-OS override applied
+Map bundledJdk(String osName) {
+    Map jdk = gradle.ext.versions.bundled_jdk
+    return jdk[osName] ? jdk + jdk[osName] : jdk
+}
+
 ["linux", "windows", "darwin"].each { osName ->
     ["x86_64", "arm64"].each { archName ->
         if (osName == "windows" && archName == "arm64") { return }
@@ -1058,7 +1064,7 @@ def getTargetPlatforms() {
         String jdkFolderName = ToolingUtils.jdkFolderName(osName, archName)
 
         tasks.register("downloadJdk${taskSuffix}", Download) {
-            def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+            def jdkDetails = new JDKDetails(bundledJdk(osName), osName, archName)
             // Use provider for lazy evaluation - only resolve URL when task executes
             src provider { System.getenv("JDK_URL") ?: jdkDetails.createDownloadUrl() }
             onlyIfNewer true
@@ -1073,7 +1079,7 @@ def getTargetPlatforms() {
         if (osName == "windows") {
             tasks.register("unpackJdk${taskSuffix}", Copy) {
                 dependsOn "downloadJdk${taskSuffix}"
-                def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+                def jdkDetails = new JDKDetails(bundledJdk(osName), osName, archName)
                 String rootName = null
                 from(zipTree("${projectDir}/build/${jdkDetails.localPackageName}")) {
                     eachFile { fcd ->
@@ -1087,7 +1093,7 @@ def getTargetPlatforms() {
         } else {
             tasks.register("unpackJdk${taskSuffix}", Exec) {
                 dependsOn "downloadJdk${taskSuffix}"
-                def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+                def jdkDetails = new JDKDetails(bundledJdk(osName), osName, archName)
                 commandLine 'tar', 'xf', "${projectDir}/build/${jdkDetails.localPackageName}", '-C', "${projectDir}/${jdkFolderName}", '--strip-components', '1'
                 doFirst { mkdir "${projectDir}/${jdkFolderName}" }
             }
@@ -1103,13 +1109,15 @@ tasks.register("copyAllJdks") {
     }
     doLast {
         String arch = selectArch()
-        String jdkFolder = ToolingUtils.jdkFolderName("linux", arch)
-        File releaseFile = file("${projectDir}/${jdkFolder}/release")
-        if (releaseFile.exists()) {
-            def content = releaseFile.text
-            def matcher = content =~ /IMPLEMENTOR_VERSION="([^"]+)"/
-            if (matcher.find()) {
-                file("${projectDir}/JDK_VERSION").write(matcher.group(1))
+        [(ToolingUtils.jdkFolderName("linux", arch)): file("${projectDir}/JDK_VERSION"),
+         (ToolingUtils.jdkFolderName("windows", arch)): file("${buildDir}/JDK_VERSION-windows")].each { jdkFolder, versionFile ->
+            File releaseFile = file("${projectDir}/${jdkFolder}/release")
+            if (releaseFile.exists()) {
+                def matcher = releaseFile.text =~ /IMPLEMENTOR_VERSION="([^"]+)"/
+                if (matcher.find()) {
+                    versionFile.parentFile.mkdirs()
+                    versionFile.write(matcher.group(1))
+                }
             }
         }
     }
