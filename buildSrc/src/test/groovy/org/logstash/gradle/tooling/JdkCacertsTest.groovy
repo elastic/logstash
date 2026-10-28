@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.junit.jupiter.api.Assertions.assertThrows
 
 class JdkCacertsTest {
-    static final File FIXTURES = new File("src/test/resources/distrusted_ca_certs")
+    static final File FIXTURES = new File("../qa/bundled_jdk/fixtures")
     // emSign Root TLS CA - G3
     static final String REMOVED_SPKI = "C619E4780ED8E0ABEDA24AD732567DE4383A7EA941338F6D1A7D1B49AC792FE9"
 
@@ -30,7 +30,7 @@ class JdkCacertsTest {
         keyStore.setCertificateEntry("removed", certificate("emsign-root-tls-ca-g3-by-emsign-ecc-root-ca-g3.crt"))
         keyStore.setCertificateEntry("kept", certificate("em-dv-tls-ca-g3b-emsign.crt"))
         cacerts = tempDir.resolve("cacerts").toFile()
-        // unprotected like the JDK's cacerts; JDK 17 otherwise encrypts the entries
+        // unprotected, like the JDK's cacerts
         System.setProperty("keystore.pkcs12.certProtectionAlgorithm", "NONE")
         System.setProperty("keystore.pkcs12.macAlgorithm", "NONE")
         try {

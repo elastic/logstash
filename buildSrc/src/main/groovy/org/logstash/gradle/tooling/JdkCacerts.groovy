@@ -11,10 +11,6 @@ import java.security.MessageDigest
  */
 class JdkCacerts {
 
-    static String securityDir(String osName) {
-        return osName == "darwin" ? "Contents/Home/lib/security" : "lib/security"
-    }
-
     static void removeTrustAnchors(File cacerts, Collection<String> spkiSha256s) {
         KeyStore keyStore = KeyStore.getInstance("PKCS12")
         cacerts.withInputStream { keyStore.load(it, null) }

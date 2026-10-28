@@ -1111,7 +1111,7 @@ List<String> distrustedTrustAnchors = [
                 dependsOn "unpackJdk${taskSuffix}"
                 inputs.property("distrustedTrustAnchors", distrustedTrustAnchors)
                 doLast {
-                    JdkCacerts.removeTrustAnchors(file("${projectDir}/${jdkFolderName}/${JdkCacerts.securityDir(osName)}/cacerts"), distrustedTrustAnchors)
+                    JdkCacerts.removeTrustAnchors(file("${projectDir}/${jdkFolderName}/lib/security/cacerts"), distrustedTrustAnchors)
                 }
             }
         }
