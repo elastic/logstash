@@ -5,7 +5,7 @@ set -euo pipefail
 
 LS_VERSION="${LS_VERSION:-$(./gradlew -q printStackVersion)}"
 if [[ "${LS_VERSION}" == *-SNAPSHOT ]]; then
-  BASE_URL="${BASE_URL:-https://snapshots.elastic.co/downloads/logstash}"
+  BASE_URL="${BASE_URL:-https://artifacts-snapshot.elastic.co/logstash/${LS_VERSION}/downloads/logstash}"
 else
   BASE_URL="${BASE_URL:-https://artifacts.elastic.co/downloads/logstash}"
 fi

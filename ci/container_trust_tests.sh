@@ -5,16 +5,28 @@ set -euo pipefail
 
 LS_VERSION="${LS_VERSION:-$(./gradlew -q printStackVersion)}"
 REGISTRY="${REGISTRY:-docker.elastic.co/logstash}"
+# snapshot images come from the DRA build
+if [[ "${LS_VERSION}" == *-SNAPSHOT ]]; then
+  IMAGE_URL="${IMAGE_URL-https://artifacts-snapshot.elastic.co/logstash/${LS_VERSION}/downloads/logstash}"
+fi
+case "$(uname -m)" in
+  aarch64|arm64) ARCH=arm64 ;;
+  *) ARCH=amd64 ;;
+esac
 JAVA="${JAVA_HOME:+${JAVA_HOME}/bin/}java"
 QA_DIR="${PWD}/qa/bundled_jdk"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "${WORK_DIR}"' EXIT
 
 failed=()
-for image in logstash logstash-oss logstash-wolfi; do
+for image in ${IMAGES:-logstash logstash-oss logstash-wolfi}; do
   ref="${REGISTRY}/${image}:${LS_VERSION}"
   echo "--- ${ref}"
-  [[ "${PULL:-true}" == "true" ]] && docker pull -q "${ref}" > /dev/null
+  if [[ "${PULL:-true}" == "true" && -n "${IMAGE_URL:-}" ]]; then
+    curl -fsSL --retry 3 "${IMAGE_URL}/${image}-${LS_VERSION}-docker-image-${ARCH}.tar.gz" | docker load -q > /dev/null
+  elif [[ "${PULL:-true}" == "true" ]]; then
+    docker pull -q "${ref}" > /dev/null
+  fi
   docker run --rm -v "${QA_DIR}:/qa:ro" --entrypoint /usr/share/logstash/bin/ruby "${ref}" \
     /qa/container_trust_check.rb /qa/fixtures 2>&1 | grep -v '^Using bundled JDK' || failed+=("${ref}")
 done
