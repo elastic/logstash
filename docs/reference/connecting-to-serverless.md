@@ -42,7 +42,7 @@ The value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elast
 
 2. Find your **{{es}} endpoint URL**:
 
-    Select **Manage** next to your project. Then find the {{es}} endpoint under **Application endpoints, cluster and component IDs**. 
+    Select **Manage** next to your project. Under **Application endpoints**, select **{{es}}** and copy the **Direct endpoint** value from the flyout.
 
     Alternatively, open your project, select the help icon, then select **Connection details**.
 
