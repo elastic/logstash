@@ -21,6 +21,95 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.6 [logstash-9.5.6-release-notes]
+
+### Features and enhancements [logstash-9.5.6-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.5.6
+
+=== Logstash Commits between 9.5 and 9.5.5
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.5.5..9.5"
+
+8338d87fc - (HEAD -> 9.5, origin/9.5) Update patch plugin versions in gemfile lock (#19753) (13 hours ago) <github-actions[bot]>
+f1b83ffb7 - Bump bundled JDK to 21.0.13+9, keep Windows on 21.0.12.1+1 (#19737) (#19745) (14 hours ago) <mergify[bot]>
+9a0c0abc5 - [9.5] (backport #19738) Updates Jackson to 2.21.8 (#19741) (14 hours ago) <mergify[bot]>
+a49c22c76 - chore: deps(updatecli): Bump updatecli version to v0.123.0 (#19730) (#19732) (3 days ago) <mergify[bot]>
+0b9a95957 - Notify Slack when the bump Java workflow fails (#19716) (#19726) (6 days ago) <mergify[bot]>
+a8ae8cd23 - Fix java bump updatecli workflow (#19710) (#19712) (8 days ago) <mergify[bot]>
+ff11c16f5 - Update patch plugin versions in gemfile lock (#19705) (8 days ago) <github-actions[bot]>
+521907a6a - [9.5] (backport #19690) bump guava dependency (#19693) (9 days ago) <mergify[bot]>
+5871d648e - Update patch plugin versions in gemfile lock (#19688) (10 days ago) <github-actions[bot]>
+bd0383c4b - Update patch plugin versions in gemfile lock (#19685) (10 days ago) <github-actions[bot]>
+efd1c2389 - [docs] Use singular 'Logstash API' in OpenAPI spec title (#19678) (#19682) (10 days ago) <mergify[bot]>
+e0bc338a7 - Unset JAVACMD for integration tests (#19673) (#19674) (2 weeks ago) <mergify[bot]>
+7062884d2 - ci: CODEOWNERS for oblt-aw trigger clients (#19666) (#19669) (2 weeks ago) <mergify[bot]>
+8284efbe9 - Add release notes for 9.4.7 and 9.4.8, and missing entries for 9.4.6 (#19662) (3 weeks ago) <Visha Angelova>
+cbe8f0c0c - Add security advisory notice to the 9.5.5 release notes. (#19659) (3 weeks ago) <Brandon Morelli>
+60e7728b7 - Stop running generalized/duplicate snyk scans on logstash branches (#19620) (#19655) (3 weeks ago) <mergify[bot]>
+72d111c09 - Update patch plugin versions in gemfile lock (#19654) (3 weeks ago) <github-actions[bot]>
+f88eb6dfe - Bump logstash version 9.5.6 (#19651) (3 weeks ago) <github-actions[bot]>
+db20018c1 - Release notes for 9.5.5 (#19602) (3 weeks ago) <github-actions[bot]>
+ec40682e7 - chore: deps(updatecli): Bump updatecli version to v0.122.1 (#19638) (#19646) (3 weeks ago) <mergify[bot]>
+b65326ff1 - Sync agentic workflow files from elastic/oblt-aw (#19642) (#19643) (3 weeks ago) <mergify[bot]>
+4a581b865 - [9.5] (backport #19543) Sync agentic workflow files from elastic/oblt-aw (#19640) (3 weeks ago) <mergify[bot]>
+7eb0b0caf - Fix month regex in health report ISO8601 pattern (#19630) (#19634) (4 weeks ago) <mergify[bot]>
+eb12e517b - Bump bc-fips deps (#19622) (#19631) (4 weeks ago) <mergify[bot]>
+8337ed0ba - ci: replace json-watcher with version-bump-dra in the version bump pipeline (#19619) (#19627) (4 weeks ago) <mergify[bot]>
+d9e073e3b - Sync agentic workflow files from elastic/oblt-aw (#19623) (#19624) (4 weeks ago) <mergify[bot]>
+2a07992e3 - [9.5] (backport #19598) Fix Gradle native services crash on Windows Server 2016 (#19616) (4 weeks ago) <mergify[bot]>
+ea4935297 - Sync agentic workflow files from elastic/oblt-aw (#19612) (#19613) (4 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.5.5..9.5 *.release"
+Changed plugin versions:
+logstash-filter-csv: 3.1.1 -> 3.1.3
+logstash-filter-elastic_integration: 9.5.4 -> 9.5.8
+logstash-input-azure_event_hubs: 1.5.10 -> 1.5.12
+logstash-integration-kafka: 12.1.9 -> 12.2.1
+logstash-output-webhdfs: 3.1.1 -> 3.1.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.5.6-changes]
+
+**Csv Filter - 3.1.3**
+
+* Require `csv` `~> 3.3, >= 3.3.6`, which fixes the JRuby CSV.parse_line performance regression ([ruby/csv#361](https://github.com/ruby/csv/issues/361)). The `< 3.2.6` pin allowed `logstash-plugin update` to resolve csv 0.1.0, which breaks on Ruby 3 [#96](https://github.com/logstash-plugins/logstash-filter-csv/pull/96)
+
+* Pin `csv` dependency to `< 3.2.6` to avoid a JRuby CSV.parse_line performance regression introduced in csv 3.2.6 [#94](https://github.com/logstash-plugins/logstash-filter-csv/pull/94)
+
+**Elastic_integration Filter - 9.5.8**
+
+* Sync up with Elasticsearch 9.5 branch to pull latest dependencies [#540](https://github.com/elastic/logstash-filter-elastic_integration/pull/540)
+
+* Update jackson dependency to 3.1.8 [#520](https://github.com/elastic/logstash-filter-elastic_integration/pull/520)
+
+* Sync up with Elasticsearch 9.5 branch to pull latest dependencies [#514](https://github.com/elastic/logstash-filter-elastic_integration/pull/514)
+
+* Sync up with Elasticsearch 9.5 branch to pull latest dependencies, including Jackson 2.21.7 [#510](https://github.com/elastic/logstash-filter-elastic_integration/pull/510)
+
+**Azure_event_hubs Input - 1.5.12**
+
+* Update jackson to 2.21.8 [#126](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/126)
+
+* Update jackson dependency to 2.21.7 and guava dependency to 33.7.2-jre [#125](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/125)
+
+**Kafka Integration - 12.2.1**
+
+* Update jackson dependency to 2.21.8 [#292](https://github.com/logstash-plugins/logstash-integration-kafka/pull/292)
+
+* Add share group consumer support to Kafka input plugin via `consumer_mode => "share_group"` (Kafka 4.0+ KIP-932) [#252](https://github.com/logstash-plugins/logstash-integration-kafka/pull/252) [#252](https://github.com/logstash-plugins/logstash-integration-kafka/pull/252)
+
+* Update jackson dependency to 2.21.7, and require `snappy-java` 1.1.10.10 or later and `guava` 33.7.2-jre or later [#289](https://github.com/logstash-plugins/logstash-integration-kafka/pull/289)
+
+* Upgrades lz4-java dependency to 1.11.4 version [#287](https://github.com/logstash-plugins/logstash-integration-kafka/pull/287)
+
+**Webhdfs Output - 3.1.2**
+
+* Update `snappy-java` dependency to 1.1.10.12 [#53](https://github.com/logstash-plugins/logstash-output-webhdfs/pull/53)
+
+
 ## 9.5.5 [logstash-9.5.5-release-notes]
 
 ::::{important}
