@@ -1,0 +1,5 @@
+redirects:
+  # OpenTelemetry metrics export is documented on 9.5 and main.
+  # docs-content links to that page from What's new, and this branch is the
+  # current published docs source, so the inbound link has to resolve here.
+  'reference/monitoring-with-opentelemetry.md': '!reference/monitoring-logstash.md'
