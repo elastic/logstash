@@ -21,6 +21,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+<<<<<<< HEAD
 ## 9.5.6 [logstash-9.5.6-release-notes]
 
 ### Updates to dependencies [logstash-9.5.6-dependencies]
@@ -30,6 +31,17 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Update Guava to 33.7.2 [#19693](https://github.com/elastic/logstash/pull/19693)
 
 ### Plugins [logstash-plugin-9.5.6-changes]
+=======
+## 9.4.9 [logstash-9.4.9-release-notes]
+
+### Updates to dependencies [logstash-9.4.9-dependencies]
+
+* Update bundled JDK to Temurin 21.0.13+9, which no longer trusts the emSign ECC Root CA - G3 certificate authority. Windows packages still bundle Temurin 21.0.12.1+1, with emSign ECC Root CA - G3 removed from its trust store [#19746](https://github.com/elastic/logstash/pull/19746)
+* Update Jackson to 2.21.8 [#19742](https://github.com/elastic/logstash/pull/19742)
+* Update Guava to 33.7.2 [#19694](https://github.com/elastic/logstash/pull/19694)
+
+### Plugins [logstash-plugin-9.4.9-changes]
+>>>>>>> 66ef3f1 (Release notes for 9.4.9 (#19758))
 
 **Csv Filter - 3.1.3**
 
@@ -37,11 +49,19 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Pin `csv` dependency to `< 3.2.6` to avoid a JRuby CSV.parse_line performance regression introduced in csv 3.2.6 [#94](https://github.com/logstash-plugins/logstash-filter-csv/pull/94)
 
+<<<<<<< HEAD
 **Elastic_integration Filter - 9.5.8**
 
 * Sync up with Elasticsearch 9.5 branch to pull latest dependencies [#540](https://github.com/elastic/logstash-filter-elastic_integration/pull/540)
 
 * Update Jackson dependency to 3.1.8 [#520](https://github.com/elastic/logstash-filter-elastic_integration/pull/520)
+=======
+**Elastic_integration Filter - 9.4.12**
+
+* Sync up with Elasticsearch 9.4 branch to pull latest dependencies [#539](https://github.com/elastic/logstash-filter-elastic_integration/pull/539)
+
+* Update Jackson dependency to 3.1.8 [#521](https://github.com/elastic/logstash-filter-elastic_integration/pull/521)
+>>>>>>> 66ef3f1 (Release notes for 9.4.9 (#19758))
 
 **Azure_event_hubs Input - 1.5.12**
 
@@ -49,6 +69,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Update Jackson dependency to 2.21.7 and `guava` dependency to 33.7.2-jre [#125](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/125)
 
+<<<<<<< HEAD
 **Kafka Integration - 12.2.1**
 
 * Update Jackson dependency to 2.21.8 [#292](https://github.com/logstash-plugins/logstash-integration-kafka/pull/292)
@@ -58,12 +79,22 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Update Jackson dependency to 2.21.7, and require `snappy-java` 1.1.10.10 or later and `guava` 33.7.2-jre or later [#289](https://github.com/logstash-plugins/logstash-integration-kafka/pull/289)
 
 * Upgrade `lz4-java` dependency to 1.11.4 [#287](https://github.com/logstash-plugins/logstash-integration-kafka/pull/287)
+=======
+**Kafka Integration - 11.8.15**
+
+* Update Jackson dependency to 2.21.8 [#293](https://github.com/logstash-plugins/logstash-integration-kafka/pull/293)
+
+* Update Jackson dependency to 2.21.7, and require `snappy-java` 1.1.10.10 or later and `guava` 33.7.2-jre or later [#290](https://github.com/logstash-plugins/logstash-integration-kafka/pull/290)
+
+* Upgrade `lz4-java` dependency to 1.11.4 [#288](https://github.com/logstash-plugins/logstash-integration-kafka/pull/288)
+>>>>>>> 66ef3f1 (Release notes for 9.4.9 (#19758))
 
 **Webhdfs Output - 3.1.2**
 
 * Update `snappy-java` dependency to 1.1.10.12 [#53](https://github.com/logstash-plugins/logstash-output-webhdfs/pull/53)
 
 
+<<<<<<< HEAD
 ## 9.5.5 [logstash-9.5.5-release-notes]
 
 ::::{important}
@@ -346,6 +377,8 @@ This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The 
 
 * Added support for IPv6 addresses [#16](https://github.com/logstash-plugins/logstash-output-udp/pull/16)
 
+=======
+>>>>>>> 66ef3f1 (Release notes for 9.4.9 (#19758))
 ## 9.4.8 [logstash-9.4.8-release-notes]
 
 ::::{important}
