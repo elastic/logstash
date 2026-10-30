@@ -21,6 +21,7 @@
 package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Objects;
 
 import co.elastic.logstash.api.Metric;
@@ -141,6 +142,14 @@ public final class JRubyAckedQueueExt extends RubyObject {
     public void rubyWrite(ThreadContext context, Event event) {
         try {
             this.queue.write(event);
+        } catch (IOException e) {
+            throw RubyUtil.newRubyIOError(context.runtime, e);
+        }
+    }
+
+    public void rubyWriteBatch(ThreadContext context, Collection<Event> events) {
+        try {
+            this.queue.write(events);
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }

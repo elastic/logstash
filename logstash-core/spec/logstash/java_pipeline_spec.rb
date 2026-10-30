@@ -16,6 +16,7 @@
 # under the License.
 
 require "spec_helper"
+require "logstash/codecs/plain"
 require "logstash/inputs/generator"
 require "logstash/filters/drop"
 require_relative "../support/mocks_classes"
