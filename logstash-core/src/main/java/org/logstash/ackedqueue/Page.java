@@ -215,10 +215,12 @@ public final class Page implements Closeable {
 
 
     public void ensurePersistedUpto(long seqNum) throws IOException {
+        // lastCheckpointUptoSeqNum is an *exclusive* upper bound: the last checkpoint covers
+        // [minSeqNum, minSeqNum + elementCount - 1], so the first uncovered seqNum is minSeqNum + elementCount.
         long lastCheckpointUptoSeqNum = this.lastCheckpoint.getMinSeqNum() + this.lastCheckpoint.getElementCount();
 
-        // if the last checkpoint for this headpage already included the given seqNum, no need to fsync/checkpoint
-        if (seqNum > lastCheckpointUptoSeqNum) {
+        // checkpoint if seqNum has not been covered yet (>= because lastCheckpointUptoSeqNum is exclusive)
+        if (seqNum >= lastCheckpointUptoSeqNum) {
             // head page checkpoint does a data file fsync
             checkpoint();
         }
