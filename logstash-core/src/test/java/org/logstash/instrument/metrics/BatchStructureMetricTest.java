@@ -20,7 +20,6 @@
 package org.logstash.instrument.metrics;
 
 import org.HdrHistogram.Histogram;
-import org.HdrHistogram.Recorder;
 import org.junit.Before;
 import org.junit.Test;
 import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric;
@@ -30,10 +29,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.Matchers.aMapWithSize;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BatchStructureMetricTest {
@@ -172,25 +171,122 @@ public class BatchStructureMetricTest {
     }
 
     @Test
-    public void givenInstantiatedStructureMetricInstanceThenVerifyOccupationEstimation() {
-        // HistogramMetric uses HdrHistogram with 3 digits precision, so create a sample to have
-        // the rough histogram occupation.
-        Histogram sample = new Recorder(3).getIntervalHistogram();
+    public void givenCaptureNeverCalledThenEstimateBatchMetricsFootprintInBytesReflectsOnlyTheBatchHistogram() {
+        // no retention windows exist until capture() has been called at least once, so the estimate
+        // must fall back to just the underlying batch histogram's own footprint.
+        assertEquals(lifetimeHistogram.estimateBatchMetricsFootprintInBytes(), sut.estimateBatchMetricsFootprintInBytes());
+    }
 
-        int sampleOccupation = sample.getEstimatedFootprintInBytes();
+    @Test
+    public void givenCaptureCalledThenEstimateBatchMetricsFootprintInBytesIncludesRetentionWindowContributions() {
+        sut.capture();
 
-        //BatchStructureMetric has 4 policies
-        int totalDatapoints = BuiltInFlowMetricRetentionPolicies.LAST_1_MINUTE.datapointsCount() +
-        BuiltInFlowMetricRetentionPolicies.LAST_5_MINUTES.datapointsCount() +
-        BuiltInFlowMetricRetentionPolicies.LAST_15_MINUTES.datapointsCount() +
-        BuiltInFlowMetricRetentionPolicies.LIFETIME.datapointsCount();
+        int withWindows = sut.estimateBatchMetricsFootprintInBytes();
+        int batchHistogramAlone = lifetimeHistogram.estimateBatchMetricsFootprintInBytes();
 
-        // 60 seconds retention divided by the resolution of 3 seconds, plus the staging accumulator.
-        // The same reasoning applies to 5 and 15 minutes.
-        assertEquals(60/3 + 1 + 5 * 60/15 + 1 + 15 * 60/30 + 1  + 2, totalDatapoints);
+        assertThat("once retention windows exist, they meaningfully contribute to the footprint",
+                withWindows, is(greaterThan((int)(batchHistogramAlone * 1.10))));
+        assertThat("but because they are packed they don't become the controlling factor",
+                withWindows, is(lessThan((int)(batchHistogramAlone * 1.50))));
+    }
 
-        int expectedOccupation = sampleOccupation * totalDatapoints;
+    @Test
+    public void givenValuesRecordedWithinTheSameOrderOfMagnitudeOverTimeThenEstimateBatchMetricsFootprintInBytesIsUnchanged() {
+        sut.capture();
+        int baseline = sut.estimateBatchMetricsFootprintInBytes();
 
-        assertEquals(expectedOccupation, sut.estimateBatchMetricsFootprintInBytes());
+        for (int i = 0; i < 10; i++) {
+            lifetimeHistogram.recordValue(100 + i);
+            clock.advance(Duration.ofSeconds(1));
+            sut.capture();
+        }
+
+        assertEquals("recording values that fit within the already-allocated histogram range should not grow the estimate",
+                baseline, sut.estimateBatchMetricsFootprintInBytes());
+    }
+
+    @Test
+    public void givenValueRecordedWithDisparateMagnitudeOverTimeThenEstimateBatchMetricsFootprintInBytesGrows() {
+        sut.capture();
+
+        for (int i = 0; i < 10; i++) {
+            lifetimeHistogram.recordValue(100 + i);
+            clock.advance(Duration.ofSeconds(1));
+            sut.capture();
+        }
+        int beforeSpike = sut.estimateBatchMetricsFootprintInBytes();
+
+        // a value several orders of magnitude larger forces the underlying histogram(s) to widen their range
+        lifetimeHistogram.recordValue(1_000_000_000L);
+        clock.advance(Duration.ofSeconds(1));
+        sut.capture();
+
+        int afterSpike = sut.estimateBatchMetricsFootprintInBytes();
+
+        assertThat("a capture whose histogram had to widen its range to cover a disparate value should grow the estimate several-fold, not just marginally",
+                afterSpike, is(greaterThan(beforeSpike * 5)));
+        assertThat("but the growth from a single widened-range capture should still be bounded, not runaway",
+                afterSpike, is(lessThan(beforeSpike * 15)));
+    }
+
+    @Test
+    public void givenCardinalityGrowthWithinAnAlreadyAllocatedRangeThenRetentionWindowContributionsGrowEvenThoughTheBatchHistogramsOwnEstimateDoesNot() {
+        lifetimeHistogram.recordValue(1);
+        sut.capture();
+
+        int batchHistogramFootprintBefore = lifetimeHistogram.estimateBatchMetricsFootprintInBytes();
+        int totalFootprintBefore = sut.estimateBatchMetricsFootprintInBytes();
+
+        // Recording many distinct values within the already-allocated range grows the *packed* footprint of
+        // each capture's ValueHistogram (used directly by HistogramRetentionWindow#estimateMaxFootprintInBytes)
+        // without growing the *unpacked* lifetime snapshot's footprint that batchHistogram's own multiplier-based
+        // estimate is based on -- see LifetimeHistogramMetricTest for that half of the behavior in isolation.
+        for (long value = 2; value <= 2000; value++) {
+            lifetimeHistogram.recordValue(value);
+        }
+        clock.advance(Duration.ofSeconds(1));
+        sut.capture();
+
+        int batchHistogramFootprintAfter = lifetimeHistogram.estimateBatchMetricsFootprintInBytes();
+        int totalFootprintAfter = sut.estimateBatchMetricsFootprintInBytes();
+
+        assertThat("the batch histogram's own multiplier-based estimate should not move from cardinality growth alone",
+                batchHistogramFootprintAfter, is(equalTo(batchHistogramFootprintBefore)));
+        assertThat("the retention windows' real packed-footprint accounting should pick up the cardinality-driven growth several-fold, not just marginally",
+                totalFootprintAfter, is(greaterThan(totalFootprintBefore * 2)));
+        assertThat("but that cardinality-driven growth should still be bounded relative to the number of distinct values recorded, not runaway",
+                totalFootprintAfter, is(lessThan(totalFootprintBefore * 4)));
+    }
+
+    @Test
+    public void givenSuccessiveCapturesWithGrowingCardinalityThenEstimateBatchMetricsFootprintInBytesTracksTheYoungestCaptureNonDecreasingly() {
+        // HistogramRetentionWindow#estimateMaxFootprintInBytes relies on the assumption that, since these are
+        // cumulative lifetime histograms, the youngest capture's PackedHistogram is always the largest one in
+        // the window. Verify that assumption holds -- and is reflected in the overall estimate -- across many
+        // successive captures, not just a single before/after comparison.
+        long value = 1;
+        int previous = -1;
+        int afterFirstRound = -1;
+        int current = -1;
+        for (int round = 0; round < 5; round++) {
+            for (int i = 0; i < 500; i++) {
+                lifetimeHistogram.recordValue(value++);
+            }
+            clock.advance(Duration.ofSeconds(1));
+            sut.capture();
+
+            current = sut.estimateBatchMetricsFootprintInBytes();
+            assertTrue("the footprint estimate should never decrease as more distinct values are captured over time",
+                    current >= previous);
+            previous = current;
+            if (round == 0) {
+                afterFirstRound = current;
+            }
+        }
+
+        assertThat("across several rounds of cardinality growth, the estimate should grow substantially overall, not just marginally",
+                current, is(greaterThan((int)(afterFirstRound * 1.5))));
+        assertThat("but that growth should still be bounded relative to the number of additional distinct values recorded, not runaway",
+                current, is(lessThan((int)(afterFirstRound * 3.0))));
     }
 }
