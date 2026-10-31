@@ -205,5 +205,24 @@ describe LogStash::Config::Source::MultiLocal do
         expect { subject.pipeline_configs }.not_to raise_error(ArgumentError)
       end
     end
+
+    context "when a pipeline's config source fails to load" do
+      let(:remote_url) { "http://test.dev/superconfig.conf" }
+      let(:retrieved_pipelines) do [
+          { "pipeline.id" => "main", "config.string" => config_string },
+          { "pipeline.id" => "remote", "path.config" => remote_url },
+      ]
+      end
+
+      before(:each) do
+        stub_request(:get, remote_url).to_return(status: 503).then.to_return(status: 200, body: config_string)
+      end
+
+      it "restores the original settings so that the source still matches" do
+        expect { subject.pipeline_configs }.to raise_error(LogStash::ConfigLoadingError)
+        expect(subject.match?).to be_truthy
+        expect(subject.pipeline_configs.map(&:pipeline_id)).to contain_exactly("main", "remote")
+      end
+    end
   end
 end
