@@ -142,6 +142,16 @@ public final class Queue implements Closeable {
         }
     }
 
+    Batch createBatch(SequencedList<BoxedQueueable> boxedElements) {
+        return createBatch(boxedElements.getElements(), boxedElements.getMinSeqNum());
+    }
+
+    Batch createBatch(List<BoxedQueueable> boxes, long firstSeqNum) {
+        final ArrayList<Queueable> elements = new ArrayList<>(boxes.size());
+        boxes.stream().map(BoxedQueueable::unbox).forEach(elements::add);
+        return new Batch(elements, firstSeqNum, this);
+    }
+
     public String getDirPath() {
         return this.dirPath.toString();
     }
@@ -473,7 +483,7 @@ public final class Queue implements Closeable {
             }
 
             long seqNum = this.seqNum += 1;
-            this.headPage.write(data, seqNum, this.checkpointMaxWrites);
+            this.headPage.write(element, data, seqNum, this.checkpointMaxWrites);
             this.unreadCount++;
 
             maybeSignalReadDemand(needsForceFlush);
@@ -614,18 +624,18 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     public synchronized Batch nonBlockReadBatch(int limit) throws IOException {
-        final SerializedBatchHolder serializedBatchHolder;
+        final BoxedBatchHolder boxedBatchHolder;
         lock.lock();
         try {
             Page p = nextReadPage();
             if (isHeadPage(p) && p.isFullyRead()) {
                 return null;
             }
-            serializedBatchHolder = readPageBatch(p, limit, 0L);
+            boxedBatchHolder = readPageBatch(p, limit, 0L);
         } finally {
             lock.unlock();
         }
-        return serializedBatchHolder.deserialize();
+        return boxedBatchHolder.unbox();
     }
 
     /**
@@ -637,10 +647,10 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     public Batch readBatch(int limit, long timeout) throws IOException {
-        return readSerializedBatch(limit, timeout).deserialize();
+        return readBoxedBatch(limit, timeout).unbox();
     }
 
-    private synchronized SerializedBatchHolder readSerializedBatch(int limit, long timeout) throws IOException {
+    private synchronized BoxedBatchHolder readBoxedBatch(int limit, long timeout) throws IOException {
         lock.lock();
 
         try {
@@ -651,7 +661,7 @@ public final class Queue implements Closeable {
     }
 
     /**
-     * read a {@link SerializedBatchHolder} from the given {@link Page}. If the page is a head page, try to maximize the
+     * read a {@link BoxedBatchHolder} from the given {@link Page}. If the page is a head page, try to maximize the
      * batch size by waiting for writes.
      * @param p the {@link Page} to read from.
      * @param limit size limit of the batch to read.
@@ -659,9 +669,9 @@ public final class Queue implements Closeable {
      * @return {@link Batch} with read elements or null if nothing was read
      * @throws IOException if an IO error occurs
      */
-    private SerializedBatchHolder readPageBatch(Page p, int limit, long timeout) throws IOException {
+    private BoxedBatchHolder readPageBatch(Page p, int limit, long timeout) throws IOException {
         int left = limit;
-        final List<byte[]> elements = new ArrayList<>(limit);
+        final List<BoxedQueueable> elements = new ArrayList<>(limit);
 
         // NOTE: the tricky thing here is that upon entering this method, if p is initially a head page
         // it could become a tail page upon returning from the notEmpty.await call.
@@ -686,12 +696,12 @@ public final class Queue implements Closeable {
             if (! p.isFullyRead()) {
                 boolean wasFull = isMaxUnreadReached();
 
-                final SequencedList<byte[]> serialized = p.read(left);
+                final SequencedList<BoxedQueueable> serialized = p.read(left);
                 int n = serialized.getElements().size();
                 assert n > 0 : "page read returned 0 elements";
                 elements.addAll(serialized.getElements());
                 if (firstSeqNum == -1L) {
-                    firstSeqNum = serialized.getSeqNums().get(0);
+                    firstSeqNum = serialized.getMinSeqNum();
                 }
 
                 this.unreadCount -= n;
@@ -711,7 +721,7 @@ public final class Queue implements Closeable {
             removeUnreadPage(p);
         }
 
-        return new SerializedBatchHolder(elements, firstSeqNum);
+        return new BoxedBatchHolder(elements, firstSeqNum);
     }
 
     /**
@@ -929,17 +939,17 @@ public final class Queue implements Closeable {
         return seqNum >= pMinSeq && seqNum < pMaxSeq;
     }
 
-    class SerializedBatchHolder {
-        private final List<byte[]> elements;
+    class BoxedBatchHolder {
+        private final List<BoxedQueueable> boxedElements;
         private final long firstSeqNum;
 
-        private SerializedBatchHolder(List<byte[]> elements, long firstSeqNum) {
-            this.elements = elements;
+        BoxedBatchHolder(final List<BoxedQueueable> boxedElements, final long firstSeqNum) {
+            this.boxedElements = boxedElements;
             this.firstSeqNum = firstSeqNum;
         }
 
-        private Batch deserialize() {
-            return new Batch(elements, firstSeqNum, Queue.this);
+        Batch unbox() {
+            return Queue.this.createBatch(boxedElements, firstSeqNum);
         }
     }
 
