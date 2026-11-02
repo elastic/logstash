@@ -119,11 +119,6 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-24]]
 === Logstash 8.19.24 Release Notes
 
-[IMPORTANT]
-====
-This release contains security fixes. Please see our https://discuss.elastic.co/c/announcements/security-announcements/31[security advisory] for more details.
-====
-
 ==== Updates to dependencies
 
 * Update bundled JDK to Temurin 21.0.13+9, which no longer trusts the emSign ECC Root CA - G3 certificate authority. Windows packages still bundle Temurin 21.0.12.1+1, with emSign ECC Root CA - G3 removed from its trust store https://github.com/elastic/logstash/pull/19747[#19747]
