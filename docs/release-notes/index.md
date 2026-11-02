@@ -23,6 +23,10 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.4.9 [logstash-9.4.9-release-notes]
 
+::::{important}
+This release contains security fixes. Please see our [security advisory](https://discuss.elastic.co/c/announcements/security-announcements/31) for more details.
+::::
+
 ### Updates to dependencies [logstash-9.4.9-dependencies]
 
 * Update bundled JDK to Temurin 21.0.13+9, which no longer trusts the emSign ECC Root CA - G3 certificate authority. Windows packages still bundle Temurin 21.0.12.1+1, with emSign ECC Root CA - G3 removed from its trust store [#19746](https://github.com/elastic/logstash/pull/19746)
