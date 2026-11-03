@@ -37,7 +37,7 @@ public class PipelineIndicatorTest {
             assertThat(analysis.status, is(Status.YELLOW));
             assertThat(analysis.diagnosis, is(notNullValue()));
             assertThat(analysis.diagnosis.cause, containsString("loading"));
-            assertThat(analysis.diagnosis.helpUrl, containsString("/health-report-pipeline-status.html#loading"));
+            assertThat(analysis.diagnosis.helpUrl, containsString("/health-report-pipeline-status.html#" + expectedAnchor("health-report-pipeline-status", "loading")));
             assertThat(analysis.impact, is(notNullValue()));
             assertThat(analysis.impact.id, containsString("not_processing"));
             assertThat(analysis.impact.impactAreas, contains(ImpactArea.PIPELINE_EXECUTION));
@@ -51,7 +51,7 @@ public class PipelineIndicatorTest {
             assertThat(analysis.status, is(Status.YELLOW));
             assertThat(analysis.diagnosis, is(notNullValue()));
             assertThat(analysis.diagnosis.cause, containsString("finished"));
-            assertThat(analysis.diagnosis.helpUrl, containsString("/health-report-pipeline-status.html#finished"));
+            assertThat(analysis.diagnosis.helpUrl, containsString("/health-report-pipeline-status.html#" + expectedAnchor("health-report-pipeline-status", "finished")));
             assertThat(analysis.impact, is(notNullValue()));
             assertThat(analysis.impact.id, containsString("not_processing"));
             assertThat(analysis.impact.impactAreas, contains(ImpactArea.PIPELINE_EXECUTION));
@@ -65,7 +65,7 @@ public class PipelineIndicatorTest {
             assertThat(analysis.status, is(Status.RED));
             assertThat(analysis.diagnosis, is(notNullValue()));
             assertThat(analysis.diagnosis.cause, containsString("error"));
-            assertThat(analysis.diagnosis.helpUrl, containsString("/health-report-pipeline-status.html#terminated"));
+            assertThat(analysis.diagnosis.helpUrl, containsString("/health-report-pipeline-status.html#" + expectedAnchor("health-report-pipeline-status", "terminated")));
             assertThat(analysis.impact, is(notNullValue()));
             assertThat(analysis.impact.id, containsString("not_processing"));
             assertThat(analysis.impact.impactAreas, contains(ImpactArea.PIPELINE_EXECUTION));
@@ -79,10 +79,15 @@ public class PipelineIndicatorTest {
             assertThat(analysis.status, is(Status.UNKNOWN));
             assertThat(analysis.diagnosis, is(notNullValue()));
             assertThat(analysis.diagnosis.cause, containsString("not known"));
-            assertThat(analysis.diagnosis.helpUrl, containsString("/health-report-pipeline-status.html#unknown"));
+            assertThat(analysis.diagnosis.helpUrl, containsString("/health-report-pipeline-status.html#" + expectedAnchor("health-report-pipeline-status", "unknown")));
             assertThat(analysis.impact, is(notNullValue()));
             assertThat(analysis.impact.id, containsString("not_processing"));
             assertThat(analysis.impact.impactAreas, contains(ImpactArea.PIPELINE_EXECUTION));
+        }
+
+        /** Mirrors {@link HelpUrl#withAnchor} for use in assertions. */
+        private static String expectedAnchor(final String page, final String anchor) {
+            return HelpUrl.IS_MAJOR_9_PLUS ? page + "-diagnosis-" + anchor : anchor;
         }
 
         static PipelineIndicator.Details detailsForStatus(PipelineIndicator.Status status) {
