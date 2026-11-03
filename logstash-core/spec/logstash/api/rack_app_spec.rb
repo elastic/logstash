@@ -105,4 +105,27 @@ describe LogStash::Api::RackApp do
       get "/service-unavailable"
     end
   end
+
+  describe ".app" do
+    let(:agent) { double("agent") }
+    let(:modules) { [LogStash::Api::Modules::Root] + described_class.rack_namespaces(agent).values }
+    let(:app) { described_class.app(logger, agent, "test") }
+
+    before do
+      allow(logger).to receive(:debug?).and_return(false)
+    end
+
+    it "returns a built rack app" do
+      expect(app).not_to be_a(Rack::Builder)
+    end
+
+    it "does not instantiate API modules per request" do
+      app
+      modules.each { |mod| expect(mod).not_to receive(:new) }
+      3.times do
+        get "/does-not-exist"
+        expect(last_response.status).to eql(404)
+      end
+    end
+  end
 end
