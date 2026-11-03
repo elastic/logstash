@@ -19,6 +19,7 @@
 
 package org.logstash.instrument.metrics.otel;
 
+import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -33,12 +34,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -201,21 +208,47 @@ public class OtelMetricsServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test
-    public void shutdownReturnsPromptlyWhenCollectorIsUnreachable() {
-        // Port 1 is not listening, so the final flush export fails; shutdown must stay bounded
-        OtelMetricsConfig config = OtelMetricsConfig.builder("node-id", "node-name", "http://localhost:1", "grpc")
-                .intervalMs(60_000L)
-                .build();
-        OtelMetricsService service = new OtelMetricsService(config);
-        service.registerGauge("test.gauge", "test gauge", "1", () -> 1L, Attributes.empty());
+    @Test(timeout = 30_000)
+    public void shutdownStaysBoundedWhileExportIsInFlight() throws Exception {
+        // A collector that accepts the export request but never responds keeps the export in flight
+        CountDownLatch exportReceived = new CountDownLatch(1);
+        CountDownLatch releaseCollector = new CountDownLatch(1);
+        HttpServer collector = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        collector.setExecutor(Executors.newCachedThreadPool());
+        collector.createContext("/v1/metrics", exchange -> {
+            exportReceived.countDown();
+            try {
+                releaseCollector.await(60, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                exchange.close();
+            }
+        });
+        collector.start();
 
-        long start = System.nanoTime();
-        service.shutdown();
-        Duration elapsed = Duration.ofNanos(System.nanoTime() - start);
+        try {
+            String endpoint = "http://localhost:" + collector.getAddress().getPort();
+            OtelMetricsConfig config = OtelMetricsConfig.builder("node-id", "node-name", endpoint, "http")
+                    .intervalMs(60_000L)
+                    .build();
+            OtelMetricsService service = new OtelMetricsService(config);
+            service.registerGauge("test.gauge", "test gauge", "1", () -> 1L, Attributes.empty());
 
-        // forceFlush is capped at 5s and SDK close at ~10s
-        assertThat(elapsed).isLessThan(Duration.ofSeconds(20));
+            service.flush();
+            assertThat(exportReceived.await(10, TimeUnit.SECONDS)).as("export reached the collector").isTrue();
+
+            long start = System.nanoTime();
+            service.shutdown();
+            Duration elapsed = Duration.ofNanos(System.nanoTime() - start);
+
+            // forceFlush is capped at 5s and SDK close at ~10s
+            assertThat(elapsed).isLessThan(Duration.ofSeconds(20));
+        } finally {
+            releaseCollector.countDown();
+            collector.stop(0);
+            ((ExecutorService) collector.getExecutor()).shutdownNow();
+        }
     }
 
     // ==================== getSystemProperty tests ====================
