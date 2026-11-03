@@ -20,6 +20,7 @@
 
 package org.logstash.ext;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -64,9 +65,11 @@ public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClien
     @Override
     protected JRubyAbstractQueueWriteClientExt doPushBatch(final ThreadContext context,
                                                            final Collection<JrubyEventExtLibrary.RubyEvent> batch) {
+        final Collection<Event> events = new ArrayList<>(batch.size());
         for (final IRubyObject event : batch) {
-            queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
+            events.add(((JrubyEventExtLibrary.RubyEvent) event).getEvent());
         }
+        queue.rubyWriteBatch(context, events);
         return this;
     }
 

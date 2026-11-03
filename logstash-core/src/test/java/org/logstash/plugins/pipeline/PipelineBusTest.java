@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.logstash.RubyUtil;
+import org.logstash.RubyTestBase;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.time.Duration;
@@ -46,7 +47,7 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
 @RunWith(Parameterized.class)
-public class PipelineBusTest {
+public class PipelineBusTest extends RubyTestBase {
     static String address = "fooAddr";
     static String otherAddress = "fooAddr";
     static Collection<String> addresses = Arrays.asList(address, otherAddress);
@@ -403,6 +404,47 @@ public class PipelineBusTest {
 
     private JrubyEventExtLibrary.RubyEvent rubyEvent() {
       return JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY);
+    }
+
+    @Test(timeout = 10_000)
+    public void unavailableInputAfterPartialWriteDoesNotAdvanceRetryPositionAgain() {
+        final List<Integer> delivered = new ArrayList<>();
+        final PipelineInput failingInput = new TestPipelineInput() {
+            @Override
+            public ReceiveResponse internalReceive(Stream<JrubyEventExtLibrary.RubyEvent> events) {
+                events.limit(2).forEach(event -> delivered.add(((Number) event.getEvent().getField("sequence")).intValue()));
+                return ReceiveResponse.failedAt(2, new Exception("queue closed after two writes"));
+            }
+        };
+        final PipelineInput replacementInput = new TestPipelineInput() {
+            @Override
+            public ReceiveResponse internalReceive(Stream<JrubyEventExtLibrary.RubyEvent> events) {
+                events.forEach(event -> delivered.add(((Number) event.getEvent().getField("sequence")).intValue()));
+                return ReceiveResponse.completed();
+            }
+        };
+        // Make the destination unavailable for exactly one retry before its replacement
+        // starts. This exercises the real retry loop without timing a pipeline restart.
+        final AddressState state = new AddressState(address) {
+            private int attempts;
+            @Override
+            public PipelineInput getInput() {
+                return switch (attempts++) {
+                    case 0 -> failingInput;
+                    case 1 -> null;
+                    default -> replacementInput;
+                };
+            }
+        };
+        final JrubyEventExtLibrary.RubyEvent[] events = new JrubyEventExtLibrary.RubyEvent[5];
+        for (int i = 0; i < events.length; i++) {
+            events[i] = rubyEvent();
+            events[i].getEvent().setField("sequence", i);
+        }
+
+        AbstractPipelineBus.doSendEvents(events, state.getReadOnlyView(), true);
+
+        assertThat(delivered).containsExactly(0, 1, 2, 3, 4);
     }
 
     static class TestPipelineInput implements PipelineInput {

@@ -35,10 +35,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.logstash.RubyTestBase;
 
 import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
 
-public final class PqRepairTest {
+public final class PqRepairTest extends RubyTestBase {
 
     private static final List<Queueable> TEST_ELEMENTS = Collections.unmodifiableList(Arrays.asList(
         new StringElement("foobarbaz1"), new StringElement("foobarbaz2"),
