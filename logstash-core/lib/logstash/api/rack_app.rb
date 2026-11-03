@@ -119,7 +119,7 @@ module LogStash
               run app.new(nil, agent)
             end
           end
-        end
+        end.to_app
       end
 
       def self.rack_namespaces(agent)
