@@ -265,7 +265,7 @@ dependencies {
     api 'org.apache.httpcomponents:httpcore:4.4.16'
 
     // OpenTelemetry SDK for metrics export
-    def otelVersion = '1.62.0'
+    def otelVersion = '1.67.0'
     implementation platform("io.opentelemetry:opentelemetry-bom:${otelVersion}")
     implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'

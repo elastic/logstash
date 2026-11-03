@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.Duration;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -181,6 +182,40 @@ public class OtelMetricsServiceTest {
 
         assertThat(OtelMetricsService.normalizeHttpEndpoint("https://collector.example.com:9443"))
                 .isEqualTo("https://collector.example.com:9443/v1/metrics");
+    }
+
+    @Test
+    public void constructorRejectsHostlessHttpEndpoint() {
+        // The OTLP SDK (since 1.64) rejects endpoints without a host when building the exporter
+        OtelMetricsConfig config = OtelMetricsConfig.builder("node-id", "node-name", "http://:4318", "http").build();
+
+        assertThatThrownBy(() -> new OtelMetricsService(config))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void constructorRejectsHostlessGrpcEndpoint() {
+        OtelMetricsConfig config = OtelMetricsConfig.builder("node-id", "node-name", "http://:4317", "grpc").build();
+
+        assertThatThrownBy(() -> new OtelMetricsService(config))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void shutdownReturnsPromptlyWhenCollectorIsUnreachable() {
+        // Port 1 is not listening, so the final flush export fails; shutdown must stay bounded
+        OtelMetricsConfig config = OtelMetricsConfig.builder("node-id", "node-name", "http://localhost:1", "grpc")
+                .intervalMs(60_000L)
+                .build();
+        OtelMetricsService service = new OtelMetricsService(config);
+        service.registerGauge("test.gauge", "test gauge", "1", () -> 1L, Attributes.empty());
+
+        long start = System.nanoTime();
+        service.shutdown();
+        Duration elapsed = Duration.ofNanos(System.nanoTime() - start);
+
+        // forceFlush is capped at 5s and SDK close at ~10s
+        assertThat(elapsed).isLessThan(Duration.ofSeconds(20));
     }
 
     // ==================== getSystemProperty tests ====================
