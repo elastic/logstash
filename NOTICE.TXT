@@ -6511,7 +6511,7 @@ The OpenTelemetry Authors (https://opentelemetry.io/).
 Licensed under the Apache License, Version 2.0.
 
 ==========
-Notice for: io.opentelemetry:opentelemetry-bom-1.62.0
+Notice for: io.opentelemetry:opentelemetry-bom-1.67.0
 ----------
 
 OpenTelemetry Java
