@@ -181,7 +181,7 @@ ci/docker_acceptance_tests.sh {flavor}"""),
             step["env"] = {
                 "BASE_REGISTRY": "docker.io",
                 "BASE_IMAGE": "redhat/ubi10",
-                "BASE_TAG": "10.1"
+                "BASE_TAG": "10.2"
             }
         
         steps.append(step)
