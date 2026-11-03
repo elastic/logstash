@@ -255,7 +255,21 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
+<<<<<<< HEAD
     api group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     api group: 'commons-codec', name: 'commons-codec', version: '1.17.0'
     api group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.16'
+=======
+    api 'org.apache.httpcomponents:httpclient:4.5.14'
+    api 'commons-codec:commons-codec:1.17.0'
+    api 'org.apache.httpcomponents:httpcore:4.4.16'
+
+    // OpenTelemetry SDK for metrics export
+    def otelVersion = '1.67.0'
+    implementation platform("io.opentelemetry:opentelemetry-bom:${otelVersion}")
+    implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry:opentelemetry-sdk'
+    implementation 'io.opentelemetry:opentelemetry-sdk-metrics'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+>>>>>>> d92d7da (Upgrades opentelemetry-bom dependency (#19794))
 }
