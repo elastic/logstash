@@ -79,7 +79,9 @@ jobs:
             ./vendor/jruby/bin/jruby -S bundle update $GEMS --major --strict --conservative
           fi
       - name: Update NOTICE.txt for bumped dependencies
-        run: ./bin/dependencies-report --csv build/dependencies.csv.ruby
+        run: |
+          ./bin/dependencies-report --csv build/dependencies.csv.ruby
+          mv NOTICE.txt NOTICE.TXT
       - run: mv Gemfile.lock Gemfile.jruby-*.lock.release
       - run: echo "T=$(date +%s)" >> $GITHUB_ENV
       - run: echo "BRANCH=update_lock_${{ env.INPUTS_BRANCH }}_${T}" >> $GITHUB_ENV
