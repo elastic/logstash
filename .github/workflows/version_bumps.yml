@@ -85,11 +85,7 @@ jobs:
           git add .
           git status
           if [[ -z $(git status --porcelain) ]]; then echo "No changes. We're done."; exit 0; fi
-<<<<<<< HEAD
-          git commit -m "Update ${{ github.event.inputs.bump }} plugin versions in gemfile lock" -a
-=======
           git commit -m "Update ${{ env.INPUTS_BUMP }} plugin versions in gemfile lock and NOTICE.txt" -a
->>>>>>> ace389c (After gemfile.lock update, workflow also updates the dependency tree. (#19807))
           git push origin $BRANCH
       - name: Create Pull Request
         run: |
