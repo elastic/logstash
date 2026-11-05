@@ -73,6 +73,10 @@ jobs:
             echo "Bumping at --major: ${GEMS}"
             ./vendor/jruby/bin/jruby -S bundle update $GEMS --major --strict --conservative
           fi
+      - name: Update NOTICE.txt for bumped dependencies
+        run: |
+          ./bin/dependencies-report --csv build/dependencies.csv.ruby
+          mv NOTICE.txt NOTICE.TXT
       - run: mv Gemfile.lock Gemfile.jruby-*.lock.release
       - run: echo "T=$(date +%s)" >> $GITHUB_ENV
       - run: echo "BRANCH=update_lock_${{ env.INPUTS_BRANCH }}_${T}" >> $GITHUB_ENV
@@ -81,7 +85,7 @@ jobs:
           git add .
           git status
           if [[ -z $(git status --porcelain) ]]; then echo "No changes. We're done."; exit 0; fi
-          git commit -m "Update ${{ github.event.inputs.bump }} plugin versions in gemfile lock" -a
+          git commit -m "Update ${{ env.INPUTS_BUMP }} plugin versions in gemfile lock and NOTICE.txt" -a
           git push origin $BRANCH
       - name: Create Pull Request
         run: |

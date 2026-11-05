@@ -194,7 +194,9 @@ class LogstashService < Service
       puts "Found feature flag. Starting LS using --path.settings #{feature_config_dir}"
     end
     puts "Starting Logstash: #{@logstash_bin} #{args} (pwd: #{Dir.pwd})"
-    ChildProcess.build(@logstash_bin, *args)
+    process = ChildProcess.build(@logstash_bin, *args)
+    process.environment['JAVACMD'] = nil
+    process
   end
 
   def teardown
@@ -300,6 +302,7 @@ class LogstashService < Service
 
     cmd, *args = cmd_args
     process = ChildProcess.build(cmd, *args)
+    process.environment['JAVACMD'] = nil
     environment.each do |k, v|
       process.environment[k] = v
     end

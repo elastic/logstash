@@ -1,7 +1,7 @@
 ---
 # alpha and beta qualifiers are now added via VERSION_QUALIFIER environment var
-logstash: 8.19.23
-logstash-core: 8.19.23
+logstash: 8.19.25
+logstash-core: 8.19.25
 logstash-core-plugin-api: 2.1.16
 # Logstash release track corresponding to keys in https://github.com/logstash-plugins/.ci/blob/1.x/logstash-versions.yml
 # For example 9.current, 9.previous, etc
@@ -10,8 +10,8 @@ logstash-release-track: 8.current
 bundled_jdk:
   # for AdoptOpenJDK/OpenJDK jdk-14.0.1+7.1, the revision is 14.0.1 while the build is 7.1
   vendor: "adoptium"
-  revision: 21.0.12.1
-  build: "1"
+  revision: 21.0.13
+  build: "9"
 
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
 # *and* for which jars artifacts are published for compile-time
@@ -27,7 +27,7 @@ jruby:
 # Note: this file is copied to the root of logstash-core because its gemspec needs it when
 #       bundler evaluates the gemspec via bin/logstash
 # Ensure Jackson version here is kept in sync with version used by jrjackson gem
-jrjackson: 0.5.4
-jackson: 2.21.7
-jackson-databind: 2.21.7
+jrjackson: 0.5.6
+jackson: 2.21.8
+jackson-databind: 2.21.8
 jackson-annotations: 2.21 # standalone release without a patch version

@@ -1,0 +1,26 @@
+name: Observability Agentic Workflow — Schedule (frequent)
+
+# High-cadence schedule lane (every 15 minutes). Shares obs-aw-event-schedule.yml
+# with schedule-profile=frequent so daily autodoc/security stay off this cron.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run-obs-aw-schedule-frequent:
+    # Union of ALL jobs in obs-aw-event-schedule.yml (GitHub checks callers
+    # against every declared job, including daily-only routes skipped by if:).
+    permissions:
+      actions: read
+      contents: write
+      copilot-requests: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    uses: elastic/oblt-aw/.github/workflows/obs-aw-event-schedule.yml@v0 # ratchet:exclude
+    with:
+      schedule-profile: frequent
