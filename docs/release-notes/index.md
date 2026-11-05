@@ -21,6 +21,279 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.6.0 [logstash-9.6.0-release-notes]
+
+### Features and enhancements [logstash-9.6.0-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.6.0
+
+=== Logstash Commits between 9.6 and 9.5.6
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.5.6..9.6"
+
+feb8c3c5d - (HEAD -> 9.6, origin/9.6) [9.6] Forward port release notes for 9.5.6 and 9.4.9 (#19785) (9 minutes ago) <Álex Cámara Lara>
+0e1a734ec - After gemfile.lock update, workflow also updates the dependency tree. (#19807) (#19814) (10 hours ago) <mergify[bot]>
+0aee28d23 - Update patch plugin versions in gemfile lock (#19809) (13 hours ago) <github-actions[bot]>
+94ace55df - Ship jdk 21.0.13+9 with windows artifacts (#19808) (#19810) (13 hours ago) <mergify[bot]>
+91af26c6c - Regenerate 9.6 dependency tree. (#19803) (2 days ago) <Mashhur>
+80e09f8ad - Ironbank install openssl (#19793) (#19804) (2 days ago) <mergify[bot]>
+180cdd1bb - Build monitoring API rack app once instead of per request (#19721) (#19795) (2 days ago) <mergify[bot]>
+5938fbabb - Upgrades opentelemetry-bom dependency (#19794) (#19799) (2 days ago) <mergify[bot]>
+6fc22387f - Bump docker/login-action (#19772) (#19781) (2 days ago) <mergify[bot]>
+24fb513bb - ci: drop n1-standard machineType (#19756) (#19766) (6 days ago) <mergify[bot]>
+79e1d9be6 - Fix serverless endpoint flyout title and label (#19736) (#19765) (7 days ago) <mergify[bot]>
+5a24960c9 - Doc: Update version.stack references (#19664) (#19760) (7 days ago) <mergify[bot]>
+805dc4781 - Update patch plugin versions in gemfile lock (#19752) (8 days ago) <github-actions[bot]>
+9370ad78f - Bump bundled JDK to 21.0.13+9, keep Windows on 21.0.12.1+1 (#19737) (#19744) (8 days ago) <mergify[bot]>
+ff427d894 - Updates Jackson to 2.21.8 (#19738) (#19740) (8 days ago) <mergify[bot]>
+e85c9d4d7 - chore: deps(updatecli): Bump updatecli version to v0.123.0 (#19730) (#19731) (10 days ago) <mergify[bot]>
+b12897f56 - Notify Slack when the bump Java workflow fails (#19716) (#19725) (13 days ago) <mergify[bot]>
+167ce4b0c - Use 9.x as 9.next while in ff (#19724) (13 days ago) <Cas Donoghue>
+e81865d75 - Fix java bump updatecli workflow (#19710) (#19711) (2 weeks ago) <mergify[bot]>
+d8d94c5e6 - Update minor plugin versions in gemfile lock (#19709) (2 weeks ago) <github-actions[bot]>
+b3d2e07d7 - Update patch plugin versions in gemfile lock (#19708) (2 weeks ago) <github-actions[bot]>
+6aa9d8466 - bump guava dependency (#19690) (#19704) (2 weeks ago) <mergify[bot]>
+dd8511de4 - bump lock file for 9.6 (#19698) (2 weeks ago) <github-actions[bot]>
+c4c020ddc - Add 9.6.0 lock file copied from 9.5 (#19692) (2 weeks ago) <github-actions[bot]>
+5ad00e8a2 - Bump actions/setup-java (#19681) (2 weeks ago) <dependabot[bot]>
+39a297ed8 - [docs] Use singular 'Logstash API' in OpenAPI spec title (#19678) (3 weeks ago) <Andrea De Pirro>
+b26e4bdbb - Automate minor release preparation via bump-minor-logstash.yml (#19461) (3 weeks ago) <Copilot>
+de90f653d - Unset JAVACMD for integration tests (#19673) (3 weeks ago) <Cas Donoghue>
+266492ff7 - Add o11y machine access to snyk artifact pipeline (#19672) (3 weeks ago) <Mashhur>
+1077d1a30 - ci: CODEOWNERS for oblt-aw trigger clients (#19666) (3 weeks ago) <Francisco Ramon>
+19cabfd8f - Doc: Forwardport 9.4.8 and 9.5.5 release notes (#19661) (4 weeks ago) <Visha Angelova>
+734c3cab8 - Stop running generalized/duplicate snyk scans on logstash branches (#19620) (4 weeks ago) <Cas Donoghue>
+b3dddd463 - chore: deps(updatecli): Bump updatecli version to v0.122.1 (#19638) (4 weeks ago) <github-actions[bot]>
+c7faab215 - Sync agentic workflow files from elastic/oblt-aw (#19642) (4 weeks ago) <elastic-vault-github-plugin-prod[bot]>
+ab024f537 - Fix month regex in health report ISO8601 pattern (#19630) (5 weeks ago) <Cas Donoghue>
+b9ff3a9a6 - Bump bc-fips deps (#19622) (5 weeks ago) <Cas Donoghue>
+087fc7473 - ci: replace json-watcher with version-bump-dra in the version bump pipeline (#19619) (5 weeks ago) <ninalee12>
+44f9a5d0c - Sync agentic workflow files from elastic/oblt-aw (#19623) (5 weeks ago) <elastic-vault-github-plugin-prod[bot]>
+6a7ec65d6 - Fix Gradle native services crash on Windows Server 2016 (#19598) (5 weeks ago) <Cas Donoghue>
+b9938493f - Sync agentic workflow files from elastic/oblt-aw (#19612) (5 weeks ago) <elastic-vault-github-plugin-prod[bot]>
+3c6e33358 - Update bundled JRuby to 10.0.7.0 (#19594) (5 weeks ago) <Copilot>
+92cd69e8b - Fix sbom generation script such that snyk can find jar deps (#19555) (5 weeks ago) <Cas Donoghue>
+56d34d113 - chore: deps(updatecli): Bump updatecli version to v0.122.0 (#19589) (5 weeks ago) <github-actions[bot]>
+9e80fce5d - Updates Jackson to 2.21.7 (#19577) (6 weeks ago) <Andrea Selva>
+99a94d643 - Add a grype ignore file (#19575) (6 weeks ago) <Cas Donoghue>
+9595c1b89 - fix jdk matrix tests with new gradle/bundler pattern (#19576) (6 weeks ago) <Cas Donoghue>
+876503c16 - Remove legacy PR Buildkite Detective workflow (#19490) (7 weeks ago) <Francisco Ramon>
+74fd05dab - Sync agentic workflow files from elastic/oblt-aw (#19543) (7 weeks ago) <elastic-vault-github-plugin-prod[bot]>
+9c6e585bb - Upgrade rubyzip dependency. (#19501) (7 weeks ago) <Mashhur>
+bb950f87e - Update jackson to 2.21.6 (#19442) (7 weeks ago) <Cas Donoghue>
+d3c1abaf2 - Update load balance link for Beats in Logstash docs (#19539) (#19546) (7 weeks ago) <mergify[bot]>
+62cb0030a - Pin resolv 0.7.2 and fork JRuby for gem installs (#19483) (7 weeks ago) <Cas Donoghue>
+078c17b19 - Forwardport 9.4.7 and 9.5.3 release notes. (#19527) (7 weeks ago) <Mashhur>
+9ff1f0648 - (origin/mergify/bp/main/pr-19525, origin/mergify/bp/main/pr-19524) Add a line in LS-LS comm page, to signal users that lumberjack inpu plugin should not be used. (#19505) (7 weeks ago) <Mashhur>
+3bafe7fe2 - Upgrades zstd-jni (#19512) (7 weeks ago) <Mashhur>
+ba9092ad6 - chore: deps(updatecli): Bump updatecli version to v0.121.0 (#19511) (7 weeks ago) <github-actions[bot]>
+610f6896b - Bump actions/setup-java in the github-actions group across 1 directory (#19506) (7 weeks ago) <dependabot[bot]>
+b62f96fd4 - Update bundled JDK to 21.0.12.1 build 1 (#19507) (7 weeks ago) <github-actions[bot]>
+3841ce655 - add missing test files (#19495) (8 weeks ago) <Cas Donoghue>
+10a6e380a - Add the logstash-output-http plugin to observabilitySRE container (#19465) (8 weeks ago) <Cas Donoghue>
+c8434fa45 - Bump anchore/scan-action in the github-actions group across 1 directory (#19488) (8 weeks ago) <dependabot[bot]>
+772b07478 - Migrate DRA GCS publishing from Release manager to dra-prep-plugin (#19477) (9 weeks ago) <ninalee12>
+f7e486e9e - Release notes for 9.5.3 (#19479) (#19480) (9 weeks ago) <mergify[bot]>
+ceb071c0a - [main] (backport #19463) Release notes for 9.4.6 (#19472) (9 weeks ago) <mergify[bot]>
+ac4105a7d - Bump the github-actions group across 1 directory with 2 updates (#19470) (9 weeks ago) <dependabot[bot]>
+316a02747 - Updated to Gradle 9.7.0 (#19216) (10 weeks ago) <Andrea Selva>
+9129c13c6 - [docs] Warn not to use Cloud ID over AWS PrivateLink (#19462) (2 months ago) <shainaraskas>
+dd88bfb8c - chore: deps(updatecli): Bump updatecli version to v0.120.1 (#19453) (2 months ago) <github-actions[bot]>
+dfb18c0e1 - [CI] Serverless CI README.md (#19454) (2 months ago) <Kaise>
+5e5356567 - Release notes for 9.5.2 (#19436) (#19448) (3 months ago) <mergify[bot]>
+824f02c96 - [chore] add timestamp in health check API (#19422) (3 months ago) <Vihas Makwana>
+d01d88238 - Update concurrent-ruby gem (#19428) (3 months ago) <Cas Donoghue>
+2a46d5101 - fix: correct casing to lowercase streams (matches actual GitHub team slug) (#19419) (3 months ago) <Julien Lind>
+d950dbe82 - Rename ingest-fp team reference to Streams (#19415) (3 months ago) <Julien Lind>
+5540ab6ce - Handles no such file exception if happens during the oldest segment resolution. (#19409) (3 months ago) <Mashhur>
+e22828ca5 - chore: deps(updatecli): Bump updatecli version to v0.120.0 (#19399) (3 months ago) <github-actions[bot]>
+e735f9e33 - Bump actions/setup-java in the github-actions group across 1 directory (#19398) (3 months ago) <dependabot[bot]>
+c0bd22c05 - Release notes for 9.5.1 (#19389) (#19402) (3 months ago) <Andrea Selva>
+dd01f4efd - Release notes for 9.4.5 (#19388) (#19401) (3 months ago) <mergify[bot]>
+6bb6e3f8f - Update jdk matrix tests with improvments from 8.19 (#19354) (3 months ago) <Cas Donoghue>
+a14d9e6c0 - fix: use hyphenated input names in bump-logstash workflow (#19384) (3 months ago) <Álex Cámara Lara>
+804fc2117 - Make BufferedTokenizer thread safe (#19345) (3 months ago) <Andrea Selva>
+ab859c28a - Aligns dependency bump workflow on run branch. (#19343) (3 months ago) <Mashhur>
+704995ca0 - Release notes for 9.5.0 (#19356) (#19376) (3 months ago) <mergify[bot]>
+350aaabf0 - Add .gitignore protection against locally-created credential files (#19296) (3 months ago) <Mike Place>
+f81f1ba3c - Update bundled JDK to 21.0.12 build 8 (#19368) (3 months ago) <github-actions[bot]>
+218e53b34 - Bump the github-actions group across 1 directory with 2 updates (#19364) (3 months ago) <dependabot[bot]>
+d8e848084 - Pin jruby-openssl on main (#19355) (3 months ago) <Cas Donoghue>
+95257f986 - dra: trigger bump-logstash workflow from version bump pipeline (#19280) (3 months ago) <Francisco Ramon>
+2e68a2646 - Bump docker/login-action in the github-actions group across 1 directory (#19351) (3 months ago) <dependabot[bot]>
+f3964eda5 - Bump log4j to 2.25.5 (#19335) (3 months ago) <Cas Donoghue>
+3c4d175bf - BufferedTokenizer: size limit check in flush and logging when drop data (#19312) (4 months ago) <Andrea Selva>
+f1ad935ad - Detect input/output blocks with any whitespace before the brace (#19268) (4 months ago) <Luca Belluccini>
+a8b265a0b - [main] (backport #19313) Release notes for 9.3.8 (#19326) (4 months ago) <mergify[bot]>
+55de5dfa0 - Release notes for 9.4.4 (#19314) (#19323) (4 months ago) <mergify[bot]>
+816bf4c61 - Bump actions/setup-node in the github-actions group across 1 directory (#19316) (4 months ago) <dependabot[bot]>
+6491d3b91 - [CI] Removed deprecated JDK from Logstash JDK test matrix (#19317) (4 months ago) <Andrea Selva>
+cd366559c - CI: Add OpenAPI spec lint and S3 publish workflows (#19278) (4 months ago) <Jan Calanog>
+a28e3403a - Log JVM UseCompressedOops status at startup (#19267) (4 months ago) <Mauri de Souza Meneguzzo>
+620940aee - chore: deps(updatecli): Bump updatecli version to v0.119.0 (#19295) (4 months ago) <github-actions[bot]>
+c6a4a80b0 - Doc: Add failure store info to data resiliency section (#18595) (4 months ago) <Karen Metts>
+bb92531e3 - Bump jackson and jrjackson dependencies (#19249) (4 months ago) <Cas Donoghue>
+ca4e96c56 - security: add permissions block to workflows (#19283) (4 months ago) <elastic-vault-github-plugin-prod[bot]>
+c52da4967 - Bump logstash version 9.6.0 (#19276) (4 months ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.5.6..9.6 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 9.5.8 -> 9.6.1
+logstash-integration-snmp: 4.3.1 -> 4.5.0
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.6.0-changes]
+
+**Elastic_integration Filter - 9.6.1**
+
+* Sync up with Elasticsearch 9.6 branch to pull latest dependencies [#541](https://github.com/elastic/logstash-filter-elastic_integration/pull/541)
+
+* Embeds Ingest Node components from Elasticsearch 9.6 [#517](https://github.com/elastic/logstash-filter-elastic_integration/pull/517)
+* Update jackson dependency to 3.1.8 [#520](https://github.com/elastic/logstash-filter-elastic_integration/pull/520)
+
+* Set SO_TIMEOUT on IOReactor to ensure NIO connections have a baseline socket timeout [#480](https://github.com/elastic/logstash-filter-elastic_integration/pull/480)
+* Prevent indefinite hangs when connection pool restore fails to apply the request-level timeout
+
+* Sync up with Elasticsearch 9.5 branch to pull latest dependencies [#476](https://github.com/elastic/logstash-filter-elastic_integration/pull/476)
+
+* Fixes an issue where a field set by an integration pipeline to `java.util.Date` value-object representing a timestamp could not be converted to a timestamp [#460](https://github.com/elastic/logstash-filter-elastic_integration/issues/460)
+* Applies Elasticsearch geoip module relocation changes [#445](https://github.com/elastic/logstash-filter-elastic_integration/pull/445)
+
+* Include httpclient5/httpcore5 from the `elasticsearch-java` artifact [#458](https://github.com/elastic/logstash-filter-elastic_integration/pull/458)
+
+* Upgrades `tools.jackson.core` dependency to 3.1.1 [#454](https://github.com/elastic/logstash-filter-elastic_integration/pull/454)
+
+* Include Elasticsearch web-utils JAR into the plugin to keep `registered_domain` processor dependencies [#397](https://github.com/elastic/logstash-filter-elastic_integration/pull/397)
+* Fixed `set_security_user` processor to behave consistently with other unsupported processors (`inference`, `enrich`) by tagging events with `_ingest_pipeline_failure` [#269](https://github.com/elastic/logstash-filter-elastic_integration/pull/269)
+* Apply Elasticsearch user-agent plugin refactoring [#408](https://github.com/elastic/logstash-filter-elastic_integration/pull/408)
+
+* Include httpclient5/httpcore5 from the `elasticsearch-java` artifact [#457](https://github.com/elastic/logstash-filter-elastic_integration/pull/457)
+
+* Upgrades `tools.jackson.core` dependency to 3.1.1 [#453](https://github.com/elastic/logstash-filter-elastic_integration/pull/453)
+
+* Upgrades `elasticsearch-java` and `elasticsearch-rest-client` dependencies to 9.latest [#418](https://github.com/elastic/logstash-filter-elastic_integration/pull/418)
+* Upgrades transient `tools.jackson.core` dependency to 3.1.0
+
+* Fixes the `MissingFormatArgumentException` potentially `String.format` may cause in the `SimpleResolverCache` [#393](https://github.com/elastic/logstash-filter-elastic_integration/pull/393)
+
+* Embeds Ingest Node components from Elasticsearch 9.3 [#378](https://github.com/elastic/logstash-filter-elastic_integration/pull/378)
+
+* Upgrades `elasticsearch-java` and `elasticsearch-rest-client` dependencies to 9.latest [#418](https://github.com/elastic/logstash-filter-elastic_integration/pull/418)
+* Upgrades transient `tools.jackson.core` dependency to 3.1.0
+
+* Fixes the `MissingFormatArgumentException` potentially `String.format` may cause in the `SimpleResolverCache` [#392](https://github.com/elastic/logstash-filter-elastic_integration/pull/392)
+
+* Logging compatability with Elasticsearch 9.2 [#373](https://github.com/elastic/logstash-filter-elastic_integration/pull/373)
+* Utilizes Elasticsearch interfaces via Elasticsearch logstash-bridge [#336](https://github.com/elastic/logstash-filter-elastic_integration/pull/336)
+
+* Add `terminate` processor support [#345](https://github.com/elastic/logstash-filter-elastic_integration/pull/345)
+
+* Introduces `proxy` param to support proxy [#316](https://github.com/elastic/logstash-filter-elastic_integration/pull/316)
+* Embeds Ingest Node components from Elasticsearch 9.1
+
+* Embeds Ingest Node components from Elasticsearch 9.0, no functional change [#291](https://github.com/elastic/logstash-filter-elastic_integration/pull/291)
+
+* Pre-release for 9.0, no functional change [#265](https://github.com/elastic/logstash-filter-elastic_integration/pull/265)
+* Embeds Ingest Node components from Elasticsearch 9.0.0 prerelease
+* Compatible with Logstash 8.17+
+
+* Aligns with stack major and minor versions, no functional changes [#285](https://github.com/elastic/logstash-filter-elastic_integration/pull/285)
+* Embeds Ingest Node components from Elasticsearch 8.18
+
+* Provides a guidance in logs when plugin version mismatches with connected Elasticsearch `major.minor` version [#255](https://github.com/elastic/logstash-filter-elastic_integration/pull/255)
+* Embeds Ingest Node components from Elasticsearch 8.17
+* Compatible with Logstash 8.15+
+
+* Aligns with stack major and minor versions, no functional changes [#212](https://github.com/elastic/logstash-filter-elastic_integration/pull/212)
+* Embeds Ingest Node components from Elasticsearch 8.17
+* Compatible with Logstash 8.15+
+
+* Provides a guidance in logs when plugin version mismatches with connected Elasticsearch `major.minor` version [#253](https://github.com/elastic/logstash-filter-elastic_integration/pull/253)
+* Embeds Ingest Node components from Elasticsearch 8.16
+* Compatible with Logstash 8.15+
+
+* Aligns with stack major and minor versions, no functional changes [#210](https://github.com/elastic/logstash-filter-elastic_integration/pull/210)
+* Embeds Ingest Node components from Elasticsearch 8.16
+* Compatible with Logstash 8.15+
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests [#197](https://github.com/elastic/logstash-filter-elastic_integration/pull/197)
+
+* Reflects the Elasticsearch GeoIP changes into the plugin and syncs with Elasticsearch 8.16 branch [#170](https://github.com/elastic/logstash-filter-elastic_integration/pull/170)
+
+* Fixes the connection failure where SSL verification mode is disabled over SSL connection [#165](https://github.com/elastic/logstash-filter-elastic_integration/pull/165)
+
+* Fix: register available PainlessExtension-s, resolving an issue where the pipelines for some integrations would fail to compile [#162](https://github.com/elastic/logstash-filter-elastic_integration/pull/162)
+
+* Update default elasticsearch tree branch to 8.15 [#156](https://github.com/elastic/logstash-filter-elastic_integration/pull/156)
+
+* Updates Elasticsearch Java client used[#155](https://github.com/elastic/logstash-filter-elastic_integration/pull/155)
+
+* [DOC] Documents that integrations are designed to work best with data streams and ECS enabled [#153](https://github.com/elastic/logstash-filter-elastic_integration/pull/153)
+
+* Fixes handling of array-type event fields by treating them as lists [#146](https://github.com/elastic/logstash-filter-elastic_integration/pull/146)
+* Syncs with Elasticsearch 8.14, including support for new user-provided GeoIP database types `ConnectionType`, `Domain` and `Isp` [#147](https://github.com/elastic/logstash-filter-elastic_integration/pull/147)
+
+* [DOC] Removes Tech Preview label and adds link to extending integrations topic in LSR [#142](https://github.com/elastic/logstash-filter-elastic_integration/pull/142)
+
+* Fixes `EventProcessorBuilder#build` to work with JRuby 9.4.6.0 [#133](https://github.com/elastic/logstash-filter-elastic_integration/pull/133)
+
+* Fixes `GeoIpDatabaseProvider.Builder#build` to work with JRuby 9.4.6.0 [#132](https://github.com/elastic/logstash-filter-elastic_integration/pull/132)
+
+* Fixes issue where configured `username`/`password` credentials was not sent to Elasticsearch instances that had anonymous access enabled [#127](https://github.com/elastic/logstash-filter-elastic_integration/pull/127)
+
+* Adds relevant information to Elasticsearch client's User-Agent header [#117](https://github.com/elastic/logstash-filter-elastic_integration/pull/117)
+
+* Non-user facing work to shorten JAR path when packaging [#114](https://github.com/elastic/logstash-filter-elastic_integration/pull/114)
+
+* [DOC] Additional links and formatting fixes to docs [#115](https://github.com/elastic/logstash-filter-elastic_integration/pull/115)
+
+* Synchronize with Elasticsearch 8.12 and include elasticsearch-geo jar to include a missed class [#113](https://github.com/elastic/logstash-filter-elastic_integration/pull/113)
+
+* Support non-encoded API Key [#101](https://github.com/elastic/logstash-filter-elastic_integration/pull/101)
+
+* Re-syncs with Elasticsearch 8.11 [#91](https://github.com/elastic/logstash-filter-elastic_integration/pull/91)
+* Adds support for `reroute` processor [#100](https://github.com/elastic/logstash-filter-elastic_integration/pull/100)
+* Adds support for `geoip` processor to use databases from Logstash's Geoip Database Management service [#88](https://github.com/elastic/logstash-filter-elastic_integration/pull/88)
+* Restores support for `redact` processor using its x-pack licensed implementation [#90](https://github.com/elastic/logstash-filter-elastic_integration/issues/90)
+
+* Re-syncs with Elasticsearch 8.10 [#78](https://github.com/elastic/logstash-filter-elastic_integration/pull/78)
+* BREAKING: The `redact` processor was removed from upstream IngestCommon, and therefore no longer available here.
+* Documentation added for required privileges and unsupported processors [#72](https://github.com/elastic/logstash-filter-elastic_integration/pull/72)
+* Added request header `Elastic-Api-Version` for serverless [#84](https://github.com/elastic/logstash-filter-elastic_integration/pull/84)
+
+* Fixes several related issues with how fields are mapped from the Logstash Event to the IngestDocument and back again [#51](https://github.com/elastic/logstash-filter-elastic_integration/pull/51)
+* `IngestDocument` metadata fields are now separately routed to `[@metadata][_ingest_document]` on the resulting `Event`, fixing an issue where the presence of Elasticsearch-reserved fields such as the top-level `_version` would cause a downstream Elasticsearch output to be unable to index the event [#47][]
+* Top-level `@timestamp` and `@version` fields are no longer excluded from the `IngestDocument`, as required by some existing integration pipelines [#54][]
+* Field-type conversions have been improved by presenting logstash `Timestamp`-type objects as their ISO8601-encoded `String`s mapping any returned `ZonedDateTime`-objects into logstash `Timestamp`s to support several Ingest Common processors and their typical use in Elastic Integration pipelines [#65][], [#70][]
+* Adds proactive reloaders for both datastream-to-pipeline-name mappings and pipeline definitions to ensure upstream changes are made available without impacting processing [#48](https://github.com/elastic/logstash-filter-elastic_integration/pull/48)
+* Presents helpful guidance when run on an unsupported version of Java [#43](https://github.com/elastic/logstash-filter-elastic_integration/pull/43)
+* Fix: now plugin is able to establish a connection to Elasticsearch on Elastic cloud with `cloud_id` and `cloud_auth` authentication pair [#62](https://github.com/elastic/logstash-filter-elastic_integration/pull/62)
+* Adds `pipeline_name` to _override_ the default behaviour of auto-detecting the pipeline name from its data stream [#69](https://github.com/elastic/logstash-filter-elastic_integration/pull/69)
+* BREAKING: http basic authentication with Elasticsearch is now configured with `username` and `password` options to make this plugin behave more similarly to other Elasticsearch-related plugins [#61](https://github.com/elastic/logstash-filter-elastic_integration/pull/61)
+* Improves user-experience when connected to an Elasticsearch that does not have security features enabled (such as when testing against an on-prem cluster) [#64](https://github.com/elastic/logstash-filter-elastic_integration/pull/64)
+* Provides helpful guidance when providing request credentials to an unsecured Elasticsearch cluster. 
+* Tolerates anonymous access of an unsecured Elasticsearch cluster by allowing the plugin to start in an "unsafe" mode without pre-validating permission to use the necessary Elasticsearch APIs.
+
+[#47]: https://github.com/elastic/logstash-filter-elastic_integration/issues/47
+[#54]: https://github.com/elastic/logstash-filter-elastic_integration/issues/54
+[#65]: https://github.com/elastic/logstash-filter-elastic_integration/issues/65
+[#70]: https://github.com/elastic/logstash-filter-elastic_integration/issues/70
+
+* Empty Bootstrap of Logstash filter plugin [#1](https://github.com/logstash-plugins/logstash-filter-elastic_integration/pull/1)
+* Adds basic configuration options required for Elasticsearch connection [#2](https://github.com/logstash-plugins/logstash-filter-elastic_integration/pull/2)
+
+**Snmp Integration - 4.5.0**
+
+* Add `map_enum_values` option to replace integer values that have a MIB named-number (enum) definition with their textual name. [#99](https://github.com/logstash-plugins/logstash-integration-snmp/pull/99)
+* Add `split_tables` option to emit one event per `tables` row instead of a single aggregated event. [#100](https://github.com/logstash-plugins/logstash-integration-snmp/pull/100)
+
+* Fix that avoids random null fields on table read. [#98](https://github.com/logstash-plugins/logstash-integration-snmp/pull/98)
+
+* Expose `max_repetitions` config option to the SNMP input plugin, allowing users to control the max-repetitions field in GETBULK PDUs used by walk and table operations. [#97](https://github.com/logstash-plugins/logstash-integration-snmp/pull/97)
+
+
 ## 9.5.6 [logstash-9.5.6-release-notes]
 
 ::::{important}
