@@ -19,6 +19,20 @@ require "spec_helper"
 require "bundler/cli"
 
 describe LogStash::Bundler do
+  context "when patching bundler self-manager" do
+    let(:self_manager) { ::Bundler::SelfManager.new }
+
+    it "disables restart_with_locked_bundler_if_needed on instances" do
+      LogStash::Bundler.patch!
+
+      allow(self_manager).to receive(:find_restart_version).and_return(Gem::Version.new("2.7.2"))
+      allow(self_manager).to receive(:installed?).and_return(true)
+      expect(self_manager).not_to receive(:restart_with)
+
+      self_manager.restart_with_locked_bundler_if_needed
+    end
+  end
+
   context "capture_stdout" do
     it "should capture stdout from block" do
       original_stdout = $stdout
@@ -187,7 +201,9 @@ describe LogStash::Bundler do
         end
 
         it "raise error when fetcher failed" do
-          allow(::Gem::SpecFetcher.fetcher).to receive("spec_for_dependency").with(anything).and_return([nil, [StandardError.new("boom")]])
+          source = double("source")
+          error_problem = Gem::SourceFetchProblem.new(source, StandardError.new("boom"))
+          allow(::Gem::SpecFetcher.fetcher).to receive("spec_for_dependency").with(anything).and_return([nil, [error_problem]])
           expect { bundler_arguments }.to raise_error(StandardError, /boom/)
         end
       end
@@ -198,6 +214,46 @@ describe LogStash::Bundler do
       it 'should call the `bundle clean`' do
         expect(bundler_arguments).to include('clean')
       end
+    end
+  end
+
+  context "specific_platforms" do
+    it "includes universal-java with nil version and excludes generic java" do
+      platforms = [
+        Gem::Platform.new("java"),
+        Gem::Platform.new("universal-java"),
+        Gem::Platform.new("universal-java-21")
+      ]
+
+      specific = LogStash::Bundler.specific_platforms(platforms).map(&:to_s)
+      expect(specific).to include("universal-java", "universal-java-21")
+      expect(specific).not_to include("java")
+    end
+
+    it "returns java-specific variants from runtime Gem.platforms on JRuby" do
+      specific = LogStash::Bundler.specific_platforms(::Gem.platforms).map(&:to_s)
+      expect(specific).to include(a_string_matching(/universal-java/))
+      expect(specific).not_to include("java")
+    end
+  end
+
+  context "genericize_platform" do
+    it "does not attempt to remove universal-java when lockfile only has generic java" do
+      lock_definition = double("bundler_definition", :platforms => [Gem::Platform.new("java")])
+      allow(::Bundler).to receive(:definition).and_return(lock_definition)
+      expect(LogStash::Bundler).to receive(:invoke!).with(hash_including(:add_platform => "java")).and_return("")
+      expect(LogStash::Bundler).not_to receive(:invoke!).with(hash_including(:remove_platform))
+
+      LogStash::Bundler.genericize_platform
+    end
+
+    it "removes universal-java variants when present in lockfile platforms" do
+      lock_definition = double("bundler_definition", :platforms => [Gem::Platform.new("java"), Gem::Platform.new("universal-java")])
+      allow(::Bundler).to receive(:definition).and_return(lock_definition)
+      expect(LogStash::Bundler).to receive(:invoke!).with(hash_including(:add_platform => "java")).ordered.and_return("")
+      expect(LogStash::Bundler).to receive(:invoke!).with(hash_including(:remove_platform => "universal-java")).ordered.and_return("")
+
+      LogStash::Bundler.genericize_platform
     end
   end
 end

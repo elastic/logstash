@@ -60,7 +60,7 @@ describe "Test Logstash Pipeline id" do
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true
-    expect(IO.read(plainlog_file) =~ /\[logstash.javapipeline\s*\]\[#{pipeline_name}\]/).to be > 0
+    expect(IO.read(plainlog_file) =~ /\[logstash\.javapipeline\s*\]\[#{pipeline_name}\]/).to be > 0
   end
 
   it "write pipeline config in logs - source:config string" do
@@ -74,7 +74,7 @@ describe "Test Logstash Pipeline id" do
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true
-    expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["config string"\]/).to be > 0
+    expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"\s*=>\s*\["config string"\]/).to be > 0
   end
 
   it "write pipeline config in logs - source:config file" do
@@ -88,7 +88,7 @@ describe "Test Logstash Pipeline id" do
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true
-    expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["#{initial_config_file}"\]/).to be > 0
+    expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"\s*=>\s*\["#{initial_config_file}"\]/).to be > 0
   end
 
   it "should separate pipeline output in its own log file" do
@@ -105,12 +105,12 @@ describe "Test Logstash Pipeline id" do
     pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
     expect(File.exist?(pipeline_log_file)).to be true
     content = IO.read(pipeline_log_file)
-    expect(content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be > 0
+    expect(content =~ /Pipeline started\s*{"pipeline.id"\s*=>\s*"#{pipeline_name}"}/).to be > 0
 
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true
     plainlog_content = IO.read(plainlog_file)
-    expect(plainlog_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be_nil
+    expect(plainlog_content =~ /Pipeline started\s*{"pipeline.id"\s*=>\s*"#{pipeline_name}"}/).to be_nil
   end
 
   it "should rollover main log file when pipeline.separate_logs is enabled" do
@@ -182,7 +182,7 @@ describe "Test Logstash Pipeline id" do
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true
     plaing_log_content = IO.read(plainlog_file)
-    expect(plaing_log_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be > 0
+    expect(plaing_log_content =~ /Pipeline started\s*{"pipeline.id"\s*=>\s*"#{pipeline_name}"}/).to be > 0
   end
 
   def wait_logstash_process_terminate(service)

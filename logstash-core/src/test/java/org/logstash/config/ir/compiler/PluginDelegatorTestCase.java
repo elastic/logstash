@@ -25,6 +25,7 @@ import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
+import org.jruby.api.Create;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -46,8 +47,8 @@ public abstract class PluginDelegatorTestCase extends RubyEnvTestCase {
     public void setup() {
         final ThreadContext context = RUBY.getCurrentContext();
         @SuppressWarnings("rawtypes")
-        final RubyArray namespaces = RubyArray.newArray(RUBY, 1);
-        namespaces.add(0, RUBY.newString(getBaseMetricsPath().split("/")[0]).intern());
+        final RubyArray namespaces = Create.allocArray(context, 1);
+        namespaces.add(0, RUBY.newString(getBaseMetricsPath().split("/")[0]).intern(context));
         IRubyObject metricWithCollector =
             runRubyScript("require \"logstash/instrument/collector\"\n" +
                               "metricWithCollector = LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new)");
@@ -70,7 +71,7 @@ public abstract class PluginDelegatorTestCase extends RubyEnvTestCase {
 
         RubyHash rh = metricStore;
         for (String p : path) {
-            rh = (RubyHash) rh.op_aref(RUBY.getCurrentContext(), RUBY.newString(p).intern());
+            rh = (RubyHash) rh.op_aref(RUBY.getCurrentContext(), RUBY.newString(p).intern(RUBY.getCurrentContext()));
         }
         return rh;
     }
@@ -78,14 +79,14 @@ public abstract class PluginDelegatorTestCase extends RubyEnvTestCase {
     protected abstract String getBaseMetricsPath();
 
     protected String getMetricStringValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern());
+        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern(RUBY.getCurrentContext()));
         RubyString value = (RubyString) counter.callMethod("value");
         return value.asJavaString();
     }
 
     protected long getMetricLongValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern());
+        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern(RUBY.getCurrentContext()));
         RubyFixnum count = (RubyFixnum) counter.callMethod("value");
-        return count.getLongValue();
+        return count.asLong(RUBY.getCurrentContext());
     }
 }

@@ -105,7 +105,7 @@ public final class ConfigCompiler {
     }
 
     private static Statement readStatementFromRubyHash(RubyHash hash, String key) {
-        IRubyObject inputValue = hash.fastARef(RubyUtil.RUBY.newString(key).intern());
+        IRubyObject inputValue = hash.fastARef(RubyUtil.RUBY.newString(key).intern(RubyUtil.RUBY.getCurrentContext()));
         return inputValue.toJava(Statement.class);
     }
 

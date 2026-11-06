@@ -151,7 +151,7 @@ describe LogStash::Plugin do
         .with(plugin_name)
         .and_return(double(:version => Gem::Version.new('1.0.0')))
 
-      expect_any_instance_of(LogStash::Logging::Logger).not_to receive(:info)
+      expect(subject.logger).not_to receive(:info)
       subject.validate({})
     end
 
@@ -160,13 +160,12 @@ describe LogStash::Plugin do
     end
 
     it 'logs a warning if the plugin use the milestone option' do
-      expect_any_instance_of(LogStash::Logging::Logger).to receive(:debug)
-        .with(/stromae plugin is using the 'milestone' method/)
-
-      class LogStash::Filters::Stromae < LogStash::Filters::Base
+      klass = Class.new(LogStash::Filters::Base) do
         config_name "stromae"
-        milestone 2
       end
+      expect(klass.logger).to receive(:debug)
+        .with(/stromae plugin is using the 'milestone' method/)
+      klass.milestone 2
     end
   end
 

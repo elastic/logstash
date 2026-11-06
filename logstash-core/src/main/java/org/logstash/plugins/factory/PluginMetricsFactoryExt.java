@@ -33,7 +33,7 @@ public final class PluginMetricsFactoryExt extends RubyBasicObject {
     @JRubyMethod
     public PluginMetricsFactoryExt initialize(final ThreadContext context,
                                               final IRubyObject pipelineId, final IRubyObject metrics) {
-        this.pipelineId = pipelineId.convertToString().intern();
+        this.pipelineId = pipelineId.convertToString().intern(context);
         if (metrics.isNil()) {
             this.metric = new NullMetricExt(context.runtime, RubyUtil.NULL_METRIC_CLASS);
         } else {
@@ -53,7 +53,7 @@ public final class PluginMetricsFactoryExt extends RubyBasicObject {
     @JRubyMethod
     public AbstractNamespacedMetricExt create(final ThreadContext context, final IRubyObject pluginType) {
         return getRoot(context).namespace(
-            context, RubyUtil.RUBY.newString(String.format("%ss", pluginType.asJavaString())).intern()
+            context, RubyUtil.RUBY.newString(String.format("%ss", pluginType.asJavaString())).intern(context)
         );
     }
 }
