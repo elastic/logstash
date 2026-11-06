@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-25,Logstash 8.19.25>>
 * <<logstash-8-19-24,Logstash 8.19.24>>
 * <<logstash-8-19-23,Logstash 8.19.23>>
 * <<logstash-8-19-22,Logstash 8.19.22>>
@@ -115,6 +116,34 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-25]]
+=== Logstash 8.19.25 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.25
+
+=== Logstash Commits between 8.19 and 8.19.24
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.24..8.19"
+
+a38ac1df2 - (HEAD -> 8.19, origin/8.19) [8.19] (backport #19807) After gemfile.lock update, workflow also updates the dependency tree. (#19817) (2 days ago) <mergify[bot]>
+d9686ecf0 - Ship jdk 21.0.13+9 with windows artifacts (#19808) (#19813) (2 days ago) <mergify[bot]>
+4881fa294 - Build monitoring API rack app once instead of per request (#19721) (#19798) (3 days ago) <mergify[bot]>
+5e5c323f4 - Add security advisory notice to the 8.19.24 release notes (#19791) (3 days ago) <Álex Cámara Lara>
+832161821 - Bump docker/login-action (#19772) (#19784) (3 days ago) <mergify[bot]>
+998182087 - Revert "Add security advisory notice to the 8.19.24 release notes" (#19780) (#19788) (4 days ago) <Álex Cámara Lara>
+b16906edb - Add security advisory notice to the 8.19.24 release notes (#19780) (4 days ago) <Álex Cámara Lara>
+94bfbb2f7 - Bump logstash version 8.19.25 (#19774) (4 days ago) <github-actions[bot]>
+7ea55c11e - Release notes for 8.19.24 (#19757) (7 days ago) <github-actions[bot]>
+4cb59e397 - ci: drop n1-standard machineType (#19756) (#19769) (8 days ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.19.24..8.19 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-19-24]]
 === Logstash 8.19.24 Release Notes
