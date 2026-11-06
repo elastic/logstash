@@ -11,6 +11,8 @@ steps:
                 - ^ci/acceptance_tests.sh
                 - ^ci/docker_acceptance_tests.sh
                 - ^qa/docker/
+                - ^.buildkite/scripts/exhaustive-tests/
+                - ^.buildkite/scripts/common/vm-images.json
                 - .buildkite/smart_exhaustive_tests_pipeline.yml
               config:
                 trigger: "logstash-exhaustive-tests-pipeline"
