@@ -52,7 +52,13 @@ You may be tempted to jump ahead and change settings like `pipeline.workers` (`-
     * Set the minimum (Xms) and maximum (Xmx) heap allocation size to the same value to prevent the heap from resizing at runtime, which is a very costly process.
     * You can make more accurate measurements of the JVM heap by using either the `jmap` command line utility distributed with Java or by using VisualVM. For more info, see [Profiling the heap](/reference/tuning-logstash.md#profiling-the-heap).
 
-4. **Tune Logstash pipeline settings:**
+4. **Adjust process `nice` value to `0`:**
+
+    * Logstash historically defaulted to a `nice` value of `19` in order to not interfere with normal operation of services and applications it runs alongside. This causes Logstash to run at **the lowest priority** possible.
+    * For **RPM/DEB** installations, Logstash's systemd unit file is located at `/usr/lib/systemd/system/logstash.service`.
+    * For **Tarball** installations, Logstash instead uses `$LS_SETTINGS_DIR/config/startup.options` if it was installed with `bin/system-install`. Running directly from the directory (i.e. `./bin/logstash`) is unaffected.
+
+5. **Tune Logstash pipeline settings:**
 
     * Continue on to [Tuning and profiling logstash pipeline performance](/reference/tuning-logstash.md) to learn about tuning individual pipelines.
 
