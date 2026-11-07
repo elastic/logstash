@@ -56,6 +56,16 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
     }
 
     @Override
+    protected boolean isPersistent() {
+        return false;
+    }
+
+    @Override
+    protected void doCheckpoint(final ThreadContext context) {
+        throw context.runtime.newNotImplementedError("checkpoint! called on non-persistent queue");
+    }
+
+    @Override
     protected JRubyAbstractQueueWriteClientExt doPush(final ThreadContext context,
                                                       final JrubyEventExtLibrary.RubyEvent event) throws InterruptedException {
         queue.put(event);

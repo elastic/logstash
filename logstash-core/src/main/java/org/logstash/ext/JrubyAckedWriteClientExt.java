@@ -55,6 +55,16 @@ public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClien
     }
 
     @Override
+    protected boolean isPersistent() {
+        return true;
+    }
+
+    @Override
+    protected void doCheckpoint(final ThreadContext context) {
+        queue.ensurePersisted(context);
+    }
+
+    @Override
     protected JRubyAbstractQueueWriteClientExt doPush(final ThreadContext context,
                                                       final JrubyEventExtLibrary.RubyEvent event) {
         queue.rubyWrite(context, event.getEvent());
