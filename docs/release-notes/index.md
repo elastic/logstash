@@ -21,6 +21,41 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.6.0 [logstash-9.6.0-release-notes]
+
+### Notable issues fixed [logstash-9.6.0-fixes]
+
+* Fixed an issue where frequent requests to the Logstash monitoring API (for example from Metricbeat, Elastic Agent, or Kubernetes probes) could increase native memory usage by several hundred MB [#19795](https://github.com/elastic/logstash/pull/19795)
+* Detect `input` and `output` blocks when the opening brace is on a new line or preceded by a tab, preventing an unintended default `stdin` input or `stdout` output from being added. A warning is now logged when defaults are added [#19268](https://github.com/elastic/logstash/pull/19268)
+
+### Updates to dependencies [logstash-9.6.0-dependencies]
+
+* Update OpenTelemetry BOM to 1.67.0 [#19799](https://github.com/elastic/logstash/pull/19799)
+
+### Updates to documentations [logstash-9.6.0-documentations]
+
+* Document that Cloud ID cannot be used for Elastic Cloud Hosted deployments protected by an AWS PrivateLink VPC filter, and how to connect with the private Elasticsearch endpoint instead [#19462](https://github.com/elastic/logstash/pull/19462)
+* Add failure store information to the data resiliency section [#18595](https://github.com/elastic/logstash/pull/18595)
+
+### Plugins [logstash-plugin-9.6.0-changes]
+
+**Elastic_integration Filter - 9.6.1**
+
+* Sync up with Elasticsearch 9.6 branch to pull latest dependencies [#541](https://github.com/elastic/logstash-filter-elastic_integration/pull/541)
+
+* Embeds Ingest Node components from Elasticsearch 9.6 [#517](https://github.com/elastic/logstash-filter-elastic_integration/pull/517)
+
+**Snmp Integration - 4.5.0**
+
+* Add `map_enum_values` option to replace integer values that have a MIB named-number (enum) definition with their textual name [#99](https://github.com/logstash-plugins/logstash-integration-snmp/pull/99)
+
+* Add `split_tables` option to emit one event per `tables` row instead of a single aggregated event [#100](https://github.com/logstash-plugins/logstash-integration-snmp/pull/100)
+
+* Fix that avoids random null fields on table read [#98](https://github.com/logstash-plugins/logstash-integration-snmp/pull/98)
+
+* Expose `max_repetitions` config option to the SNMP input plugin, allowing users to control the max-repetitions field in GETBULK PDUs used by walk and table operations [#97](https://github.com/logstash-plugins/logstash-integration-snmp/pull/97)
+
+
 ## 9.5.6 [logstash-9.5.6-release-notes]
 
 ::::{important}
