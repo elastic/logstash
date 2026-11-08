@@ -38,12 +38,12 @@ jobs:
       BACKPORT_LABEL: "backport-${{ github.ref_name }}"
     steps:
       - name: Set up JDK 21
-        uses: actions/setup-java@v6.1.0
+        uses: actions/setup-java@v6.2.0
         with:
           distribution: 'temurin'
           java-version: '21'
       - name: Fetch logstash-core team member list
-        uses: tspascoal/get-user-teams-membership@b2546c5affc730fd8e3d8483ae9ad3621938c2f9 #v4.0.2
+        uses: tspascoal/get-user-teams-membership@239f45b779d25e70c2e669134c6ed90826f008a1 #v4.0.3
         with: 
           username: ${{ github.actor }}
           organization: elastic
