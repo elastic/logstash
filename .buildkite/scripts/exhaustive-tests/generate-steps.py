@@ -11,7 +11,7 @@ VM_IMAGES_FILE = ".buildkite/scripts/common/vm-images.json"
 VM_IMAGE_PREFIX = "platform-ingest-logstash-multi-jdk-"
 
 ACCEPTANCE_LINUX_OSES = [
-    "ubuntu-2404", "ubuntu-2204", "ubuntu-2004",
+    "ubuntu-2604", "ubuntu-2404", "ubuntu-2204", "ubuntu-2004",
     "debian-11", "debian-12", "debian-13",
     "rhel-8", "rhel-9", "rhel-10",
     "oraclelinux-7", "oraclelinux-8", "oraclelinux-9", "oraclelinux-10",
