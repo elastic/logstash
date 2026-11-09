@@ -1194,4 +1194,45 @@ public class QueueTest {
         });
         assertThat(qre.getMessage(), containsString("Tried to write to a closed queue."));
     }
+
+    @Test
+    public void ensurePersistedFsyncsHeadPageUpToLastWrite() throws IOException {
+        // Use a high checkpointMaxWrites so writes do NOT auto-checkpoint (TestSettings default is 1)
+        Settings settings = SettingsImpl.builder(
+            TestSettings.persistedQueueSettings(1024, dataPath)
+        ).checkpointMaxWrites(1024).build();
+        try (Queue q = new Queue(settings)) {
+            q.open();
+            q.write(new StringElement("foo"));
+            q.write(new StringElement("bar"));
+
+            // head checkpoint does not yet cover the two writes
+            Checkpoint before = q.getCheckpointIO().read("checkpoint.head");
+            assertThat(before.getElementCount(), is(0));
+
+            q.ensurePersisted();
+
+            Checkpoint after = q.getCheckpointIO().read("checkpoint.head");
+            assertThat(after.getElementCount(), is(2));
+        }
+    }
+
+    @Test
+    public void ensurePersistedIsNoOpWhenNothingNewWasWritten() throws IOException {
+        // Use a high checkpointMaxWrites so writes do NOT auto-checkpoint (TestSettings default is 1)
+        Settings settings = SettingsImpl.builder(
+            TestSettings.persistedQueueSettings(1024, dataPath)
+        ).checkpointMaxWrites(1024).build();
+        try (Queue q = new Queue(settings)) {
+            q.open();
+            q.ensurePersisted(); // empty queue: must not throw
+
+            q.write(new StringElement("foo"));
+            q.ensurePersisted();
+            Checkpoint first = q.getCheckpointIO().read("checkpoint.head");
+            q.ensurePersisted(); // second call: nothing new, must not re-checkpoint or throw
+            Checkpoint second = q.getCheckpointIO().read("checkpoint.head");
+            assertThat(second.getElementCount(), is(first.getElementCount()));
+        }
+    }
 }
