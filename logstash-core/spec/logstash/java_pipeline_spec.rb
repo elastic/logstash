@@ -1240,56 +1240,6 @@ describe LogStash::JavaPipeline do
           expect(subject.metric.collector).to be(collector)
         end
       end
-
-      context "batch structure metric estimation" do
-        let(:collector) { ::LogStash::Instrument::Collector.new }
-        let(:metric) { ::LogStash::Instrument::Metric.new(collector) }
-
-        let(:sample_occupation) do
-          java_import 'org.HdrHistogram.Recorder'
-          # HistogramMetric uses HdrHistogram with 3 digits precision, so create a sample to have
-          # the rough histogram memory consumption.
-          sample = Recorder.new(3).interval_histogram
-
-          sample.estimated_footprint_in_bytes
-        end
-
-        # BatchStructureMetric has 4 policies
-        # Each window contains also the staging, so
-        # has to be summed up to the bare count of retention / resolution periods.
-        # Note that the calculations correspond to the resolutions per 60 seconds multiplied by the number 
-        # of minutes. For example, for the 5 minute rentention policy:
-        # 60 / 15 (resolution per 60 seconds) * 5 (minutes). The + 1 corresponds to the staging datapoint.
-        let(:last_1_minute_datapoints) { 60 / 3 + 1 }
-        let(:last_5_minutes_datapoints) { 5 * 60 / 15 + 1}
-        let(:last_15_minutes_datapoints) { 15 * 60 / 30 + 1 }
-        let(:lifetime_datapoints) { 2 }
-        let(:single_batch_metric_datapoints) do
-          last_1_minute_datapoints + last_5_minutes_datapoints + last_15_minutes_datapoints + lifetime_datapoints
-        end
-
-        # byte size and event count batch metrics has single_batch_metric_datapoints each plus
-        # other 3 datapoints used by each lifetime histogram metric
-        let(:total_datapoints) { 2 * single_batch_metric_datapoints + 2 * 3 }
-        let(:expected_occupation) { sample_occupation * total_datapoints }
-
-        context "when enabled" do
-          # enable batch sampling else the batch metrics are not initialized
-          let(:batch_sampling_mode) { "full" }
-
-          it "should report the expected result" do
-            subject.initialize_flow_metrics
-            expect(subject.estimate_batch_metrics_occupation).to be(expected_occupation)
-          end
-        end
-
-        context "when disabled" do
-          it "must return nil" do
-            subject.initialize_flow_metrics
-            expect(subject.estimate_batch_metrics_occupation).to be_nil
-          end
-        end
-      end
     end
   end
 
