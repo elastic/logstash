@@ -61,8 +61,12 @@ jobs:
       - run: git config --global user.name "logstashmachine"
       - run: ./gradlew clean installDefaultGems
       - run: ./vendor/jruby/bin/jruby -S bundle update --all --${{ env.INPUTS_BUMP }} --strict
+        env:
+          BUNDLE_PATH: vendor/bundle
       - name: Bump selected deps at minor level
         if: ${{ inputs.bump == 'patch' }}
+        env:
+          BUNDLE_PATH: vendor/bundle
         run: |
           AWS_GEMS=$(./vendor/jruby/bin/jruby -S bundle list --name-only | grep '^aws-')
           GEMS=$(echo "${AWS_GEMS} ${INPUTS_EXTRA_GEMS_MINOR}" | xargs)
@@ -72,6 +76,8 @@ jobs:
           fi
       - name: Bump selected deps at major level
         if: ${{ inputs.bump != 'major' && inputs.extra_gems_major != '' }}
+        env:
+          BUNDLE_PATH: vendor/bundle
         run: |
           GEMS=$(echo "${INPUTS_EXTRA_GEMS_MAJOR}" | xargs)
           if [ -n "$GEMS" ]; then
