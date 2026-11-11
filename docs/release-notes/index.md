@@ -25,42 +25,16 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.5.7-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.5.7
+* Add the `openssl` CLI back to the UBI-based container images, which no longer include it by default [#19793](https://github.com/elastic/logstash/pull/19793)
 
-=== Logstash Commits between 9.5 and 9.5.6
+### Fixes [logstash-9.5.7-fixes]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.5.6..9.5"
+* Fix an issue where Logstash could fail to exit after logging "An unexpected error occurred!" when a beats or elastic_agent input was running [#19729](https://github.com/elastic/logstash/pull/19729)
+* Fix an issue where frequent requests to the monitoring API (for example from Metricbeat, Elastic Agent, or Kubernetes probes) could increase native memory usage by several hundred MB [#19721](https://github.com/elastic/logstash/pull/19721)
 
-6ddeb1c59 - (HEAD -> 9.5, origin/9.5) Sync agentic workflow files from elastic/oblt-aw (#19854) (#19856) (5 hours ago) <mergify[bot]>
-957458789 - Reduce artifact upload and download volume in exhaustive tests (#19841) (#19853) (7 hours ago) <mergify[bot]>
-f895238be - Update patch plugin versions in gemfile lock and NOTICE.txt (#19847) (23 hours ago) <github-actions[bot]>
-50ca3f77b - Fix version bump workflow NOTICE step (#19842) (#19844) (24 hours ago) <mergify[bot]>
-69a8f9664 - Add Ubuntu 26.04 to exhaustive tests (#19831) (#19835) (2 days ago) <mergify[bot]>
-df462e07f - Retry Kafka download in integration test setup (#19825) (#19828) (5 days ago) <mergify[bot]>
-ff92465d2 - Exit on fatal error without waiting for Ruby threads (#19729) (#19820) (6 days ago) <mergify[bot]>
-f6d190fdc - After gemfile.lock update, workflow also updates the dependency tree. (#19807) (#19815) (7 days ago) <mergify[bot]>
-da4c3d79e - Ship jdk 21.0.13+9 with windows artifacts (#19808) (#19811) (7 days ago) <mergify[bot]>
-1c89d343f - Ironbank install openssl (#19793) (#19805) (8 days ago) <mergify[bot]>
-435d0db49 - [9.5] (backport #19794) Upgrades opentelemetry-bom dependency  (#19800) (8 days ago) <mergify[bot]>
-a50a60f51 - Build monitoring API rack app once instead of per request (#19721) (#19796) (8 days ago) <mergify[bot]>
-504e80492 - Add security advisory notice to the 9.5.6 release notes (#19789) (8 days ago) <Álex Cámara Lara>
-6ebd1b404 - Bump docker/login-action (#19772) (#19782) (8 days ago) <mergify[bot]>
-0d33198ba - Revert "Add security advisory notice to the 9.5.6 release notes" (#19778) (#19786) (9 days ago) <Álex Cámara Lara>
-5096dd40e - [9.5] (backport #19758) Release notes for 9.4.9 (#19777) (9 days ago) <mergify[bot]>
-629f67f06 - Add security advisory notice to the 9.5.6 release notes (#19778) (9 days ago) <Álex Cámara Lara>
-062dd3922 - Bump logstash version 9.5.7 (#19775) (9 days ago) <github-actions[bot]>
-b9529013b - Release notes for 9.5.6 (#19759) (13 days ago) <github-actions[bot]>
-7ab1124ff - ci: drop n1-standard machineType (#19756) (#19767) (13 days ago) <mergify[bot]>
-d38e25a6e - Fix serverless endpoint flyout title and label (#19736) (#19764) (13 days ago) <mergify[bot]>
-1c6fae922 - Doc: Update version.stack references (#19664) (#19761) (13 days ago) <mergify[bot]>
+### Updates to dependencies [logstash-9.5.7-dependencies]
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.5.6..9.5 *.release"
-Changed plugin versions:
-logstash-integration-kafka: 12.2.1 -> 12.2.2
-logstash-integration-rabbitmq: 7.4.4 -> 7.4.5
----------- GENERATED CONTENT ENDS HERE ------------
+* Update the JDK bundled with Windows packages to Temurin 21.0.13+9, matching the other platforms [#19808](https://github.com/elastic/logstash/pull/19808)
 
 ### Plugins [logstash-plugin-9.5.7-changes]
 
