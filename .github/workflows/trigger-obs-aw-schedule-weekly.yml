@@ -1,0 +1,28 @@
+name: Observability Agentic Workflow — Schedule (weekly)
+
+# Weekly schedule lane (Monday 06:00 UTC). Shares obs-aw-event-schedule.yml with
+# schedule-profile=weekly so daily/frequent routes stay off this cron.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run-obs-aw-schedule-weekly:
+    # Union of ALL jobs in obs-aw-event-schedule.yml (GitHub checks callers
+    # against every declared job, including routes skipped by if:).
+    permissions:
+      actions: read
+      contents: write
+      copilot-requests: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    uses: elastic/oblt-aw/.github/workflows/obs-aw-event-schedule.yml@v0 # ratchet:exclude
+    with:
+      schedule-profile: weekly
+    secrets:
+      BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_LOGS_API_TOKEN }}
