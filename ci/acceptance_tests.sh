@@ -39,7 +39,13 @@ if [[ $BUILDKITE == true ]]; then
   echo "--- Downloading artifacts from \"build/*${PACKAGE_TYPE}\" to $LS_ARTIFACTS_PATH"
   set -x
   # also creates build/ under $HOME
-  buildkite-agent artifact download "build/*${PACKAGE_TYPE}" $HOME
+  # Set ARTIFACTS_STEP (a step key) to download only from that step. Without it the glob
+  # matches artifacts from every step in the build (e.g. arm64 packages) and each job downloads them all.
+  STEP_ARGS=()
+  if [[ -n "${ARTIFACTS_STEP:-}" ]]; then
+    STEP_ARGS=(--step "$ARTIFACTS_STEP")
+  fi
+  buildkite-agent artifact download ${STEP_ARGS[@]+"${STEP_ARGS[@]}"} "build/*${PACKAGE_TYPE}" $HOME
   set +x
   echo "--- Running gradle"
   ./gradlew clean bootstrap
