@@ -115,7 +115,7 @@ public final class EventTest extends RubyTestBase {
         Event e = new Event();
         e.setField(
             "foo",
-            RubyString.newString(RubyUtil.RUBY, "--bar--").substr(RubyUtil.RUBY, 2, 3)
+            RubyString.newString(RubyUtil.RUBY, "--bar--").substr(RubyUtil.RUBY.getCurrentContext(), 2, 3)
         );
         final RubyString before = (RubyString) e.getUnconvertedField("foo");
         Event er = Event.deserialize(e.serialize());

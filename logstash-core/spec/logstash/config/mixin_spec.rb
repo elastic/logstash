@@ -40,7 +40,7 @@ describe LogStash::Config::Mixin do
         'Deprecated settings will continue to work, but are scheduled for removal from logstash in the future. ' \
         'this is old school If you have any questions about this, please ask it on the https://discuss.elastic.co/c/logstash discussion forum'
         expect(arg1).to eq(message)
-        expect(arg2[:plugin].to_s).to include('"password"=><password>')
+        expect(arg2[:plugin].to_s).to include('"password" => <password>')
       end
       expect(deprecation_logger).to receive(:deprecated) do |message, _|
         expect(message).to include("old_opt")

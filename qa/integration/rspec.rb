@@ -20,7 +20,7 @@ require 'rubygems'
 ::Gem.clear_paths
 
 ENV['GEM_HOME'] = ENV['GEM_PATH'] = ::File.expand_path(
-    ::File.join(__FILE__, "..", "..", "..", "build", "qa", "integration", "vendor", "jruby", "3.1.0")
+    ::File.join(__FILE__, "..", "..", "..", "build", "qa", "integration", "vendor", "jruby", "3.4.0")
 )
 
 ::Gem.paths = ENV

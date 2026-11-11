@@ -52,7 +52,7 @@ describe "uncaught exception" do
 
     log_file = "#{logs_dir}/logstash-plain.log"
     expect(File.exist?(log_file)).to be true
-    expect(File.read(log_file)).to match /\[FATAL\]\[org.logstash.Logstash.*?java.lang.AssertionError: a fatal error/m
+    expect(File.read(log_file)).to match /\[FATAL\]\[org\.logstash\.Logstash\s*\].*?java\.lang\.AssertionError: a fatal error/m
   end
 
   it "logs unexpected exception (from Java thread)" do
@@ -65,7 +65,7 @@ describe "uncaught exception" do
 
     log_file = "#{logs_dir}/logstash-plain.log"
     expect(File.exist?(log_file)).to be true
-    expect(File.read(log_file)).to match /\[ERROR\]\[org.logstash.Logstash.*?uncaught exception \(in thread .*?java.io.EOFException: unexpected/m
+    expect(File.read(log_file)).to match /\[ERROR\]\[org\.logstash\.Logstash\s*\].*?uncaught exception \(in thread .*?java\.io\.EOFException: unexpected/m
   end
 
   def spawn_logstash_and_wait_for_exit!(config, timeout)

@@ -22,6 +22,8 @@ package org.logstash.config.ir.compiler;
 
 import java.util.Collections;
 import org.jruby.RubyArray;
+import org.jruby.api.Create;
+import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.FieldReference;
@@ -46,7 +48,7 @@ public final class DatasetCompilerTest {
                 Collections.emptyList(),
                 PipelineTestUtil.buildOutput(events -> {}),
                 true
-            ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
+            ).instantiate().compute(Create.newArray(RubyUtil.RUBY.getCurrentContext()), false, false),
             nullValue()
         );
     }
@@ -63,8 +65,9 @@ public final class DatasetCompilerTest {
         final JrubyEventExtLibrary.RubyEvent falseEvent =
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
         final Dataset right = left.right();
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         @SuppressWarnings("rawtypes")
-        final RubyArray batch = RubyUtil.RUBY.newArray(
+        final RubyArray batch = Create.newArray(context,
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, trueEvent), falseEvent
         );
         assertThat(left.compute(batch, false, false).size(), is(1));

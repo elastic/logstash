@@ -46,7 +46,7 @@ public final class JrubyTimestampExtLibraryTest extends RubyTestBase {
             newRubyTimestamp(context, new IRubyObject[0]);
         final long now =
             TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
-        Assertions.assertThat(t.ruby_time(context).to_i().getLongValue())
+        Assertions.assertThat(t.ruby_time(context).to_i(context).asLong(context))
             .isBetween(now - 1L, now + 2L);
     }
 
@@ -57,7 +57,7 @@ public final class JrubyTimestampExtLibraryTest extends RubyTestBase {
             JrubyTimestampExtLibrary.RubyTimestamp.ruby_now(context, RubyUtil.RUBY_TIMESTAMP_CLASS);
         final long now =
             TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
-        Assertions.assertThat(t.ruby_time(context).to_i().getLongValue())
+        Assertions.assertThat(t.ruby_time(context).to_i(context).asLong(context))
             .isBetween(now - 1L, now + 2L);
     }
 
@@ -68,7 +68,7 @@ public final class JrubyTimestampExtLibraryTest extends RubyTestBase {
         final JrubyTimestampExtLibrary.RubyTimestamp t = newRubyTimestamp(context, new IRubyObject[]{now});
         Assertions.assertThat(
             Math.abs(
-                t.ruby_time(context).to_f().getDoubleValue() - now.convertToFloat().getDoubleValue()
+                t.ruby_time(context).to_f().asDouble(context) - now.convertToFloat().asDouble(context)
             )
         ).isLessThan(0.000999999);
         final IRubyObject nowToI = now.callMethod(context, "to_i");
@@ -121,7 +121,7 @@ public final class JrubyTimestampExtLibraryTest extends RubyTestBase {
     @Test
     public void testCoerceInstanceOfRubyTime() {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final RubyTime rubyTime = RubyTime.newTimeFromNanoseconds(context.runtime, 1L);
+        final RubyTime rubyTime = RubyTime.newTimeFromNanoseconds(context, 1L);
 
         final IRubyObject coerced = JrubyTimestampExtLibrary.RubyTimestamp.ruby_coerce(context, RubyUtil.RUBY_TIMESTAMP_CLASS, rubyTime);
 

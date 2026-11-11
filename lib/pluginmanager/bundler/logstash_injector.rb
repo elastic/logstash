@@ -96,7 +96,7 @@ module Bundler
             definition.remove_platform(specific_platform)
           end
           definition.add_platform(Gem::Platform.new('java'))
-          definition.lock(lockfile_path)
+          definition.lock
           gemfile.save
         rescue => e
           # the error should be handled elsewhere but we need to get the original file if we dont

@@ -26,8 +26,10 @@ import org.jruby.RubyClass;
 import org.jruby.RubyEncoding;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
+import org.jruby.api.Convert;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Create;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
@@ -43,7 +45,7 @@ public class BufferedTokenizerExt extends RubyObject {
     private static final RubyString NEW_LINE = (RubyString) RubyUtil.RUBY.newString("\n").
                                                                 freeze(RubyUtil.RUBY.getCurrentContext());
 
-    private @SuppressWarnings("rawtypes") RubyArray input = RubyUtil.RUBY.newArray();
+    private @SuppressWarnings("rawtypes") RubyArray input = Create.newArray(RubyUtil.RUBY.getCurrentContext());
     private StringBuilder headToken = new StringBuilder();
     private RubyString delimiter = NEW_LINE;
     private int sizeLimit;
@@ -62,7 +64,7 @@ public class BufferedTokenizerExt extends RubyObject {
             this.delimiter = args[0].convertToString();
         }
         if (args.length == 2) {
-            final int sizeLimit = args[1].convertToInteger().getIntValue();
+            final int sizeLimit = Convert.toInt(context, args[1].convertToInteger());
             if (sizeLimit <= 0) {
                 throw new IllegalArgumentException("Size limit must be positive");
             }
@@ -89,7 +91,7 @@ public class BufferedTokenizerExt extends RubyObject {
     public RubyArray extract(final ThreadContext context, IRubyObject data) {
         RubyEncoding encoding = (RubyEncoding) data.convertToString().encoding(context);
         encodingName = encoding.getEncoding().getCharsetName();
-        final RubyArray entities = data.convertToString().split(delimiter, -1);
+        final RubyArray entities = data.convertToString().split(context, delimiter, -1);
         if (!bufferFullErrorNotified) {
             input.clear();
             input.concat(entities);
@@ -106,7 +108,7 @@ public class BufferedTokenizerExt extends RubyObject {
                 if (!entities.isEmpty()) {
                     RubyString last = ((RubyString) input.pop(context));
                     RubyString nextFirst = ((RubyString) entities.shift(context));
-                    entities.unshift(last.concat(nextFirst));
+                    entities.unshift(context, last.concat(nextFirst));
                     input.concat(entities);
                 }
             }
@@ -116,10 +118,10 @@ public class BufferedTokenizerExt extends RubyObject {
             if (bufferFullErrorNotified) {
                 bufferFullErrorNotified = false;
                 if (input.isEmpty()) {
-                    return RubyUtil.RUBY.newArray();
+                    return Create.newArray(context);
                 }
             }
-            final int entitiesSize = ((RubyString) input.first()).size();
+            final int entitiesSize = ((RubyString) input.first(context)).size();
             if (inputSize + entitiesSize > sizeLimit) {
                 bufferFullErrorNotified = true;
                 headToken = new StringBuilder();
@@ -135,7 +137,7 @@ public class BufferedTokenizerExt extends RubyObject {
             // this is a specialization case which avoid adding and removing from input accumulator
             // when it contains just one element
             headToken.append(input.shift(context)); // remove head
-            return RubyUtil.RUBY.newArray();
+            return Create.newArray(context);
         }
 
         if (headToken.length() > 0) {
@@ -144,7 +146,7 @@ public class BufferedTokenizerExt extends RubyObject {
             headToken.append(input.shift(context)); // append buffer to first element and
             // create new RubyString with the data specified encoding
             RubyString encodedHeadToken = toEncodedRubyString(context, headToken.toString());
-            input.unshift(encodedHeadToken); // reinsert it into the array
+            input.unshift(context, encodedHeadToken); // reinsert it into the array
             headToken = new StringBuilder();
         }
         headToken.append(input.pop(context)); // put the leftovers in headToken for later
