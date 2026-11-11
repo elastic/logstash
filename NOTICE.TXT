@@ -11141,7 +11141,7 @@ Copyright (C) 1999-2019 by Shigeru Chiba, All rights reserved.
 This software is distributed under the Mozilla Public License Version 1.1, the GNU Lesser General Public License Version 2.1 or later, or the Apache License Version 2.0.
 
 ==========
-Notice for: org.jruby:jruby-core-10.0.6.0
+Notice for: org.jruby:jruby-core-10.0.8.0
 ----------
 
 JRuby is Copyright (c) 2007-2018 The JRuby project
