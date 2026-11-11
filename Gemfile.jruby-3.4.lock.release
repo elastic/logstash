@@ -139,7 +139,6 @@ GEM
       net-http (~> 0.5)
     ffi (1.17.4-java)
     filesize (0.2.0)
-    fileutils (1.7.3)
     fivemat (1.3.7)
     flores (0.0.8)
     fpm (1.16.0)
@@ -779,7 +778,6 @@ GEM
     rake (13.3.1)
     redis (4.8.1)
     regexp_parser (2.10.0)
-    resolv (0.7.2)
     rexml (3.4.4)
     rspec (3.13.2)
       rspec-core (~> 3.13.0)
@@ -876,9 +874,6 @@ GEM
 
 PLATFORMS
   java
-  universal-java-11
-  universal-java-17
-  universal-java-21
 
 DEPENDENCIES
   belzebuth
@@ -886,8 +881,6 @@ DEPENDENCIES
   bigdecimal (~> 3.1)
   childprocess (~> 4)
   ci_reporter_rspec (~> 1)
-  date (= 3.3.3)
-  fileutils (~> 1.7)
   flores (~> 0.0.8)
   fpm (~> 1, >= 1.14.1)
   gems (~> 1)
@@ -1000,7 +993,6 @@ DEPENDENCIES
   polyglot
   rack-test
   rake (~> 13)
-  resolv (~> 0.7.2)
   rspec (~> 3.5)
   rubocop
   rubocop-ast (= 1.42.0)
