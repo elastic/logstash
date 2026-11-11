@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-25,Logstash 8.19.25>>
 * <<logstash-8-19-24,Logstash 8.19.24>>
 * <<logstash-8-19-23,Logstash 8.19.23>>
 * <<logstash-8-19-22,Logstash 8.19.22>>
@@ -115,6 +116,11 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-25]]
+=== Logstash 8.19.25 Release Notes
+
+No user-facing changes in Logstash.
 
 [[logstash-8-19-24]]
 === Logstash 8.19.24 Release Notes

@@ -11,7 +11,7 @@ VM_IMAGES_FILE = ".buildkite/scripts/common/vm-images.json"
 VM_IMAGE_PREFIX = "platform-ingest-logstash-multi-jdk-"
 
 ACCEPTANCE_LINUX_OSES = [
-    "ubuntu-2404", "ubuntu-2204", "ubuntu-2004",
+    "ubuntu-2604", "ubuntu-2404", "ubuntu-2204", "ubuntu-2004",
     "debian-11", "debian-12", "debian-13",
     "rhel-8", "rhel-9", "rhel-10",
     "oraclelinux-7", "oraclelinux-8", "oraclelinux-9", "oraclelinux-10",
@@ -20,6 +20,8 @@ ACCEPTANCE_LINUX_OSES = [
     "opensuse-leap-15",
     "amazonlinux-2023",
 ]
+
+ACCEPTANCE_BUILD_STEP_KEY = "acceptance-build-artifacts"
 
 CUR_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -126,7 +128,7 @@ def acceptance_linux_steps() -> list[typing.Any]:
 
     build_artifacts_step = {
         "label": "Build artifacts",
-        "key": "acceptance-build-artifacts",
+        "key": ACCEPTANCE_BUILD_STEP_KEY,
         # use the same agent as the one we use for building DRA artifacts
         "agents": gcp_agent("ubuntu-2204", instance_type="n2-standard-16", image_prefix="family/platform-ingest-logstash"),
         "command": LiteralScalarString("""#!/usr/bin/env bash
@@ -136,10 +138,12 @@ echo "--- Building all artifacts"
 export ARCH="x86_64"
 ./gradlew clean bootstrap artifactDeb artifactRpm
 """),
+        # Only the deb/rpm packages are consumed (by the acceptance steps below).
+        # Do not add "build/*tar.gz": this step builds only artifactDeb/artifactRpm, so that glob
+        # matched just the downloaded JDK tarballs (~380 MiB per build) that no job reads.
         "artifact_paths": [
             "build/*rpm",
             "build/*deb",
-            "build/*tar.gz",
         ],
     }
 
@@ -150,7 +154,8 @@ export ARCH="x86_64"
             "label": vm,
             "key": slugify_bk_key(vm),
             "agents": aws_agent(vm,instance_type="m5.4xlarge") if "amazonlinux" in vm else gcp_agent(vm),
-            "depends_on": "acceptance-build-artifacts",
+            "depends_on": ACCEPTANCE_BUILD_STEP_KEY,
+            "env": {"ARTIFACTS_STEP": ACCEPTANCE_BUILD_STEP_KEY},
             "retry": {"automatic": [{"limit": 3}]},
             "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
