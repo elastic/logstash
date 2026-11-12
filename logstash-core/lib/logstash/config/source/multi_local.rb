@@ -36,15 +36,9 @@ module LogStash module Config module Source
         clone.merge_pipeline_settings(pipeline_settings)
       end
       detect_duplicate_pipelines(pipelines_settings)
-      pipeline_configs = pipelines_settings.map do |pipeline_settings|
-        @settings = pipeline_settings
-        # this relies on instance variable @settings and the parent class' pipeline_configs
-        # method. The alternative is to refactor most of the Local source methods to accept
-        # a settings object instead of relying on @settings.
-        local_pipeline_configs # create a PipelineConfig object based on @settings
-      end.flatten
-      @settings = @original_settings
-      pipeline_configs
+      pipelines_settings.flat_map do |pipeline_settings|
+        for_pipeline(pipeline_settings).local_pipeline_configs
+      end
     end
 
     def match?
@@ -126,7 +120,17 @@ module LogStash module Config module Source
       @detect_pipelines_called = true
     end
 
+    protected
+
+    attr_writer :settings
+    protected :local_pipeline_configs
+
     private
+
+    # copy of this source whose @settings are the given pipeline's settings
+    def for_pipeline(pipeline_settings)
+      dup.tap { |source| source.settings = pipeline_settings }
+    end
 
     def do_warning?
       if !(done = true && @match_warning_done)

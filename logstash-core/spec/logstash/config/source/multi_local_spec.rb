@@ -205,5 +205,51 @@ describe LogStash::Config::Source::MultiLocal do
         expect { subject.pipeline_configs }.not_to raise_error(ArgumentError)
       end
     end
+
+    context "when a pipeline's config source fails to load" do
+      let(:remote_url) { "http://test.dev/superconfig.conf" }
+      let(:retrieved_pipelines) do [
+          { "pipeline.id" => "main", "config.string" => config_string },
+          { "pipeline.id" => "remote", "path.config" => remote_url },
+      ]
+      end
+
+      before(:each) do
+        stub_request(:get, remote_url).to_return(status: 503).then.to_return(status: 200, body: config_string)
+      end
+
+      it "still matches and loads the pipelines on the next call" do
+        expect { subject.pipeline_configs }.to raise_error(LogStash::ConfigLoadingError)
+        expect(subject.match?).to be_truthy
+        expect(subject.pipeline_configs.map(&:pipeline_id)).to contain_exactly("main", "remote")
+      end
+    end
+
+    context "when called again while a pipeline is loading" do
+      let(:retrieved_pipelines) do [
+          { "pipeline.id" => "first", "config.string" => config_string },
+          { "pipeline.id" => "second", "config.string" => config_string },
+      ]
+      end
+
+      it "does not change the settings seen by either call" do
+        nested_configs = nil
+        matched_while_loading = nil
+        allow(LogStash::Config::Source::Local::ConfigStringLoader).to receive(:read).and_wrap_original do |original, *args|
+          if nested_configs.nil?
+            nested_configs = []
+            matched_while_loading = subject.match?
+            nested_configs = subject.pipeline_configs
+          end
+          original.call(*args)
+        end
+
+        configs = subject.pipeline_configs
+
+        expect(matched_while_loading).to be_truthy
+        expect(configs.map(&:pipeline_id)).to eq(["first", "second"])
+        expect(nested_configs.map(&:pipeline_id)).to eq(["first", "second"])
+      end
+    end
   end
 end
