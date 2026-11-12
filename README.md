@@ -43,8 +43,13 @@ Logstash core will continue to exist under this repository and all related issue
 
 ### Prerequisites
 
+<<<<<<< HEAD
 * Install JDK version 11 or 17. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
 * Install JRuby 9.2.x It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
+=======
+* Install JDK version 21. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+* The build uses the vendored JRuby version specified in [`versions.yml`](versions.yml) (currently 10.0.7.0); no separate JRuby installation is required.
+>>>>>>> 3a21abc (docs: sync JRuby version in README with .ruby-version (#19723))
 * Install `rake` and `bundler` tool using `gem install rake` and `gem install bundler` respectively.
 
 ### RVM install (optional)
