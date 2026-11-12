@@ -184,4 +184,64 @@ describe "ObservabilitySRE FIPS container" do
         expect(logs).to include("org.bouncycastle")
       end
   end
+
+  context "when running the HTTP input through LS to ES in a FIPS compliant configuration" do
+    before(:all) do
+      work_dir = File.expand_path("../docker", __dir__)
+      docker_compose_up({"LOGSTASH_PIPELINE" => "http-to-ls-to-es.conf"}, work_dir)
+      wait_for_elasticsearch
+    end
+
+    after(:all) do
+      work_dir = File.expand_path("../docker", __dir__)
+      docker_compose_down({}, work_dir)
+    end
+
+    it "data flows through the HTTP input to Elasticsearch" do
+      # Wait for index to appear, indicating data is flowing through the HTTP input
+      wait_until(timeout: 30, message: "Index http-input-test not found") do
+        response = es_request("/_cat/indices?v")
+        response.code == "200" && response.body.include?("http-input-test")
+      end
+      # Wait until events tagged by the HTTP input branch are observed
+      query = { query: { match_all: {} } }.to_json
+      result = nil
+      wait_until(timeout: 30, message: "No documents in http-input-test") do
+        response = es_request("/http-input-test-*/_search", query)
+        result = JSON.parse(response.body)
+        response.code == "200" && result["hits"]["total"]["value"] > 0
+      end
+      expect(result["hits"]["hits"].first["_source"]["tags"]).to include("http_input")
+    end
+  end
+
+  context "when running the HTTP input through LS to ES with non-FIPS compliant configuration" do
+    before(:all) do
+      work_dir = File.expand_path("../docker", __dir__)
+      docker_compose_up({"LOGSTASH_PIPELINE" => "http-to-ls-weak.conf"}, work_dir)
+      wait_for_elasticsearch
+    end
+
+    after(:all) do
+      work_dir = File.expand_path("../docker", __dir__)
+      docker_compose_down({}, work_dir)
+    end
+
+    it "prevents data flow when using TLSv1.1 which is not FIPS-compliant" do
+        # Allow time for Logstash to attempt connections (and fail)
+        sleep 15
+
+        # Verify that no index has been created that would indicate successful data flow
+        response = es_request("/_cat/indices?v")
+        expect(response.body).not_to include("http-input-weak-ssl-test")
+
+        # The HTTP input does not log server-side handshake errors, so check the
+        # BouncyCastle handshake failure reported by the HTTP output client
+        logs = `docker logs fips_test_logstash 2>&1`
+
+        expect(logs).to include("handshake_failure")
+        expect(logs).to include("TlsFatalAlert")
+        expect(logs).to include("org.bouncycastle")
+      end
+  end
 end
