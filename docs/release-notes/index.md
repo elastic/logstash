@@ -21,6 +21,32 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.7 [logstash-9.5.7-release-notes]
+
+### Features and enhancements [logstash-9.5.7-features-enhancements]
+
+* Add the `openssl` CLI back to the UBI-based container images, which no longer include it by default [#19793](https://github.com/elastic/logstash/pull/19793)
+
+### Fixes [logstash-9.5.7-fixes]
+
+* Fix an issue where Logstash could fail to exit after logging "An unexpected error occurred!" when a beats or elastic_agent input was running [#19729](https://github.com/elastic/logstash/pull/19729)
+* Fix an issue where frequent requests to the monitoring API (for example from Metricbeat, Elastic Agent, or Kubernetes probes) could increase native memory usage by several hundred MB [#19721](https://github.com/elastic/logstash/pull/19721)
+
+### Updates to dependencies [logstash-9.5.7-dependencies]
+
+* Update the JDK bundled with Windows packages to Temurin 21.0.13+9, matching the other platforms [#19808](https://github.com/elastic/logstash/pull/19808)
+
+### Plugins [logstash-plugin-9.5.7-changes]
+
+**Kafka Integration - 12.2.2**
+
+* Upgrades kafka-clients dependency to 4.2.2 [#294](https://github.com/logstash-plugins/logstash-integration-kafka/pull/294)
+
+**Rabbitmq Integration - 7.4.5**
+
+* Recover from broker-closed output channels without leaking channels or losing events [#88](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/88)
+
+
 ## 9.5.6 [logstash-9.5.6-release-notes]
 
 ::::{important}
