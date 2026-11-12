@@ -17,6 +17,7 @@
 
 require_relative "../framework/fixture"
 require_relative "../framework/settings"
+require "socket"
 require_relative "../framework/helpers"
 
 describe "CLI >" do
@@ -41,5 +42,24 @@ describe "CLI >" do
     expect(lines.shift).to match(/^(Using system java)|(Using bundled JDK)|(Using LS_JAVA_HOME defined java):/)
     while (up_line = lines.shift).match(/OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated|warning: ignoring JAVA_TOOL_OPTIONS|warning: already initialized constant Socket::Constants|.*warning: method redefined; discarding old to_int$|.*warning: method redefined; discarding old to_f$|^WARNING: Logstash comes bundled with the recommended JDK.*/) do end
     expect(up_line).to match(/^Sending Logstash logs to/)
+  end
+
+  it "loads the config from a remote url" do
+    config = "input { generator { count => 1 } } output { null {} }"
+    server = TCPServer.new("127.0.0.1", 0)
+    responder = Thread.new do
+      client = server.accept
+      while (line = client.gets) && line != "\r\n" do end
+      client.write("HTTP/1.1 200 OK\r\nContent-Length: #{config.bytesize}\r\nConnection: close\r\n\r\n#{config}")
+      client.close
+    end
+
+    execute = @logstash.run("-t", "-f", "http://127.0.0.1:#{server.addr[1]}/remote.conf")
+
+    expect(execute.stderr_and_stdout).to include("Configuration OK")
+    expect(execute.exit_code).to eq(0)
+  ensure
+    responder&.kill
+    server&.close
   end
 end
