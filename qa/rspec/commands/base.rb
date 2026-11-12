@@ -38,11 +38,19 @@ class Command
     @exit_status
   end
 
+  # The suite runs under `bundle exec`, which sets RUBYOPT=-rbundler/setup and RUBYLIB.
+  # Unset them so they can't reach Ruby run by the package under test (e.g. a postinst),
+  # since some sudo implementations (sudo-rs) don't strip them.
+  BUNDLER_ENV_UNSET = %w(
+    BUNDLE_PATH BUNDLE_GEMFILE BUNDLE_BIN_PATH BUNDLER_VERSION BUNDLER_SETUP
+    GEM_HOME GEM_PATH RUBYLIB RUBYOPT
+  ).each_with_object({}) { |var, env| env[var] = nil }.freeze
+
   def execute(cmdline)
     # use of capture3 gives us strings instead of raw io objects
     # this helps not having to deal with IO streams being full
     # and requiring multi threaded reading to prevent tests being blocked
-    @stdout, @stderr, status = Open3.capture3(cmdline)
+    @stdout, @stderr, status = Open3.capture3(BUNDLER_ENV_UNSET, cmdline)
     @stdout.chomp!
     @stderr.chomp!
     @exit_status = status.exitstatus
