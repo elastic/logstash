@@ -66,6 +66,10 @@ module LogStash
           {} # empty
         end
 
+        def reload_pipeline(pipeline_id)
+          service.agent.reload_pipeline(pipeline_id.to_sym)
+        end
+
         def os
           {
             :name => java.lang.System.getProperty("os.name"),
