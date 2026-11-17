@@ -722,7 +722,7 @@ Notice for: aws-eventstream-1.4.1
    limitations under the License.
 
 ==========
-Notice for: aws-partitions-1.1304.0
+Notice for: aws-partitions-1.1307.0
 ----------
 
 
@@ -929,7 +929,7 @@ Notice for: aws-partitions-1.1304.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-cloudfront-1.166.0
+Notice for: aws-sdk-cloudfront-1.168.0
 ----------
 
 
@@ -1136,7 +1136,7 @@ Notice for: aws-sdk-cloudfront-1.166.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-cloudwatch-1.158.0
+Notice for: aws-sdk-cloudwatch-1.161.0
 ----------
 
 
@@ -1343,7 +1343,7 @@ Notice for: aws-sdk-cloudwatch-1.158.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-core-3.267.0
+Notice for: aws-sdk-core-3.269.0
 ----------
 
 
@@ -1550,7 +1550,7 @@ Notice for: aws-sdk-core-3.267.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-kms-1.142.0
+Notice for: aws-sdk-kms-1.144.0
 ----------
 
 
@@ -1757,7 +1757,7 @@ Notice for: aws-sdk-kms-1.142.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-resourcegroups-1.111.0
+Notice for: aws-sdk-resourcegroups-1.113.0
 ----------
 
 
@@ -1964,7 +1964,7 @@ Notice for: aws-sdk-resourcegroups-1.111.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-s3-1.241.0
+Notice for: aws-sdk-s3-1.244.0
 ----------
 
 
@@ -2171,7 +2171,7 @@ Notice for: aws-sdk-s3-1.241.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-sns-1.130.0
+Notice for: aws-sdk-sns-1.132.0
 ----------
 
 
@@ -2378,7 +2378,7 @@ Notice for: aws-sdk-sns-1.130.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-sqs-1.128.0
+Notice for: aws-sdk-sqs-1.130.0
 ----------
 
 
@@ -5466,7 +5466,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
-Notice for: dalli-3.2.15
+Notice for: dalli-3.2.17
 ----------
 
 Copyright (c) Peter M. Goldstein, Mike Perham
@@ -6394,7 +6394,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: gems-1.3.0
+Notice for: gems-1.3.1
 ----------
 
 source: https://github.com/rubygems/gems/blob/v0.8.3/LICENSE.md
@@ -10106,7 +10106,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ==========
-Notice for: minitar-1.1.0
+Notice for: minitar-1.1.1
 ----------
 
 source: https://github.com/halostatue/minitar/blob/v0.6.1/Licence.md
@@ -11681,7 +11681,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: puma-8.0.2
+Notice for: puma-8.0.4
 ----------
 
 Some code copyright (c) 2005, Zed Shaw
@@ -11793,7 +11793,7 @@ THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: rack-protection-4.2.1
+Notice for: rack-protection-4.2.2
 ----------
 
 The MIT License (MIT)
@@ -12624,7 +12624,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: sinatra-4.2.1
+Notice for: sinatra-4.2.2
 ----------
 
 Copyright (c) 2007, 2008, 2009 Blake Mizerany
