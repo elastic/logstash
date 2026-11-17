@@ -73,6 +73,11 @@ public final class Logstash implements Runnable, AutoCloseable {
     private final Ruby ruby;
 
     /**
+     * Whether {@link #run()} ended with an unclean shutdown.
+     */
+    private volatile boolean exitedUncleanly;
+
+    /**
      * Main Entrypoint.
      * Requires environment {@code "LS_HOME"} to be set to the Logstash root directory.
      * @param args Logstash CLI Arguments
@@ -226,6 +231,9 @@ public final class Logstash implements Runnable, AutoCloseable {
 
     @Override
     public void close() {
+        if (exitedUncleanly) {
+            return;
+        }
         ruby.tearDown(false);
     }
 
@@ -308,7 +316,8 @@ public final class Logstash implements Runnable, AutoCloseable {
         throw new IllegalStateException(MUTATED_GEMFILE_ERROR);
     }
 
-    private static void uncleanShutdown(final Exception ex) {
+    private void uncleanShutdown(final Exception ex) {
+        exitedUncleanly = true;
         throw new IllegalStateException(UNCLEAN_SHUTDOWN_PREFIX + ex.getMessage(), ex);
     }
 
