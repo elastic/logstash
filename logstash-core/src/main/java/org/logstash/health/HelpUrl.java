@@ -24,9 +24,11 @@ import java.util.Objects;
 
 public class HelpUrl {
     static final String BASE_URL;
+    static final boolean IS_MAJOR_9_PLUS;
     static {
+        IS_MAJOR_9_PLUS = Integer.parseInt(Logstash.VERSION_MAJOR) >= 9;
         final String versionAnchor;
-        if (Integer.parseInt(Logstash.VERSION_MAJOR) >= 9) {
+        if (IS_MAJOR_9_PLUS) {
             versionAnchor = "master";
         } else {
             versionAnchor = String.format("%s.%s", Logstash.VERSION_MAJOR, Logstash.VERSION_MINOR);
@@ -38,8 +40,16 @@ public class HelpUrl {
         this(page, null);
     }
 
+    /**
+     * Returns a new {@code HelpUrl} with a version-appropriate anchor.
+     * <p>
+     * Logstash 9.0+ doc pages use fully-qualified anchors of the form
+     * {@code {page}-diagnosis-{anchor}} (e.g. {@code health-report-pipeline-status-diagnosis-loading}).
+     * Earlier versions use the short form {@code {anchor}} (e.g. {@code loading}).
+     */
     public HelpUrl withAnchor(final String anchor) {
-        return new HelpUrl(this.page, anchor);
+        final String resolved = IS_MAJOR_9_PLUS ? this.page + "-diagnosis-" + anchor : anchor;
+        return new HelpUrl(this.page, resolved);
     }
 
     private HelpUrl(final String page, final String anchor) {
