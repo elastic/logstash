@@ -10915,7 +10915,7 @@ Copyright (C) 1999-2019 by Shigeru Chiba, All rights reserved.
 This software is distributed under the Mozilla Public License Version 1.1, the GNU Lesser General Public License Version 2.1 or later, or the Apache License Version 2.0.
 
 ==========
-Notice for: org.jruby:jruby-core-10.0.7.0
+Notice for: org.jruby:jruby-core-10.0.8.0
 ----------
 
 JRuby is Copyright (c) 2007-2018 The JRuby project
@@ -11601,7 +11601,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: pstore-0.1.4
+Notice for: pstore-0.2.1
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -13464,7 +13464,7 @@ version(s), and exceptions or additional permissions here}."
   You may add additional accurate notices of copyright ownership.
 
 ==========
-Notice for: syntax_suggest-2.0.2
+Notice for: syntax_suggest-2.0.3
 ----------
 
 Copyright (c) 2020 schneems
