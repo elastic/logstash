@@ -21,6 +21,58 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.4.10 [logstash-9.4.10-release-notes]
+
+### Features and enhancements [logstash-9.4.10-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.4.10
+
+=== Logstash Commits between 9.4 and 9.4.9
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.9..9.4"
+
+c4e05c667 - (HEAD -> 9.4, origin/9.4) Disable Base64 intrinsics by default (#19906) (#19913) (61 minutes ago) <mergify[bot]>
+b584cf7ba - Update patch plugin versions in gemfile lock and NOTICE.txt (#19907) (74 minutes ago) <github-actions[bot]>
+8d57f7334 - deps: Bump ironbank version to 10.3 (#19867) (#19870) (2 hours ago) <mergify[bot]>
+c13941e45 - Update bundled JRuby to 10.0.8.0 (#19824) (#19850) (2 hours ago) <mergify[bot]>
+f5c0297cd - Fix 19771 multilocal settings (#19838) (#19899) (2 hours ago) <mergify[bot]>
+b6af846d0 - Add logstash-input-http to observabilitySRE container (#19859) (#19891) (3 hours ago) <mergify[bot]>
+a320bb050 - Unset Bundler env for acceptance test commands (#19865) (#19887) (3 hours ago) <mergify[bot]>
+71ca4c373 - Test Ironbank acceptance against UBI 10.3 (#19873) (#19883) (3 hours ago) <mergify[bot]>
+4a6242f40 - Fix 19770 remote config net http (#19839) (#19879) (3 hours ago) <mergify[bot]>
+c676767ce - docs: sync JRuby version in README with .ruby-version (#19723) (#19863) (6 days ago) <mergify[bot]>
+a5eb01f4e - Sync agentic workflow files from elastic/oblt-aw (#19854) (#19857) (7 days ago) <mergify[bot]>
+72824708e - Fix version bump workflow NOTICE step (#19842) (#19845) (8 days ago) <mergify[bot]>
+dadce76d0 - Add Ubuntu 26.04 to exhaustive tests (#19831) (#19836) (9 days ago) <mergify[bot]>
+430d833ce - Retry Kafka download in integration test setup (#19825) (#19829) (12 days ago) <mergify[bot]>
+7ab0f35c3 - Exit on fatal error without waiting for Ruby threads (#19729) (#19821) (13 days ago) <mergify[bot]>
+b0b42635c - After gemfile.lock update, workflow also updates the dependency tree. (#19807) (#19816) (2 weeks ago) <mergify[bot]>
+e163b5ab2 - Ship jdk 21.0.13+9 with windows artifacts (#19808) (#19812) (2 weeks ago) <mergify[bot]>
+5e2e88219 - Ironbank install openssl (#19793) (#19806) (2 weeks ago) <mergify[bot]>
+7ae76b263 - Build monitoring API rack app once instead of per request (#19721) (#19797) (2 weeks ago) <mergify[bot]>
+302a016e0 - Add security advisory notice to the 9.4.9 release notes (#19790) (2 weeks ago) <Álex Cámara Lara>
+09b422c43 - Bump docker/login-action (#19772) (#19783) (2 weeks ago) <mergify[bot]>
+484f62442 - Revert "Add security advisory notice to the 9.4.9 release notes" (#19779) (#19787) (2 weeks ago) <Álex Cámara Lara>
+b419b30bc - Add security advisory notice to the 9.4.9 release notes (#19779) (2 weeks ago) <Álex Cámara Lara>
+24e670cba - Bump logstash version 9.4.10 (#19776) (2 weeks ago) <github-actions[bot]>
+66ef3f169 - Release notes for 9.4.9 (#19758) (3 weeks ago) <github-actions[bot]>
+d1707b9d6 - ci: drop n1-standard machineType (#19756) (#19768) (3 weeks ago) <mergify[bot]>
+521ad882f - [9.4] (backport #19664) Doc: Update version.stack references (#19762) (3 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.4.9..9.4 *.release"
+Changed plugin versions:
+logstash-integration-rabbitmq: 7.4.4 -> 7.4.5
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.4.10-changes]
+
+**Rabbitmq Integration - 7.4.5**
+
+* Recover from broker-closed output channels without leaking channels or losing events [#88](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/88)
+
+
 ## 9.4.9 [logstash-9.4.9-release-notes]
 
 ::::{important}
