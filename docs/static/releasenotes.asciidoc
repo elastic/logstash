@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-26,Logstash 8.19.26>>
 * <<logstash-8-19-25,Logstash 8.19.25>>
 * <<logstash-8-19-24,Logstash 8.19.24>>
 * <<logstash-8-19-23,Logstash 8.19.23>>
@@ -116,6 +117,34 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-26]]
+=== Logstash 8.19.26 Release Notes
+
+==== New features and enhancements
+
+* Logstash now starts the JVM with `-XX:-UseBASE64Intrinsics` unless `UseBASE64Intrinsics` is already set in `jvm.options` or `LS_JAVA_OPTS`. To opt back in, set `-XX:+UseBASE64Intrinsics` https://github.com/elastic/logstash/pull/19906[#19906]
+
+==== Notable issues fixed
+
+* Fixed pipelines defined in `pipelines.yml` no longer being reloaded after a single error while loading their config source. Concurrent config fetches no longer see another pipeline's settings https://github.com/elastic/logstash/pull/19838[#19838]
+
+* Fixed Logstash sometimes not exiting after an unexpected fatal error https://github.com/elastic/logstash/pull/19729[#19729]
+
+* Fixed an issue where frequent requests to the monitoring API (for example from Metricbeat, Elastic Agent, or Kubernetes probes) could increase native memory usage by several hundred MB https://github.com/elastic/logstash/pull/19721[#19721]
+
+==== Updates to dependencies
+
+* Windows packages now bundle Temurin 21.0.13+9, matching the other platforms https://github.com/elastic/logstash/pull/19808[#19808]
+
+* Update the Ironbank Docker image base to UBI 10.3 https://github.com/elastic/logstash/pull/19867[#19867]
+
+==== Plugins
+
+*Rabbitmq Integration - 7.4.5*
+
+* Recover from broker-closed output channels without leaking channels or losing events https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/88[#88]
+
 
 [[logstash-8-19-25]]
 === Logstash 8.19.25 Release Notes
