@@ -167,6 +167,35 @@ public class JvmOptionsParserTest {
     }
 
     @Test
+    public void testBase64IntrinsicsDisabledByDefault() throws IOException {
+        File optionsFile = writeIntoTempOptionsFile(writer -> writer.println("-Xmx1g"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, "");
+
+        assertTrue(outputStreamCaptor.toString().contains("-XX:-UseBASE64Intrinsics"));
+    }
+
+    @Test
+    public void testBase64IntrinsicsUserSettingIsKept() throws IOException {
+        File optionsFile = writeIntoTempOptionsFile(writer -> writer.println("-Xmx1g"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, "-XX:+UseBASE64Intrinsics");
+
+        final String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("-XX:+UseBASE64Intrinsics"));
+        assertFalse(output.contains("-XX:-UseBASE64Intrinsics"));
+    }
+
+    @Test
+    public void testBase64IntrinsicsUserSettingWithTrailingWhitespaceIsKept() throws IOException {
+        File optionsFile = writeIntoTempOptionsFile(writer -> writer.println("-XX:+UseBASE64Intrinsics "));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, "");
+
+        assertFalse(outputStreamCaptor.toString().contains("-XX:-UseBASE64Intrinsics"));
+    }
+
+    @Test
     public void testEnvironmentOPTSVariableTakesPrecedenceOverOptionsFile() throws IOException {
         String regex = "Xmx[^ ]+";
         String expected = "Xmx25g";
