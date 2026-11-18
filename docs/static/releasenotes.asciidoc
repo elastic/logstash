@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-26,Logstash 8.19.26>>
 * <<logstash-8-19-25,Logstash 8.19.25>>
 * <<logstash-8-19-24,Logstash 8.19.24>>
 * <<logstash-8-19-23,Logstash 8.19.23>>
@@ -116,6 +117,57 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-26]]
+=== Logstash 8.19.26 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.26
+
+=== Logstash Commits between 8.19 and 8.19.25
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.25..8.19"
+
+1b32496b9 - (HEAD -> 8.19, origin/8.19) Update patch plugin versions in gemfile lock and NOTICE.txt (#19908) (60 minutes ago) <github-actions[bot]>
+66efac50b - Disable Base64 intrinsics by default (#19906) (#19910) (72 minutes ago) <mergify[bot]>
+51184b973 - Add logstash-input-http to observabilitySRE container (#19859) (#19892) (2 hours ago) <mergify[bot]>
+80cc23d6b - Fix 19771 multilocal settings (#19838) (#19900) (23 hours ago) <mergify[bot]>
+bc4cfcf50 - Test Ironbank acceptance against UBI 10.3 (#19873) (#19884) (23 hours ago) <mergify[bot]>
+04a7eb6c0 - [8.19] (backport #19867) deps: Bump ironbank version to 10.3 (#19871) (24 hours ago) <mergify[bot]>
+4c24e1a68 - Unset Bundler env for acceptance test commands (#19865) (#19888) (24 hours ago) <mergify[bot]>
+42538b220 - Fix 19770 remote config net http (#19839) (#19880) (26 hours ago) <mergify[bot]>
+896807407 - Update patch plugin versions in gemfile lock and NOTICE.txt (#19876) (30 hours ago) <github-actions[bot]>
+a83779c0a - Pin JDK 21 in critical vulnerability scan workflow (#19872) (31 hours ago) <Cas Donoghue>
+c66cfecbf - Request to install JDK 21 in bump gems workflow (#19093) (#19875) (31 hours ago) <mergify[bot]>
+8ae8fb7bc - Exit on fatal error without waiting for Ruby threads (#19729) (#19822) (2 days ago) <mergify[bot]>
+a32f4c26b - docs: sync JRuby version in README with .ruby-version (#19723) (#19864) (6 days ago) <mergify[bot]>
+6027adb75 - Sync agentic workflow files from elastic/oblt-aw (#19854) (#19858) (7 days ago) <mergify[bot]>
+ed7b4baae - Reduce artifact upload and download volume in exhaustive tests (#19841) (#19851) (7 days ago) <mergify[bot]>
+fa3885909 - Fix version bump workflow NOTICE step (#19842) (#19846) (8 days ago) <mergify[bot]>
+7a8eb2e54 - Release notes for 8.19.25 (#19826) (8 days ago) <github-actions[bot]>
+b2d7709dc - Bump logstash version 8.19.26 (#19840) (8 days ago) <github-actions[bot]>
+825225602 - Add Ubuntu 26.04 to exhaustive tests (#19831) (#19837) (9 days ago) <mergify[bot]>
+36ee62330 - Retry Kafka download in integration test setup (#19825) (#19830) (12 days ago) <mergify[bot]>
+a38ac1df2 - [8.19] (backport #19807) After gemfile.lock update, workflow also updates the dependency tree. (#19817) (2 weeks ago) <mergify[bot]>
+d9686ecf0 - Ship jdk 21.0.13+9 with windows artifacts (#19808) (#19813) (2 weeks ago) <mergify[bot]>
+4881fa294 - Build monitoring API rack app once instead of per request (#19721) (#19798) (2 weeks ago) <mergify[bot]>
+5e5c323f4 - Add security advisory notice to the 8.19.24 release notes (#19791) (2 weeks ago) <Álex Cámara Lara>
+832161821 - Bump docker/login-action (#19772) (#19784) (2 weeks ago) <mergify[bot]>
+998182087 - Revert "Add security advisory notice to the 8.19.24 release notes" (#19780) (#19788) (2 weeks ago) <Álex Cámara Lara>
+b16906edb - Add security advisory notice to the 8.19.24 release notes (#19780) (2 weeks ago) <Álex Cámara Lara>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.19.25..8.19 *.release"
+Changed plugin versions:
+logstash-integration-rabbitmq: 7.4.4 -> 7.4.5
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Rabbitmq Integration - 7.4.5*
+
+* Recover from broker-closed output channels without leaking channels or losing events https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/88[#88]
+
 
 [[logstash-8-19-25]]
 === Logstash 8.19.25 Release Notes
