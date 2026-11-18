@@ -25,46 +25,27 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.4.10-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.4.10
+* Logstash now starts the JVM with `-XX:-UseBASE64Intrinsics` unless `UseBASE64Intrinsics` is already set in `jvm.options` or `LS_JAVA_OPTS`. To opt back in, set `-XX:+UseBASE64Intrinsics` [#19906](https://github.com/elastic/logstash/pull/19906)
 
-=== Logstash Commits between 9.4 and 9.4.9
+### Fixes [logstash-9.4.10-fixes]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.4.9..9.4"
+* Fixed loading a pipeline configuration from an `http://` or `https://` URL in `path.config` (or `-f <url>`), which failed with `NameError: uninitialized constant ...ConfigRemoteLoader::Net` [#19839](https://github.com/elastic/logstash/pull/19839)
 
-c4e05c667 - (HEAD -> 9.4, origin/9.4) Disable Base64 intrinsics by default (#19906) (#19913) (61 minutes ago) <mergify[bot]>
-b584cf7ba - Update patch plugin versions in gemfile lock and NOTICE.txt (#19907) (74 minutes ago) <github-actions[bot]>
-8d57f7334 - deps: Bump ironbank version to 10.3 (#19867) (#19870) (2 hours ago) <mergify[bot]>
-c13941e45 - Update bundled JRuby to 10.0.8.0 (#19824) (#19850) (2 hours ago) <mergify[bot]>
-f5c0297cd - Fix 19771 multilocal settings (#19838) (#19899) (2 hours ago) <mergify[bot]>
-b6af846d0 - Add logstash-input-http to observabilitySRE container (#19859) (#19891) (3 hours ago) <mergify[bot]>
-a320bb050 - Unset Bundler env for acceptance test commands (#19865) (#19887) (3 hours ago) <mergify[bot]>
-71ca4c373 - Test Ironbank acceptance against UBI 10.3 (#19873) (#19883) (3 hours ago) <mergify[bot]>
-4a6242f40 - Fix 19770 remote config net http (#19839) (#19879) (3 hours ago) <mergify[bot]>
-c676767ce - docs: sync JRuby version in README with .ruby-version (#19723) (#19863) (6 days ago) <mergify[bot]>
-a5eb01f4e - Sync agentic workflow files from elastic/oblt-aw (#19854) (#19857) (7 days ago) <mergify[bot]>
-72824708e - Fix version bump workflow NOTICE step (#19842) (#19845) (8 days ago) <mergify[bot]>
-dadce76d0 - Add Ubuntu 26.04 to exhaustive tests (#19831) (#19836) (9 days ago) <mergify[bot]>
-430d833ce - Retry Kafka download in integration test setup (#19825) (#19829) (12 days ago) <mergify[bot]>
-7ab0f35c3 - Exit on fatal error without waiting for Ruby threads (#19729) (#19821) (13 days ago) <mergify[bot]>
-b0b42635c - After gemfile.lock update, workflow also updates the dependency tree. (#19807) (#19816) (2 weeks ago) <mergify[bot]>
-e163b5ab2 - Ship jdk 21.0.13+9 with windows artifacts (#19808) (#19812) (2 weeks ago) <mergify[bot]>
-5e2e88219 - Ironbank install openssl (#19793) (#19806) (2 weeks ago) <mergify[bot]>
-7ae76b263 - Build monitoring API rack app once instead of per request (#19721) (#19797) (2 weeks ago) <mergify[bot]>
-302a016e0 - Add security advisory notice to the 9.4.9 release notes (#19790) (2 weeks ago) <Álex Cámara Lara>
-09b422c43 - Bump docker/login-action (#19772) (#19783) (2 weeks ago) <mergify[bot]>
-484f62442 - Revert "Add security advisory notice to the 9.4.9 release notes" (#19779) (#19787) (2 weeks ago) <Álex Cámara Lara>
-b419b30bc - Add security advisory notice to the 9.4.9 release notes (#19779) (2 weeks ago) <Álex Cámara Lara>
-24e670cba - Bump logstash version 9.4.10 (#19776) (2 weeks ago) <github-actions[bot]>
-66ef3f169 - Release notes for 9.4.9 (#19758) (3 weeks ago) <github-actions[bot]>
-d1707b9d6 - ci: drop n1-standard machineType (#19756) (#19768) (3 weeks ago) <mergify[bot]>
-521ad882f - [9.4] (backport #19664) Doc: Update version.stack references (#19762) (3 weeks ago) <mergify[bot]>
+* Fixed pipelines defined in `pipelines.yml` no longer being reloaded after a single error while loading their config source. Concurrent config fetches no longer see another pipeline's settings [#19838](https://github.com/elastic/logstash/pull/19838)
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.4.9..9.4 *.release"
-Changed plugin versions:
-logstash-integration-rabbitmq: 7.4.4 -> 7.4.5
----------- GENERATED CONTENT ENDS HERE ------------
+* Fixed Logstash sometimes not exiting after an unexpected fatal error [#19729](https://github.com/elastic/logstash/pull/19729)
+
+* Fixed an issue where frequent requests to the monitoring API (for example from Metricbeat, Elastic Agent, or Kubernetes probes) could increase native memory usage by several hundred MB [#19721](https://github.com/elastic/logstash/pull/19721)
+
+* The Ironbank Docker image includes the `openssl` CLI again, which the UBI 10 base image no longer provides [#19793](https://github.com/elastic/logstash/pull/19793)
+
+### Updates to dependencies [logstash-9.4.10-dependencies]
+
+* Update bundled JRuby to 10.0.8.0 [#19824](https://github.com/elastic/logstash/pull/19824)
+
+* Windows packages now bundle Temurin 21.0.13+9, matching the other platforms [#19808](https://github.com/elastic/logstash/pull/19808)
+
+* Update the Ironbank Docker image base to UBI 10.3 [#19867](https://github.com/elastic/logstash/pull/19867)
 
 ### Plugins [logstash-plugin-9.4.10-changes]
 
