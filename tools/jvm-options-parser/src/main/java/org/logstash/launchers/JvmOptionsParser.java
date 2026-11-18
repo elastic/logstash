@@ -185,9 +185,18 @@ public class JvmOptionsParser {
         // Set mandatory JVM options
         jvmOptionsContent.addAll(getMandatoryJvmOptions(javaMajorVersion));
 
-        final Set<String> jvmFinalOptions = nettyMaxOrderDefaultTo11(jvmOptionsContent);
+        final Set<String> jvmFinalOptions = base64IntrinsicsDefaultToDisabled(nettyMaxOrderDefaultTo11(jvmOptionsContent));
 
         System.out.println(String.join(" ", jvmFinalOptions));
+    }
+
+    private Set<String> base64IntrinsicsDefaultToDisabled(Set<String> options) {
+        if (options.stream().anyMatch(s -> s.matches("-XX:[+-]UseBASE64Intrinsics"))) {
+            return options;
+        }
+        final Set<String> acc = new LinkedHashSet<>(options);
+        acc.add("-XX:-UseBASE64Intrinsics");
+        return acc;
     }
 
     /**
