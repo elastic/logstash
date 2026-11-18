@@ -111,7 +111,7 @@ GEM
     date (3.6.0-java)
     diff-lcs (1.6.2)
     docile (1.4.1)
-    domain_name (0.7.20261031)
+    domain_name (0.7.20261117)
     dotenv (2.8.1)
     down (5.2.4)
       addressable (~> 2.8)
@@ -471,7 +471,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (4.2.2-java)
+    logstash-input-http (4.3.0-java)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
