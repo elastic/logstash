@@ -191,7 +191,7 @@ public class JvmOptionsParser {
     }
 
     private Set<String> base64IntrinsicsDefaultToDisabled(Set<String> options) {
-        if (options.stream().anyMatch(s -> s.matches("-XX:[+-]UseBASE64Intrinsics"))) {
+        if (options.stream().anyMatch(s -> s.strip().matches("-XX:[+-]UseBASE64Intrinsics"))) {
             return options;
         }
         final Set<String> acc = new LinkedHashSet<>(options);
