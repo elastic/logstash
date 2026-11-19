@@ -209,6 +209,12 @@ public final class MmapPageIOV1 implements PageIO {
     }
 
     @Override
+    public boolean hasCapacity(int bytes) {
+        // V1 pages are read-only; queue recovery upgrades the writable head to V2.
+        return false;
+    }
+
+    @Override
     public int persistedByteCount(int byteCount) {
         return MmapPageIOV2.SEQNUM_SIZE + MmapPageIOV2.LENGTH_SIZE
             + byteCount + MmapPageIOV2.CHECKSUM_SIZE;

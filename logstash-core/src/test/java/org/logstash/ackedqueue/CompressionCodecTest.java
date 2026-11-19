@@ -4,6 +4,7 @@ import com.github.luben.zstd.Zstd;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.logstash.RubyTestBase;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -13,7 +14,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Matchers.argThat;
 
-public class CompressionCodecTest {
+public class CompressionCodecTest extends RubyTestBase {
     static final ImmutableByteArrayBarrier RAW_BYTES = new ImmutableByteArrayBarrier((
             "this is a string of text with repeated substrings that is designed to be "+
             "able to be compressed into a string that is smaller than the original input "+
