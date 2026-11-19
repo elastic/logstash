@@ -46,9 +46,9 @@ module LogStash
       # it natively it would *fail* when a `.gem` file is not found. Instead of failing we force the cache to be
       # updated with a `.gem` file. This preserves the original patch behavior. There is still an open question of
       # *how* to potentially update the files we vendor or the way we set up bundler to avoid carrying this patch. 
-      # As of JRuby 9.4.13.0 rubygems (bundler) is at 3.6.3. There have been some releases and changes in bundler code
+      # As of JRuby 10.0.3.0 rubygems (bundler) is at 2.7.2. There have been some releases and changes in bundler code
       # since then but it does not seem to have changed the way it handles gem files. Obviously carrying a patch like this
-      # carries a maintenance burden so prioritizing a packaging solution may be 
+      # carries a maintenance burden so prioritizing a packaging solution may be worthwhile.
       ::Bundler::Source::Rubygems.module_exec do
         def fetch_gem_if_possible(spec, previous_spec = nil)
           path = if spec.remote
@@ -73,6 +73,17 @@ module LogStash
         rescue Errno::EACCES => e
           ::Bundler.ui.debug(e)
           raise InstallError, e.message
+        end
+      end
+
+      # JRuby 10 bundler includes a self-manager feature that tries to restart bundler
+      # with a locked version. This causes issues in our embedded environment.
+      # Disable it by making restart_with_locked_bundler_if_needed a no-op.
+      if defined?(::Bundler::SelfManager)
+        ::Bundler::SelfManager.module_exec do
+          def restart_with_locked_bundler_if_needed(*)
+            # No-op: don't attempt to restart with locked bundler
+          end
         end
       end
     end
@@ -146,7 +157,7 @@ module LogStash
         )
       end
       # create Gemfile.jruby-1.9.lock from template iff a template exists it itself does not exist
-      lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-3.1.lock.release")
+      lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-3.4.lock.release")
       if ::File.exist?(lock_template) && !::File.exist?(Environment::LOCKFILE)
         FileUtils.copy(lock_template, Environment::LOCKFILE)
       end
@@ -220,13 +231,20 @@ module LogStash
     end
 
     def specific_platforms(platforms = ::Gem.platforms)
+      # Keep generic `java` in lockfiles and remove more specific java variants.
+      # On JRuby 10, `universal-java` has nil version, so version is not a reliable discriminator.
       platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os == 'java' && !plat.cpu.nil?}
     end
 
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java'})
-      specific_platforms.each do |platform|
-        output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
+      specific_platforms(::Bundler.definition.platforms).each do |platform|
+        begin
+          output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
+        rescue => e
+          # Ignore errors if platform doesn't exist in lockfile
+          $stderr.puts("Note: Could not remove platform #{platform}: #{e.message}") if ENV["DEBUG"]
+        end
       end
       output
     end

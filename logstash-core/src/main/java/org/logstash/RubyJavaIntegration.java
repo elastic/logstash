@@ -59,18 +59,19 @@ public final class RubyJavaIntegration {
 
     @SuppressWarnings("rawtypes")
     public static void setupRubyJavaIntegration(final Ruby ruby) {
-        ruby.getArray().defineAnnotatedMethods(RubyJavaIntegration.RubyArrayOverride.class);
-        ruby.getHash().defineAnnotatedMethods(RubyJavaIntegration.RubyHashOverride.class);
+        final ThreadContext context = ruby.getCurrentContext();
+        ruby.getArray().defineMethods(context, RubyJavaIntegration.RubyArrayOverride.class);
+        ruby.getHash().defineMethods(context, RubyJavaIntegration.RubyHashOverride.class);
         Stream.of(LinkedHashMap.class, HashMap.class).forEach(cls ->
-            Java.getProxyClass(ruby, cls).defineAnnotatedMethods(
-                RubyJavaIntegration.RubyMapProxyOverride.class
+            Java.getProxyClass(context, cls).defineMethods(
+                context, RubyJavaIntegration.RubyMapProxyOverride.class
             )
         );
-        Java.getProxyClass(ruby, Map.class).defineAnnotatedMethods(
-            RubyJavaIntegration.JavaMapOverride.class
+        Java.getProxyClass(context, Map.class).defineMethods(
+            context, RubyJavaIntegration.JavaMapOverride.class
         );
-        Java.getProxyClass(ruby, Collection.class).defineAnnotatedMethods(
-            RubyJavaIntegration.JavaCollectionOverride.class
+        Java.getProxyClass(context, Collection.class).defineMethods(
+            context, RubyJavaIntegration.JavaCollectionOverride.class
         );
     }
 

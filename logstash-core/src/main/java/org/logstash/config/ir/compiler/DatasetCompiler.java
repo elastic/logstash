@@ -28,8 +28,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
+import org.jruby.api.Create;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.execution.AbstractPipelineExt;
@@ -137,7 +139,8 @@ public final class DatasetCompiler {
         } else {
             final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
 
-            @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
+            final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+            @SuppressWarnings("rawtypes") final RubyArray inputBuffer = (RubyArray) Create.newArray(context);
             clear.add(clearSyntax(parentFields));
             final ValueSyntaxElement inputBufferField = fields.add("inputBuffer", inputBuffer);
 
@@ -191,7 +194,8 @@ public final class DatasetCompiler {
 
         final ClassFields fields = new ClassFields();
         final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
-        @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        @SuppressWarnings("rawtypes") final RubyArray inputBuffer = (RubyArray) Create.newArray(context);
         final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
         final ValueSyntaxElement outputBufferField = fields.add(new ArrayList<>());
         final Closure clear = Closure.wrap().add(clearSyntax(parentFields));
@@ -275,7 +279,7 @@ public final class DatasetCompiler {
         } else {
             final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
             @SuppressWarnings("rawtypes")
-            final RubyArray buffer = RubyUtil.RUBY.newArray();
+            final RubyArray buffer = (RubyArray) Create.newArray(RubyUtil.RUBY.getCurrentContext());
             final Closure inlineClear;
             if (terminal) {
                 clearSyntax = Closure.EMPTY;

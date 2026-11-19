@@ -26,6 +26,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
+import org.jruby.api.Convert;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
@@ -51,11 +52,11 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @JRubyMethod(optional = 8)
     public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject[] args) throws IOException {
-        args = Arity.scanArgs(context.runtime, args, 8, 0);
-        int capacity = RubyFixnum.num2int(args[1]);
-        int maxEvents = RubyFixnum.num2int(args[2]);
-        int checkpointMaxWrites = RubyFixnum.num2int(args[3]);
-        int checkpointMaxAcks = RubyFixnum.num2int(args[4]);
+        args = Arity.scanArgs(context, args, 8, 0);
+        int capacity = Convert.toInt(context, args[1]);
+        int maxEvents = Convert.toInt(context, args[2]);
+        int checkpointMaxWrites = Convert.toInt(context, args[3]);
+        int checkpointMaxAcks = Convert.toInt(context, args[4]);
         boolean checkpointRetry = !((RubyBoolean) args[6]).isFalse();
         long queueMaxBytes = RubyFixnum.num2long(args[7]);
 
@@ -91,7 +92,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @JRubyMethod(name = "is_empty?")
     public IRubyObject rubyIsEmpty(ThreadContext context) {
-        return RubyBoolean.newBoolean(context.runtime, this.queue.isEmpty());
+        return Convert.asBoolean(context, this.queue.isEmpty());
     }
 
     @Override

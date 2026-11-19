@@ -24,6 +24,15 @@ describe LogStash::Api::Modules::Logging do
   include_context "api setup"
 
   describe "#logging" do
+    it "includes live loggers that do not have explicit logger configs" do
+      LogStash::Logging::Logger.new("dynamic.logging.spec")
+
+      get "/"
+
+      payload = LogStash::Json.load(last_response.body)
+      expect(payload.fetch("loggers")).to include("dynamic.logging.spec")
+    end
+
     context "when setting a logger's log level" do
       it "should return a positive acknowledgement on success" do
         put '/', '{"logger.logstash": "ERROR"}'

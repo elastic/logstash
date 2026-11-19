@@ -369,7 +369,7 @@ describe LogStash::Event do
     subject { LogStash::Event.new({"foo" => "bar"}) }
 
     it "other missing method raises normal exception message" do
-      expect { subject.baz() }.to raise_error(NoMethodError, /undefined method `baz' for/)
+      expect { subject.baz() }.to raise_error(NoMethodError, /undefined method 'baz' for/)
     end
   end
 
