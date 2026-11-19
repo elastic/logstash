@@ -186,11 +186,7 @@ ci/docker_acceptance_tests.sh {flavor}"""),
             step["env"] = {
                 "BASE_REGISTRY": "docker.io",
                 "BASE_IMAGE": "redhat/ubi10",
-<<<<<<< HEAD
                 "BASE_TAG": "10.3"
-=======
-                "BASE_TAG": "10.2"
->>>>>>> 5e945a7 (Ironbank install openssl (#19793))
             }
         
         steps.append(step)
