@@ -57,8 +57,9 @@ module LogStash
       end
 
       # ensure non-compliant jruby openssl provider isn't registered or eligible for later registration
-      if org.jruby.ext.openssl.SecurityHelper.isProviderRegistered
-        accumulator.failure "non-compliant Jruby OpenSSL security helper is registered"
+      # by name: SecurityHelper.isProviderRegistered is gone in jruby-openssl 0.19
+      if ::Java::java.security.Security.getProvider("BC")
+        accumulator.failure "non-compliant BouncyCastle (BC) security provider is registered"
       elsif org.jruby.util.SafePropertyAccessor.getBoolean("jruby.openssl.provider.register") != false
         accumulator.failure "non-compliant Jruby OpenSSL security helper is eligible to be registered"
       else
