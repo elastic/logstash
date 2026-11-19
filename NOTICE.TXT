@@ -722,7 +722,7 @@ Notice for: aws-eventstream-1.4.1
    limitations under the License.
 
 ==========
-Notice for: aws-partitions-1.1306.0
+Notice for: aws-partitions-1.1307.0
 ----------
 
 
@@ -1964,7 +1964,7 @@ Notice for: aws-sdk-resourcegroups-1.113.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-s3-1.243.0
+Notice for: aws-sdk-s3-1.244.0
 ----------
 
 

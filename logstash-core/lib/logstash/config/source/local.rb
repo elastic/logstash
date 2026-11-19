@@ -17,6 +17,7 @@
 
 require "logstash/config/source/base"
 require "logstash/config/pipeline_config"
+require "net/http"
 require "uri"
 
 module LogStash module Config module Source
