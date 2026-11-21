@@ -1,11 +1,12 @@
 #!/bin/bash
 # Scans a Logstash artifact for dependencies and reports to Snyk
-# Usage: ./scan-artifact.sh <version> <artifact_url>
+# Usage: ./scan-artifact.sh <version> <artifact_url> [snyk_remote_repo_url]
 
 set -euo pipefail
 
 VERSION="$1"
 ARTIFACT_URL="$2"
+REMOTE_REPO_URL="${3:-logstash-artifact}"
 
 source .buildkite/scripts/common/vm-agent.sh
 
@@ -34,7 +35,7 @@ curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cl
 chmod +x ./snyk
 
 echo "--- Running Snyk monitor for Logstash ${VERSION}"
-./snyk sbom monitor --experimental --file=output_sbom.json --org=logstash --target-reference="${VERSION}" --remote-repo-url="logstash-artifact"
+./snyk sbom monitor --experimental --file=output_sbom.json --org=logstash --target-reference="${VERSION}" --remote-repo-url="${REMOTE_REPO_URL}"
 
 echo "--- Uploading artifacts"
 buildkite-agent artifact upload "output*.csv"
