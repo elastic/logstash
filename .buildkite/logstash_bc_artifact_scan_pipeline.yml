@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+steps:
+  - label: ":pipeline: Logstash BC Artifact Scan"
+    command: |
+      set -euo pipefail
+      source .buildkite/scripts/common/vm-agent.sh
+      python3 -m pip install pyyaml requests
+      export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
+      python3 .buildkite/scripts/snyk/bc-scan/bc_scan.py generate > steps.yml
+      if [[ -s steps.yml ]]; then
+        buildkite-agent pipeline upload < steps.yml
+      fi
+
+  - wait: ~
+    continue_on_failure: true
+
+  - label: ":broom: Cleanup shipped and superseded BC Snyk projects"
+    command: |
+      set -euo pipefail
+      source .buildkite/scripts/common/vm-agent.sh
+      python3 -m pip install pyyaml requests
+      export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
+      python3 .buildkite/scripts/snyk/bc-scan/bc_scan.py cleanup
