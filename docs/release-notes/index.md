@@ -23,6 +23,10 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.5.7 [logstash-9.5.7-release-notes]
 
+::::{important}
+This release contains security fixes. Please see our [security advisory](https://discuss.elastic.co/c/announcements/security-announcements/31) for more details.
+::::
+
 ### Features and enhancements [logstash-9.5.7-features-enhancements]
 
 * Logstash now starts the JVM with `-XX:-UseBASE64Intrinsics` unless `UseBASE64Intrinsics` is already set in `jvm.options` or `LS_JAVA_OPTS`. To opt back in, set `-XX:+UseBASE64Intrinsics` [#19906](https://github.com/elastic/logstash/pull/19906)
