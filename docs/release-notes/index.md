@@ -21,6 +21,47 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.5.7 [logstash-9.5.7-release-notes]
+
+::::{important}
+This release contains security fixes. Please see our [security advisory](https://discuss.elastic.co/c/announcements/security-announcements/31) for more details.
+::::
+
+### Features and enhancements [logstash-9.5.7-features-enhancements]
+
+* Logstash now starts the JVM with `-XX:-UseBASE64Intrinsics` unless `UseBASE64Intrinsics` is already set in `jvm.options` or `LS_JAVA_OPTS`. To opt back in, set `-XX:+UseBASE64Intrinsics` [#19906](https://github.com/elastic/logstash/pull/19906)
+
+### Fixes [logstash-9.5.7-fixes]
+
+* Fixed loading a pipeline configuration from an `http://` or `https://` URL in `path.config` (or `-f <url>`), which failed with `NameError: uninitialized constant ...ConfigRemoteLoader::Net` [#19839](https://github.com/elastic/logstash/pull/19839)
+
+* Fixed pipelines defined in `pipelines.yml` no longer being reloaded after a single error while loading their config source. Concurrent config fetches no longer see another pipeline's settings [#19838](https://github.com/elastic/logstash/pull/19838)
+
+* Fixed Logstash sometimes not exiting after an unexpected fatal error [#19729](https://github.com/elastic/logstash/pull/19729)
+
+* Fixed an issue where frequent requests to the monitoring API (for example from Metricbeat, Elastic Agent, or Kubernetes probes) could increase native memory usage by several hundred MB [#19721](https://github.com/elastic/logstash/pull/19721)
+
+* The Ironbank Docker image includes the `openssl` CLI again, which the UBI 10 base image no longer provides [#19793](https://github.com/elastic/logstash/pull/19793)
+
+### Updates to dependencies [logstash-9.5.7-dependencies]
+
+* Update bundled JRuby to 10.0.8.0 [#19824](https://github.com/elastic/logstash/pull/19824)
+
+* Windows packages now bundle Temurin 21.0.13+9, matching the other platforms [#19808](https://github.com/elastic/logstash/pull/19808)
+
+* Update the Ironbank Docker image base to UBI 10.3 [#19867](https://github.com/elastic/logstash/pull/19867)
+
+### Plugins [logstash-plugin-9.5.7-changes]
+
+**Kafka Integration - 12.2.2**
+
+* Upgrades kafka-clients dependency to 4.2.2 [#294](https://github.com/logstash-plugins/logstash-integration-kafka/pull/294)
+
+**Rabbitmq Integration - 7.4.5**
+
+* Recover from broker-closed output channels without leaking channels or losing events [#88](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/88)
+
+
 ## 9.5.6 [logstash-9.5.6-release-notes]
 
 ::::{important}
@@ -347,6 +388,43 @@ This release bundles the Kafka integration plugin `12.x`, replacing `11.x`. The 
 **Udp Output - 3.3.0**
 
 * Added support for IPv6 addresses [#16](https://github.com/logstash-plugins/logstash-output-udp/pull/16)
+
+## 9.4.10 [logstash-9.4.10-release-notes]
+
+::::{important}
+This release contains security fixes. Please see our [security advisory](https://discuss.elastic.co/c/announcements/security-announcements/31) for more details.
+::::
+
+### Features and enhancements [logstash-9.4.10-features-enhancements]
+
+* Logstash now starts the JVM with `-XX:-UseBASE64Intrinsics` unless `UseBASE64Intrinsics` is already set in `jvm.options` or `LS_JAVA_OPTS`. To opt back in, set `-XX:+UseBASE64Intrinsics` [#19906](https://github.com/elastic/logstash/pull/19906)
+
+### Fixes [logstash-9.4.10-fixes]
+
+* Fixed loading a pipeline configuration from an `http://` or `https://` URL in `path.config` (or `-f <url>`), which failed with `NameError: uninitialized constant ...ConfigRemoteLoader::Net` [#19839](https://github.com/elastic/logstash/pull/19839)
+
+* Fixed pipelines defined in `pipelines.yml` no longer being reloaded after a single error while loading their config source. Concurrent config fetches no longer see another pipeline's settings [#19838](https://github.com/elastic/logstash/pull/19838)
+
+* Fixed Logstash sometimes not exiting after an unexpected fatal error [#19729](https://github.com/elastic/logstash/pull/19729)
+
+* Fixed an issue where frequent requests to the monitoring API (for example from Metricbeat, Elastic Agent, or Kubernetes probes) could increase native memory usage by several hundred MB [#19721](https://github.com/elastic/logstash/pull/19721)
+
+* The Ironbank Docker image includes the `openssl` CLI again, which the UBI 10 base image no longer provides [#19793](https://github.com/elastic/logstash/pull/19793)
+
+### Updates to dependencies [logstash-9.4.10-dependencies]
+
+* Update bundled JRuby to 10.0.8.0 [#19824](https://github.com/elastic/logstash/pull/19824)
+
+* Windows packages now bundle Temurin 21.0.13+9, matching the other platforms [#19808](https://github.com/elastic/logstash/pull/19808)
+
+* Update the Ironbank Docker image base to UBI 10.3 [#19867](https://github.com/elastic/logstash/pull/19867)
+
+### Plugins [logstash-plugin-9.4.10-changes]
+
+**Rabbitmq Integration - 7.4.5**
+
+* Recover from broker-closed output channels without leaking channels or losing events [#88](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/88)
+
 
 ## 9.4.9 [logstash-9.4.9-release-notes]
 
