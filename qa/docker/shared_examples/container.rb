@@ -64,6 +64,10 @@ shared_examples_for 'the container is configured correctly' do |flavor|
       expect(exec_in_container(@container, 'id -g logstash')).to eql '1000'
     end
 
+    it 'should have the openssl CLI' do
+      expect(exec_in_container_full(@container, 'openssl version')[:exitcode]).to eql 0
+    end
+
     it 'should not have a RollingFile appender' do
       expect(exec_in_container(@container, 'cat /usr/share/logstash/config/log4j2.properties')).not_to match /RollingFile/
     end
