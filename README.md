@@ -52,25 +52,6 @@ Logstash core will continue to exist under this repository and all related issue
 >>>>>>> 3a21abc (docs: sync JRuby version in README with .ruby-version (#19723))
 * Install `rake` and `bundler` tool using `gem install rake` and `gem install bundler` respectively.
 
-### RVM install (optional)
-
-If you prefer to use rvm (ruby version manager) to manage Ruby versions on your machine, follow these directions. In the Logstash folder:
-
-```sh
-gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-\curl -sSL https://get.rvm.io | bash -s stable --ruby=$(cat .ruby-version)
-```
-
-### Check Ruby version
-
-Before you proceed, please check your ruby version by:
-
-```sh
-$ ruby -v
-```
-
-The printed version should be the same as in the `.ruby-version` file.
-
 ### Building Logstash
 
 The Logstash project includes the source code for all of Logstash, including the Elastic-Licensed X-Pack features and functions; to run Logstash from source using only the OSS-licensed code, export the `OSS` environment variable with a value of `true`:
