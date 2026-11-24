@@ -104,7 +104,7 @@ def is_shipped(http: requests.Session, version: str) -> bool:
 def staging_build(http: requests.Session, version: str):
     """Return the latest staging build for version, or None when no BC exists."""
     resp = http.get(STAGING_LATEST_URL.format(version=version), timeout=30)
-    if resp.status_code in (403, 404):
+    if resp.status_code == 404:
         return None
     resp.raise_for_status()
     latest = resp.json()
@@ -245,11 +245,15 @@ def generate() -> None:
 
 def cleanup() -> None:
     dry_run = env_flag("DRY_RUN")
-    active = {bc["build_id"] for bc in active_bcs(http_session())}
 
+    # List projects before discovery so a project created by an overlapping run
+    # after discovery is never judged against an older view of active BCs.
     snyk = http_session(snyk_token())
     org_id = resolve_org_id(snyk)
-    stale = [p for p in list_bc_projects(snyk, org_id) if target_reference(p) not in active]
+    projects = list_bc_projects(snyk, org_id)
+    active = {bc["build_id"] for bc in active_bcs(http_session())}
+
+    stale = [p for p in projects if target_reference(p) not in active]
     print(f"Stale BC projects to delete: {len(stale)}")
 
     deleted, failed = [], []
