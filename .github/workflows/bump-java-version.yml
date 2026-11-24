@@ -2,8 +2,8 @@ name: bump-java-version
 
 on:
   schedule:
-    # Run weekly on Mondays at midnight UTC
-    - cron: '0 0 * * 1'
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 
