@@ -182,6 +182,7 @@ def dra_prep_step(branch, workflow_type, depends_on, stack_version, dra_upload):
 def dra_annotate_step(workflow_type, depends_on):
     step = f'''
 - label: ":memo: Annotate DRA summary / {workflow_type.upper()}"
+  key: "logstash_dra_annotate"
   depends_on: "{depends_on}"
   command: ".buildkite/scripts/dra/dra-annotate.sh {workflow_type}"
   agents:
@@ -203,6 +204,24 @@ def dra_trigger_step(workflow_type, stack_version, depends_on):
       DRA_PRODUCT_ID: "logstash"
       DRA_STACK_VERSION: "{stack_version}"
       DRA_WORKFLOW: "{workflow_type}"
+'''
+    return step
+
+def delete_build_artifacts(depends_on):
+    step = f'''
+- label: ":wastebasket: Delete build artifacts"
+  key: "delete_build_artifacts"
+  depends_on: "{depends_on}"
+  command: "true"
+  plugins:
+    - elastic/vault-secrets#v0.1.1:
+        path: "kv/ci-shared/manage-buildkite-artifacts/delete"
+        field: "token"
+        env_var: "BUILDKITE_API_TOKEN"
+    - elastic/delete-build-artifacts#v0.1.0:
+        continue-on-error: true
+  agents:
+    provider: k8s
 '''
     return step
 
@@ -275,6 +294,9 @@ if __name__ == "__main__":
             )
             structure["steps"].extend(
                 yaml.safe_load(dra_annotate_step(workflow_type, depends_on="logstash_dra_trigger")),
+            )
+            structure["steps"].extend(
+                yaml.safe_load(delete_build_artifacts(depends_on="logstash_dra_annotate")),
             )
 
         # Once published, do the same for observabilitySRE image
