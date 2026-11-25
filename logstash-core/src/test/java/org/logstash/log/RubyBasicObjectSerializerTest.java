@@ -48,7 +48,7 @@ public class RubyBasicObjectSerializerTest {
     public void testSerializerPriority() throws JsonProcessingException {
         final String expectedOutput = "value_from_custom_serializer";
 
-        mapper.registerModule(new SimpleModule().addSerializer(new StdSerializer<>(RubySymbol.class) {
+        mapper.registerModule(new SimpleModule().addSerializer(new StdSerializer<RubySymbol>(RubySymbol.class) {
             private static final long serialVersionUID = 2531452116050620859L;
 
             @Override
