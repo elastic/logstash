@@ -1,6 +1,19 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
 steps:
+  - label: ":broom: Cleanup stale Snyk artifact-scan projects"
+    key: "cleanup-stale-projects"
+    command: |
+      set -euo pipefail
+      source .buildkite/scripts/common/vm-agent.sh
+      python3 -m pip install pyyaml requests
+      export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
+      python3 .buildkite/scripts/snyk/cleanup-artifact-stale-projects/cleanup-stale-projects.py
+
+  # Scan even when cleanup fails. The build still reports the cleanup failure.
+  - wait: ~
+    continue_on_failure: true
+
   - label: ":pipeline: Logstash Artifact Scan"
     command: |
       set -euo pipefail
