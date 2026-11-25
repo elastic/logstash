@@ -662,8 +662,8 @@ spec:
         filter_enabled: true
         filter_condition: >-
           build.creator.name == 'elasticmachine' && build.pull_request.id != null
-      cancel_intermediate_builds: true
-      skip_intermediate_builds: true
+      cancel_intermediate_builds: false
+      skip_intermediate_builds: false
       teams:
         streams:
           access_level: MANAGE_BUILD_AND_READ
