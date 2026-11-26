@@ -19,7 +19,6 @@ This index covers the checked-in Buildkite pipeline definitions in `.buildkite/`
 | [`serverless_integration_pipeline.yml`](serverless_integration_pipeline.yml) | [Serverless integration](docs/serverless_integration_pipeline.md) |
 | [`smart_exhaustive_tests_pipeline.yml`](smart_exhaustive_tests_pipeline.yml) | [Smart exhaustive tests](docs/smart_exhaustive_tests_pipeline.md) |
 | [`snapshot_release_acceptance_pipeline.yml`](snapshot_release_acceptance_pipeline.yml) | [Snapshot and release artifact acceptance](docs/snapshot_release_acceptance_pipeline.md) |
-| [`snyk_cleanup_stale_projects_pipeline.yml`](snyk_cleanup_stale_projects_pipeline.yml) | [Snyk stale-project cleanup](docs/snyk_cleanup_stale_projects_pipeline.md) |
 | [`supported_plugins_test_pipeline.yml`](supported_plugins_test_pipeline.yml) | [Supported plugins tests](docs/supported_plugins_test_pipeline.md) |
 | [`trigger_pipelines.yml`](trigger_pipelines.yml) | [Pipeline scheduler](docs/trigger_pipelines.md) |
 | [`version_bump_pipeline.yml`](version_bump_pipeline.yml) | [Version bump](docs/version_bump_pipeline.md) |
@@ -27,4 +26,4 @@ This index covers the checked-in Buildkite pipeline definitions in `.buildkite/`
 
 ## Source coverage
 
-This directory contains 18 root-level `.buildkite/*.yml` pipeline definitions, and each is linked above. Nested YAML files under `.buildkite/scripts/` are scenario or runtime configuration, not additional pipeline definitions. Buildkite schedules are maintained remotely; current scheduled targets are linked from the relevant pages, without copying schedule timings. The remote version/branch manifests used by some generators are linked in the corresponding source sections.
+This directory contains 17 root-level `.buildkite/*.yml` pipeline definitions, and each is linked above. Nested YAML files under `.buildkite/scripts/` are scenario or runtime configuration, not additional pipeline definitions. Buildkite schedules are maintained remotely; current scheduled targets are linked from the relevant pages, without copying schedule timings. The remote version/branch manifests used by some generators are linked in the corresponding source sections.
