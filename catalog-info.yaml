@@ -29,6 +29,7 @@ spec:
     - resource:logstash-plugins-snyk-report
     - resource:logstash-artifact-snyk-scan
     - resource:logstash-artifact-snyk-cleanup
+    - resource:logstash-bc-artifact-snyk-scan
     - resource:logstash-artifacts-acceptance
     - resource:logstash-dra-snapshot-pipeline
     - resource:logstash-dra-staging-pipeline
@@ -221,6 +222,52 @@ spec:
           branch: main
           cronline: "@weekly"
           message: "Cleanup stale Snyk artifact-scan projects weekly."
+
+# ***********************************
+# Declare BC artifacts-snyk-scan pipeline
+# ***********************************
+---
+# yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/rre.schema.json
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: logstash-bc-artifact-snyk-scan
+  description: 'Snyk SBOM scan of active Logstash build candidates.'
+spec:
+  type: buildkite-pipeline
+  owner: group:logstash
+  system: platform-ingest
+  implementation:
+    apiVersion: buildkite.elastic.dev/v1
+    kind: Pipeline
+    metadata:
+      name: logstash-bc-artifacts-snyk-report-ci
+      description: ':logstash: Snyk SBOM scan of active Logstash build candidates :pipeline:'
+    spec:
+      repository: elastic/logstash
+      pipeline_file: ".buildkite/logstash_bc_artifact_scan_pipeline.yml"
+      maximum_timeout_in_minutes: 60
+      provider_settings:
+        trigger_mode: none # don't trigger jobs
+      env:
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
+        SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
+        SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
+      teams:
+        streams:
+          access_level: MANAGE_BUILD_AND_READ
+        logstash:
+          access_level: MANAGE_BUILD_AND_READ
+        ingest-eng-prod:
+          access_level: MANAGE_BUILD_AND_READ
+        everyone:
+          access_level: READ_ONLY
+      schedules:
+        BC Artifacts Snyk scan:
+          branch: main
+          cronline: "0 */4 * * *"
+          message: "Scan new Logstash build candidates and remove shipped ones from Snyk."
 
 # ***********************************
 # Declare artifacts acceptance test pipeline
