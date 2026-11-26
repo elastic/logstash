@@ -20,6 +20,8 @@
 package org.logstash.execution;
 
 import org.jruby.RubyArray;
+import org.jruby.api.Create;
+import org.jruby.runtime.ThreadContext;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,10 +53,11 @@ public final class MemoryReadBatch implements QueueBatch {
 
     @Override
     public RubyArray<RubyEvent> to_a() {
-        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
+        final ThreadContext context = RUBY.getCurrentContext();
+        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = (RubyArray<RubyEvent>) Create.allocArray(context, events.size());
         for (final RubyEvent e : events) {
             if (!isCancelled(e)) {
-                result.append(e);
+                result.append(context, e);
             }
         }
         return result;

@@ -332,16 +332,10 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     if JavaVersion::CURRENT < JavaVersion::JAVA_21
-      if allow_jdk17_check
-        logger.warn I18n.t("logstash.runner.java.version_below_21_force",
-                           :java_home => java.lang.System.getProperty("java.home"),
-                           :java_version => JavaVersion::CURRENT)
-      else
-        logger.error I18n.t("logstash.runner.java.version_21_minimum",
-                            :java_home => java.lang.System.getProperty("java.home"), 
-                            :java_version => JavaVersion::CURRENT)
-        return 1
-      end
+      logger.error I18n.t("logstash.runner.java.version_21_minimum",
+                          :java_home => java.lang.System.getProperty("java.home"), 
+                          :java_version => JavaVersion::CURRENT)
+      return 1
     end
 
     logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]
@@ -651,10 +645,4 @@ class LogStash::Runner < Clamp::StrictCommand
       logger.warn("Ignoring 'pipeline.buffer.type' since the 'io.netty.noPreferDirect' Java property has already been set (check LS_JAVA_OPTS or jvm.options file.")
     end
   end
-
-  def allow_jdk17_check
-    jdk17_allow = java.lang.System.getProperty("logstash.jdk17.allow")
-    return 'true' == jdk17_allow
-  end
-  private :allow_jdk17_check
 end

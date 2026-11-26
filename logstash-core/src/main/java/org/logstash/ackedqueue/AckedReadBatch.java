@@ -21,6 +21,8 @@
 package org.logstash.ackedqueue;
 
 import org.jruby.RubyArray;
+import org.jruby.api.Create;
+import org.jruby.runtime.ThreadContext;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
@@ -69,10 +71,11 @@ public final class AckedReadBatch implements QueueBatch {
 
     @Override
     public RubyArray<RubyEvent> to_a() {
-        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
+        final ThreadContext context = RUBY.getCurrentContext();
+        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = (RubyArray<RubyEvent>) Create.allocArray(context, events.size());
         for (final RubyEvent e : events) {
             if (!MemoryReadBatch.isCancelled(e)) {
-                result.append(e);
+                result.append(context, e);
             }
         }
         return result;

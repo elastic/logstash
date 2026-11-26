@@ -62,7 +62,7 @@ module Bundler
         definition = builder.to_definition(lockfile_path, {})
 
         # lock the definition and save our modified gemfile
-        definition.lock(lockfile_path)
+        definition.lock
         gemfile.save
 
         gems_to_remove.each do |gem_name|
