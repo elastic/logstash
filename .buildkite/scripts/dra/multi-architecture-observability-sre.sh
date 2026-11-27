@@ -31,7 +31,7 @@ docker manifest annotate ${REGISTRY_PATH}:${VERSION_MANIFEST_TAG} \
   ${REGISTRY_PATH}:${AARCH64_TAG} --os linux --arch arm64
 
 echo "Pushing manifest: ${REGISTRY_PATH}:${VERSION_MANIFEST_TAG}"
-docker manifest push ${REGISTRY_PATH}:${VERSION_MANIFEST_TAG}
+retry -t 5 -- docker manifest push ${REGISTRY_PATH}:${VERSION_MANIFEST_TAG}
 
 # Also create version without SHA for effective "latest" tag
 BASE_VERSION="$(.buildkite/scripts/common/qualified-version.sh)"
@@ -47,7 +47,7 @@ docker manifest annotate ${REGISTRY_PATH}:${BASE_VERSION} \
   ${REGISTRY_PATH}:${AARCH64_TAG} --os linux --arch arm64
 
 echo "Pushing manifest: ${REGISTRY_PATH}:${BASE_VERSION}"
-docker manifest push ${REGISTRY_PATH}:${BASE_VERSION}
+retry -t 5 -- docker manifest push ${REGISTRY_PATH}:${BASE_VERSION}
 
 # Teardown Docker environment
 source .buildkite/scripts/dra/docker-env-teardown.sh

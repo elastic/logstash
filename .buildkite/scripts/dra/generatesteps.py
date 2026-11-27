@@ -1,3 +1,4 @@
+import copy
 import os
 import sys
 
@@ -14,6 +15,20 @@ def to_bk_key_friendly_string(key):
     mapping_table = str.maketrans({'.': '_'})
 
     return key.translate(mapping_table)
+
+# Build and ship steps talk to external services (docker.elastic.co, GCS, JDK catalog).
+# Retry them to absorb transient network timeouts.
+AUTOMATIC_RETRY = {"automatic": [{"exit_status": "*", "limit": 2}]}
+
+def with_automatic_retry(steps):
+    """
+    Add the automatic retry policy to every step in the list and return the list.
+    """
+
+    for step in steps:
+        step["retry"] = copy.deepcopy(AUTOMATIC_RETRY)
+
+    return steps
 
 def package_x86_step(branch, workflow_type):
     step = f'''
@@ -239,7 +254,7 @@ def build_steps_to_yaml(branch, workflow_type):
     steps.extend(yaml.safe_load(package_x86_docker_step(branch, workflow_type)))
     steps.extend(yaml.safe_load(package_aarch64_docker_step(branch, workflow_type)))
 
-    return steps
+    return with_automatic_retry(steps)
 
 if __name__ == "__main__":
     try:
@@ -301,7 +316,7 @@ if __name__ == "__main__":
 
         # Once published, do the same for observabilitySRE image
         structure["steps"].extend(
-            yaml.safe_load(ship_observability_sre_image_steps(branch, workflow_type)),
+            with_automatic_retry(yaml.safe_load(ship_observability_sre_image_steps(branch, workflow_type))),
         )
 
     print(YAML_HEADER + yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))
