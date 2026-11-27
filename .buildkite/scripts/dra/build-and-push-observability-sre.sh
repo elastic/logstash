@@ -37,7 +37,7 @@ echo "Architecture: ${ARCH}"
 FULL_TAG="${QUALIFIED_VERSION_WITH_SHA}-${ARCH}"
 echo "Tagging and pushing: ${REGISTRY_PATH}:${QUALIFIED_VERSION} as ${REGISTRY_PATH}:${FULL_TAG}"
 docker tag ${REGISTRY_PATH}:${QUALIFIED_VERSION} ${REGISTRY_PATH}:${FULL_TAG}
-docker push ${REGISTRY_PATH}:${FULL_TAG}
+retry -t 5 -- docker push ${REGISTRY_PATH}:${FULL_TAG}
 
 # Teardown Docker environment
 source .buildkite/scripts/dra/docker-env-teardown.sh
