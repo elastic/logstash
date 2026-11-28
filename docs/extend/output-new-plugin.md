@@ -499,7 +499,7 @@ Logstash uses [RubyGems.org](http://rubygems.org) as its repository for all plug
 
 ### Licensing [_licensing_4]
 
-Logstash and all its plugins are licensed under [Apache License, version 2 ("ALv2")](https://github.com/elasticsearch/logstash/blob/main/LICENSE). If you make your plugin publicly available via [RubyGems.org](http://rubygems.org), please make sure to have this line in your gemspec:
+Logstash and all its plugins are licensed under [Apache License, version 2 ("ALv2")](https://github.com/elastic/logstash/blob/main/LICENSE.txt). If you make your plugin publicly available via [RubyGems.org](http://rubygems.org), please make sure to have this line in your gemspec:
 
 * `s.licenses = ['Apache License (2.0)']`
 
