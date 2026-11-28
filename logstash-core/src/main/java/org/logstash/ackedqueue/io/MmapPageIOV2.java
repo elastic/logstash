@@ -258,8 +258,14 @@ public final class MmapPageIOV2 implements PageIO {
 
     @Override
     public boolean hasSpace(int bytes) {
-        int bytesLeft = this.capacity - this.head;
-        return persistedByteCount(bytes) <= bytesLeft;
+        return bytes >= 0 && bytes <= this.capacity - this.head - persistedByteCount(0);
+    }
+
+    @Override
+    public boolean hasCapacity(int bytes) {
+        // The version header occupies space even in an empty page. Subtract overhead
+        // from capacity instead of adding it to bytes, which could overflow an int.
+        return bytes >= 0 && bytes <= this.capacity - HEADER_SIZE - persistedByteCount(0);
     }
 
     @Override
