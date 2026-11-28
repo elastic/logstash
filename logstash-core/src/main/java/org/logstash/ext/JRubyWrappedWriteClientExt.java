@@ -127,6 +127,16 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
         ));
     }
 
+    @JRubyMethod(name = "persistent?")
+    public IRubyObject rubyPersistent(final ThreadContext context) {
+        return writeClient.rubyPersistent(context);
+    }
+
+    @JRubyMethod(name = "checkpoint!")
+    public IRubyObject rubyCheckpoint(final ThreadContext context) {
+        return writeClient.rubyCheckpoint(context);
+    }
+
     /**
      * @param context Ruby {@link ThreadContext}
      * @return Empty {@link RubyArray}
